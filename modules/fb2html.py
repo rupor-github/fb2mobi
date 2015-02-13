@@ -773,6 +773,8 @@ class Fb2XHTML:
                 self.buff.append(save_html(hstring))
 
         for e in elem:
+            if e.tag == etree.Comment:
+                continue
             if ns_tag(e.tag) == 'title':
                 self.parse_title(e)
             elif ns_tag(e.tag) == 'subtitle':
