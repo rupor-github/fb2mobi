@@ -11,6 +11,7 @@ import codecs
 import uuid
 import cssutils
 import base64
+import hashlib
 
 from hyphenator import Hyphenator
 
@@ -350,9 +351,8 @@ class Fb2XHTML:
             root = etree.parse(os.path.join(self.temp_content_dir, fl), parser).getroot()
 
             for elem in root.xpath('//xhtml:a', namespaces={'xhtml': 'http://www.w3.org/1999/xhtml'}):
-                link = elem.attrib['href']
-
-                if link.startswith('#'):
+                link = elem.get('href','')
+                if len(link) > 0 and link.startswith('#'):
                     try:
                         elem.set('href', self.links_location[link[1:]] + link)
                     except:
@@ -893,7 +893,8 @@ class Fb2XHTML:
             self.current_file = 'index{0}.xhtml'.format(self.current_file_index)
             self.html_file_list.append(self.current_file)
         else:
-            self.current_file = '{0}.xhtml'.format(self.body_name)
+            #self.current_file = '{0}.xhtml'.format(self.body_name)
+            self.current_file = '{0}.xhtml'.format(hashlib.md5(bytes(self.body_name,'utf-8')).hexdigest())
             self.html_file_list.append(self.current_file)
 
         if self.notes_mode in ('inline', 'block'):
