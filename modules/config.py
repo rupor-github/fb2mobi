@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 
 from lxml import etree
 from lxml.builder import E
@@ -34,12 +34,12 @@ class ConverterConfig:
         self.profiles = {}
         self.profiles['default'] = {}
         self.profiles['default']['name'] = 'default'
-        self.profiles['default']['description'] = u'Профиль по-умолчанию'
+        self.profiles['default']['description'] = u'Default profile'
         self.profiles['default']['outputFormat'] = None
         self.profiles['default']['transliterate'] = None
         self.profiles['default']['transliterateAuthorAndTitle'] = None
         self.profiles['default']['hyphens'] = True
-        self.profiles['default']['dropcaps'] = False 
+        self.profiles['default']['dropcaps'] = False
         self.profiles['default']['tocMaxLevel'] = 1000
         self.profiles['default']['tocBeforeBody'] = False
         self.profiles['default']['flatTOC'] = True
@@ -49,8 +49,8 @@ class ConverterConfig:
         self.profiles['default']['chapterOnNewPage'] = True
         self.profiles['default']['authorFormat'] = '#l #f #m'
         self.profiles['default']['bookTitleFormat'] = '(#abbrseries #number) #title'
-        self.profiles['default']['annotationTitle'] = u'Аннотация'
-        self.profiles['default']['tocTitle'] = u'Содержание'
+        self.profiles['default']['annotationTitle'] = u'Annotation'
+        self.profiles['default']['tocTitle'] = u'Content'
         self.profiles['default']['notesMode'] = 'default'
         self.profiles['default']['notesBodies'] = 'notes'
         self.profiles['default']['vignettes'] = {}
@@ -64,33 +64,12 @@ class ConverterConfig:
         self.mhl = False
         self.recursive = False
 
-        self.send_to_kindle = {}
-        self.send_to_kindle['send'] = False
-        self.send_to_kindle['deleteSendedBook'] = True
-        self.send_to_kindle['smtpServer'] = 'smtp.gmail.com' 
-        self.send_to_kindle['smtpPort'] = 465
-        self.send_to_kindle['smtpLogin'] = '[Your Google Email]'
-        self.send_to_kindle['smtpPassword'] = None
-        self.send_to_kindle['fromUserEmail'] = '[Your Google Email]'
-        self.send_to_kindle['toKindleEmail'] = '[Your Kindle Email]'
-  
-        self.gui_settings = {}
-        self.gui_settings['lastUsedProfile'] = None
-        self.gui_settings['lastUsedFormat'] = None
-        self.gui_settings['outputFolder'] = None
-        self.gui_settings['convertToSourceDirectory'] = False
-        self.gui_settings['geometry'] = {}
-        self.gui_settings['geometry']['x'] = None
-        self.gui_settings['geometry']['y'] = None
-        self.gui_settings['geometry']['width'] = None
-        self.gui_settings['geometry']['height'] = None
-
         if not os.path.exists(self.config_file):
             # Если файл настроек отсутствует, созданим файл по-умолчанию
             self.write()
             # Создадим умолчательный css
             default_css = import_module('default_css')
-            with codecs.open(os.path.join(os.path.split(self.config_file)[0], 'default.css'), "w") as f:
+            with codecs.open(os.path.join(os.path.split(self.config_file)[0], 'default.css'), "w", 'utf-8') as f:
                 f.write(default_css.default_css)
                 f.close()
 
@@ -105,7 +84,7 @@ class ConverterConfig:
             elif e.tag == 'logFile':
                 if e.text:
                     self.original_log_file = e.text
-                    self.log_file = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), e.text)) 
+                    self.log_file = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), e.text))
 
             elif e.tag == 'logLevel':
                 self.log_level = e.text
@@ -115,12 +94,12 @@ class ConverterConfig:
 
             elif e.tag == 'kindleCompressionLevel':
                 self.kindle_compression_level = int(e.text)
-            
+
             elif e.tag == 'noDropcapsSymbols':
                 self.no_dropcaps_symbols = e.text
 
             elif e.tag == 'transliterate':
-                self.transliterate = e.text.lower() == 'true' 
+                self.transliterate = e.text.lower() == 'true'
 
             elif e.tag == 'defaultProfile':
                 self.default_profile = e.text
@@ -136,9 +115,9 @@ class ConverterConfig:
 
                     self.profiles[prof_name]['generateTOCPage'] = True
                     self.profiles[prof_name]['generateAnnotationPage'] = True
-                    self.profiles[prof_name]['generateOPFGuide'] = True    
-                    self.profiles[prof_name]['flatTOC'] = True     
-                    self.profiles[prof_name]['kindleRemovePersonalLabel'] = True  
+                    self.profiles[prof_name]['generateOPFGuide'] = True
+                    self.profiles[prof_name]['flatTOC'] = True
+                    self.profiles[prof_name]['kindleRemovePersonalLabel'] = True
 
                     for p in prof:
                         if p.tag == 'hyphens':
@@ -160,7 +139,7 @@ class ConverterConfig:
                             self.profiles[prof_name]['tocMaxLevel'] = int(p.text)
 
                         elif p.tag == 'generateTOCPage':
-                            self.profiles[prof_name]['generateTOCPage'] = p.text.lower() == 'true' 
+                            self.profiles[prof_name]['generateTOCPage'] = p.text.lower() == 'true'
 
                         elif p.tag == 'flatTOC':
                             self.profiles[prof_name]['flatTOC'] = p.text.lower() == 'true'
@@ -169,21 +148,21 @@ class ConverterConfig:
                             self.profiles[prof_name]['kindleRemovePersonalLabel'] = p.text.lower() == 'true'
 
                         elif p.tag == 'generateAnnotationPage':
-                            self.profiles[prof_name]['generateAnnotationPage'] = p.text.lower() == 'true'   
-                            
+                            self.profiles[prof_name]['generateAnnotationPage'] = p.text.lower() == 'true'
+
                         elif p.tag == 'generateOPFGuide':
-                            self.profiles[prof_name]['generateOPFGuide'] = p.text.lower() == 'true' 
+                            self.profiles[prof_name]['generateOPFGuide'] = p.text.lower() == 'true'
 
                         elif p.tag == 'tocBeforeBody':
-                            self.profiles[prof_name]['tocBeforeBody'] = p.text.lower() == 'true'                        
+                            self.profiles[prof_name]['tocBeforeBody'] = p.text.lower() == 'true'
 
                         elif p.tag == 'css':
                             self.profiles[prof_name]['originalcss'] = p.text
-                            self.profiles[prof_name]['css'] = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), p.text)) 
+                            self.profiles[prof_name]['css'] = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), p.text))
                             if 'parse' in p.attrib:
                                 self.profiles[prof_name]['parse_css'] = p.attrib['parse'].lower() == 'true'
                             else:
-                                self.profiles[prof_name]['parse_css'] = True 
+                                self.profiles[prof_name]['parse_css'] = True
 
                         elif p.tag == 'chapterOnNewPage':
                             self.profiles[prof_name]['chapterOnNewPage'] = p.text.lower() == 'true'
@@ -216,12 +195,12 @@ class ConverterConfig:
                                 vign_arr_save = {}
 
                                 for v in vignettes:
-                                    vign_arr[v.tag] = None if v.text.lower() == 'none' else os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), v.text))  
+                                    vign_arr[v.tag] = None if v.text.lower() == 'none' else os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), v.text))
                                     vign_arr_save[v.tag] = None if v.text.lower() == 'none' else v.text
 
                                 self.profiles[prof_name]['vignettes'][vignettes_level] = vign_arr
                                 self.profiles[prof_name]['vignettes_save'][vignettes_level] = vign_arr_save
-                            
+
             elif e.tag == 'sendToKindle':
                 for s in e:
                     if s.tag == 'send':
@@ -268,7 +247,7 @@ class ConverterConfig:
 
     def _getVignette(self, vignette_arr):
         for v in vignette_arr:
-            print v
+            print(v)
 
     def _getVignettes(self, profile):
         result = []
@@ -290,7 +269,7 @@ class ConverterConfig:
     def _getProfiles(self):
         result = []
         for p in self.profiles:
-            result.append(E('profile', 
+            result.append(E('profile',
                 E('hyphens', str(self.profiles[p]['hyphens'])),
                 E('dropcaps', str(self.profiles[p]['dropcaps'])),
                 E('tocMaxLevel', str(self.profiles[p]['tocMaxLevel'])),
@@ -319,18 +298,17 @@ class ConverterConfig:
         try:
             self.current_profile = self.profiles[profile_name]
         except:
-            self.log.warning(u'Профиль "{0}" не найден, используется профиль по умолчанию'.format(profile_name))
+            self.log.warning(u'Unable to locate profile "{0}". Using default one.'.format(profile_name))
             self.current_profile = self.profiles[self.default_profile]
 
-        if self.current_profile.has_key('outputFormat'):
+        if 'outputFormat' in self.current_profile:
             self.output_format = self.current_profile['outputFormat']
 
-        if self.current_profile.has_key('transliterate'):
+        if 'transliterate' in self.current_profile:
             self.transliterate = self.current_profile['transliterate']
 
-        if self.current_profile.has_key('transliterateAuthorAndTitle'):
+        if 'transliterateAuthorAndTitle' in self.current_profile:
             self.transliterate_author_and_title = self.current_profile['transliterateAuthorAndTitle']
-
 
     def write(self):
         config = E('settings',
@@ -345,36 +323,14 @@ class ConverterConfig:
                 E('profiles',
                     *self._getProfiles()
                     ),
-                E('sendToKindle', 
-                    E('send', str(self.send_to_kindle['send'])),
-                    E('deleteSendedBook', str(self.send_to_kindle['deleteSendedBook'])),
-                    E('smtpServer', self.send_to_kindle['smtpServer']),
-                    E('smtpPort', str(self.send_to_kindle['smtpPort'])),
-                    E('smtpLogin', self.send_to_kindle['smtpLogin']),
-                    E('smtpPassword', self.send_to_kindle['smtpPassword']) if self.send_to_kindle['smtpPassword'] else E('smtpPassword'),
-                    E('fromUserEmail', self.send_to_kindle['fromUserEmail']),
-                    E('toKindleEmail', self.send_to_kindle['toKindleEmail'])
-                    ),
-                E('guiSettings',
-                    E('lastUsedProfile', self.gui_settings['lastUsedProfile']) if self.gui_settings['lastUsedProfile'] else E('lastUsedProfile'),
-                    E('lastUsedFormat', self.gui_settings['lastUsedFormat']) if self.gui_settings['lastUsedFormat'] else E('lastUsedFormat'),
-                    E('outputFolder', self.gui_settings['outputFolder']) if self.gui_settings['outputFolder'] else E('outputFolder'),
-                    E('convertToSourceDirectory', str(self.gui_settings['convertToSourceDirectory'])),
-                    E('geometry',
-                        E('x', str(self.gui_settings['geometry']['x'])) if self.gui_settings['geometry']['x'] else E('x'),
-                        E('y', str(self.gui_settings['geometry']['y'])) if self.gui_settings['geometry']['y'] else E('y'),
-                        E('width', str(self.gui_settings['geometry']['width'])) if self.gui_settings['geometry']['width'] else E('width'),
-                        E('height', str(self.gui_settings['geometry']['height'])) if self.gui_settings['geometry']['height'] else E('height')
-                        )
-                    )
             )
 
         config_dir = os.path.dirname(self.config_file)
         if not os.path.exists(config_dir):
             os.makedirs(config_dir)
-            
-        with codecs.open(self.config_file, "w") as f:
-            f.write(etree.tostring(config, encoding="utf-8", pretty_print=True, xml_declaration=True))
+
+        with codecs.open(self.config_file, "w", 'utf-8') as f:
+            f.write(str(etree.tostring(config, encoding="utf-8", pretty_print=True, xml_declaration=True),'utf-8'))
             f.close()
 
 if __name__ == '__main__':
@@ -382,9 +338,9 @@ if __name__ == '__main__':
 
     log.basicConfig(level=log.INFO)
     config = ConverterConfig(cfg_file)
-    print config.profiles
-    print config.send_to_kindle
-    print config.gui_settings
+    print(config.profiles)
+    print(config.send_to_kindle)
+    print(config.gui_settings)
 
 
 

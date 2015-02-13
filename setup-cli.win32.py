@@ -25,14 +25,7 @@ includes = [
     'hyphenations.en',
     'hyphenations.uk',
     'hyphenations.de',  
-    'default_css',
-    'email',
-    'email.mime.base',
-    'email.mime.multipart',
-    'email.mime.text',
-    'wx.lib.pubsub.*',
-    'wx.lib.pubsub.core.*',
-    'wx.lib.pubsub.core.kwargs.*'
+    'default_css'
 ]
 
 dll_excludes = [
@@ -61,7 +54,7 @@ setup(
             'dll_excludes': dll_excludes
         }
     },
-    console=['fb2conv.py'],
+    console=['fb2mobi.py'],
     zipfile=None
 )
 

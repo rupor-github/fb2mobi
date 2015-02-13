@@ -112,7 +112,7 @@ if __name__ == '__main__':
     hyphenator = Hyphenator('ru')
     if len(sys.argv) > 1:
         for word in sys.argv[1:]:
-            print hyphenator.hyphenate_word(unicode(word, 'utf-8'))
+            print(hyphenator.hyphenate_word(unicode(word, 'utf-8')))
     else:
         import doctest
         doctest.testmod(verbose=True)

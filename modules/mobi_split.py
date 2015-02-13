@@ -4,7 +4,6 @@
 import sys
 import struct
 import binascii
-from path import pathof
 
 # important  pdb header offsets
 unique_id_seed = 68
@@ -80,10 +79,10 @@ def nullsection(datain,secno): # make it zero-length without deleting it
         datalst.append(struct.pack('>L',ofs) + struct.pack('>L',flgval))
     lpad = zerosecstart - (first_pdb_record + 8*nsec)
     if lpad > 0:
-        datalst.append('\0' * lpad)
+        datalst.append(bytes('\0' * lpad,'utf-8'))
     datalst.append(datain[zerosecstart: secstart])
     datalst.append(datain[secend:])
-    dataout = "".join(datalst)
+    dataout = b"".join(datalst)
     return dataout
 
 def deletesectionrange(datain,firstsec,lastsec): # delete a range of sections
@@ -109,10 +108,10 @@ def deletesectionrange(datain,firstsec,lastsec): # delete a range of sections
         datalst.append(struct.pack('>L',ofs) + struct.pack('>L',flgval))
     lpad = newstart - (first_pdb_record + 8*(nsec - (lastsec - firstsec + 1)))
     if lpad > 0:
-        datalst.append('\0' * lpad)
+        datalst.append(bytes('\0' * lpad,'utf-8'))
     datalst.append(datain[zerosecstart:firstsecstart])
     datalst.append(datain[lastsecend:])
-    dataout = "".join(datalst)
+    dataout = b"".join(datalst)
     return dataout
 
 def insertsection(datain,secno,secdata): # insert a new section
@@ -140,11 +139,11 @@ def insertsection(datain,secno,secdata): # insert a new section
         datalst.append(struct.pack('>L',ofs) + struct.pack('>L',flgval))
     lpad = newstart - (first_pdb_record + 8*(nsec + 1))
     if lpad > 0:
-        datalst.append('\0' * lpad)
+        datalst.append(bytes('\0' * lpad,'utf-8'))
     datalst.append(datain[zerosecstart:secstart])
     datalst.append(secdata)
     datalst.append(datain[secstart:])
-    dataout = "".join(datalst)
+    dataout = b"".join(datalst)
     return dataout
 
 
@@ -222,7 +221,7 @@ def del_exth(rec0,exth_num):
 class mobi_split:
 
     def __init__(self, infile, remove_personal_label):
-        datain = open(pathof(infile), 'rb').read()
+        datain = open(infile, 'rb').read()
         datain_rec0 = readsection(datain,0)
         ver = getint(datain_rec0,mobi_version)
         self.combo = (ver!=8)
@@ -258,7 +257,7 @@ class mobi_split:
         # datain_rec0 = del_exth(datain_rec0,534)
         # don't remove the EXTH 125 KF8 Count of Resources, seems to be present in mobi6 files as well
         # set the EXTH 129 KF8 Masthead / Cover Image string to the null string
-        datain_rec0 = write_exth(datain_rec0,129, '')
+        datain_rec0 = write_exth(datain_rec0,129, b'')
         # don't remove the EXTH 131 KF8 Unidentified Count, seems to be present in mobi6 files as well
 
         # need to reset flags stored in 0x80-0x83
@@ -298,7 +297,7 @@ class mobi_split:
                 if n > 0 and n < lastimage:
                     lastimage = n-1
         #print "First Image, last Image", firstimage,lastimage
-        
+
 
         # Try to null out FONT and RES, but leave the (empty) PDB record so image refs remain valid
         for i in range(firstimage,lastimage):
@@ -351,9 +350,9 @@ class mobi_split:
             ex201 = read_exth(datain_kfrec0, 201)
             if len(ex201) > 0:
                 datain_kfrec0 = del_exth(datain_kfrec0, 202)
-                datain_kfrec0 = add_exth(datain_kfrec0, 202, ex201[0]) 
-            
-            datain_kfrec0=add_exth(datain_kfrec0,501,"EBOK"); 
+                datain_kfrec0 = add_exth(datain_kfrec0, 202, ex201[0])
+
+            datain_kfrec0=add_exth(datain_kfrec0,501,b"EBOK");
 
         self.result_file8 = writesection(self.result_file8,0,datain_kfrec0)
 

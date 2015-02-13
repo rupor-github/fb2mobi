@@ -2,4 +2,4 @@
 
 rm -rf build
 rm -rf dist
-pyinstaller --onefile --console --paths=modules:modules/hyphenations/:modules/kindleunpack --hidden-import=hyphenations.ru --hidden-import=hyphenations.en --hidden-import=default_css fb2conv.py 
+pyinstaller --onefile --console --paths=modules:modules/hyphenations/:modules/kindleunpack --hidden-import=hyphenations.ru --hidden-import=hyphenations.en --hidden-import=default_css fb2mobi.py 
