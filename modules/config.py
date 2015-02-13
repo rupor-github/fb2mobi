@@ -201,49 +201,6 @@ class ConverterConfig:
                                 self.profiles[prof_name]['vignettes'][vignettes_level] = vign_arr
                                 self.profiles[prof_name]['vignettes_save'][vignettes_level] = vign_arr_save
 
-            elif e.tag == 'sendToKindle':
-                for s in e:
-                    if s.tag == 'send':
-                       self.send_to_kindle['send'] = s.text.lower() == 'true'
-
-                    elif s.tag == 'deleteSendedBook':
-                        self.send_to_kindle['deleteSendedBook'] = s.text.lower() == 'true'
-
-                    elif s.tag == 'smtpServer':
-                        self.send_to_kindle['smtpServer'] = s.text
-
-                    elif s.tag == 'smtpPort':
-                        self.send_to_kindle['smtpPort'] = int(s.text)
-
-                    elif s.tag == 'smtpLogin':
-                        self.send_to_kindle['smtpLogin'] = s.text
-
-                    elif s.tag == 'smtpPassword':
-                        self.send_to_kindle['smtpPassword'] = s.text
-
-                    elif s.tag == 'fromUserEmail':
-                        self.send_to_kindle['fromUserEmail'] = s.text
-
-                    elif s.tag == 'toKindleEmail':
-                        self.send_to_kindle['toKindleEmail'] = s.text
-
-            elif e.tag == 'guiSettings':
-                for g in e:
-                    if g.tag == 'lastUsedProfile':
-                        self.gui_settings['lastUsedProfile'] = g.text
-
-                    elif g.tag == 'lastUsedFormat':
-                        self.gui_settings['lastUsedFormat'] = g.text
-
-                    elif g.tag == 'outputFolder':
-                        self.gui_settings['outputFolder'] = g.text
-
-                    elif g.tag == 'convertToSourceDirectory':
-                        self.gui_settings['convertToSourceDirectory'] = g.text.lower() == 'true'
-
-                    elif g.tag == 'geometry':
-                        for geom in g:
-                            self.gui_settings['geometry'][geom.tag] = int(geom.text) if geom.text else None
 
     def _getVignette(self, vignette_arr):
         for v in vignette_arr:
@@ -339,8 +296,6 @@ if __name__ == '__main__':
     log.basicConfig(level=log.INFO)
     config = ConverterConfig(cfg_file)
     print(config.profiles)
-    print(config.send_to_kindle)
-    print(config.gui_settings)
 
 
 
