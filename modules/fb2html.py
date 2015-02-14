@@ -35,6 +35,11 @@ HTMLHEAD = (u'<?xml version="1.0"?>'
 HTMLFOOT = (u'</body>'
             '</html>')
 
+HTMLENTITIES = [
+    ('&nbsp;',  '&#160;'),
+    ('&acirc;', '&#226;')
+    ]
+
 def transliterate(string):
     '''Транслитерация строки'''
 
@@ -272,7 +277,15 @@ class Fb2XHTML:
 
         self.mobi_file = mobifile
 
-        self.tree = etree.parse(fb2file, parser=etree.XMLParser(recover=True))
+        with codecs.open(fb2file, 'r', 'utf-8') as fin:
+            fb2_str = fin.read()
+
+        # We need to take care of some HTML entities which XML parser will destroy
+        for before, after in HTMLENTITIES:
+            fb2_str = fb2_str.replace(before, after)
+
+        #self.tree = etree.parse(fb2file, parser=etree.XMLParser(recover=True))
+        self.tree = etree.parse(io.BytesIO(bytes(fb2_str,'utf-8')), parser=etree.XMLParser(recover=True))
         self.root = self.tree.getroot()
 
         self.hyphenator = Hyphenator('ru')
