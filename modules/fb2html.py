@@ -37,6 +37,8 @@ HTMLFOOT = (u'</body>'
 
 HTMLENTITIES = [
     ('&nbsp;',  '&#160;'),
+    ('&ensp;',  '&#8194;'),
+    ('&emsp;',  '&#8195;'),
     ('&acirc;', '&#226;')
     ]
 
