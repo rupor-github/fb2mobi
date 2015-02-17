@@ -124,6 +124,10 @@ def process_file(config, infile, outfile=None):
     if not config.current_profile['css']:
         config.log.warning(u'Profile does not have link to css file.')
 
+    if 'xslt' in config.current_profile and not os.path.exists(config.current_profile['xslt']):
+        config.log.critical(u'Transformation file {0} not found'.format(config.current_profile['xslt']))
+        return
+
     if config.kindle_compression_level < 0 or config.kindle_compression_level > 2:
         config.log.warning(u'Parameter kindleCompressionLevel should be between 0 and 2, using default value (1).')
         config.kindle_compression_level = 1
@@ -402,6 +406,8 @@ def process(args):
             config.kindle_compression_level = args.kindlecompressionlevel
         if args.css:
             config.current_profile['css'] = args.css
+        if args.xslt:
+            config.current_profile['xslt'] = args.xslt
         if args.dropcaps is not None:
             config.current_profile['dropcaps'] = args.dropcaps
         if args.tocmaxlevel:
@@ -488,6 +494,7 @@ if __name__ == '__main__':
 
     argparser.add_argument('-p', '--profile', type=str, default=None, help=u'Profile name from configuration')
     argparser.add_argument('--css', type=str, default=None, help=u'css file name')
+    argparser.add_argument('--xslt', type=str, default=None, help=u'xslt file name')
     dropcaps_group = argparser.add_mutually_exclusive_group()
     dropcaps_group.add_argument('--dropcaps', dest='dropcaps', action='store_true', default=None, help=u'Use dropcaps')
     dropcaps_group.add_argument('--no-dropcaps', dest='dropcaps', action='store_false', default=None, help=u'Do not use dropcaps')

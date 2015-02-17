@@ -3,7 +3,6 @@
 
 import os
 from lxml import etree, html
-import cgi
 import re
 import shutil
 import io
@@ -12,6 +11,7 @@ import uuid
 import cssutils
 import base64
 import hashlib
+import html
 
 from hyphenator import Hyphenator
 
@@ -39,7 +39,6 @@ HTMLENTITIES = [
     ('&nbsp;',  '&#160;'),
     ('&ensp;',  '&#8194;'),
     ('&emsp;',  '&#8195;'),
-    ('&acirc;', '&#226;')
     ]
 
 def transliterate(string):
@@ -135,7 +134,7 @@ def save_html(string):
     '''
 
     if string:
-        return cgi.escape(string)
+        return html.escape(string)
     else:
         return ''
 
@@ -282,12 +281,20 @@ class Fb2XHTML:
         with codecs.open(fb2file, 'r', 'utf-8') as fin:
             fb2_str = fin.read()
 
-        # We need to take care of some HTML entities which XML parser will destroy
+        # rupor - No matter what I do &nbsp &ensp and &emsp are being eaten by XML parser
+        #         and there are probably more of those...
         for before, after in HTMLENTITIES:
             fb2_str = fb2_str.replace(before, after)
 
-        #self.tree = etree.parse(fb2file, parser=etree.XMLParser(recover=True))
         self.tree = etree.parse(io.BytesIO(bytes(fb2_str,'utf-8')), parser=etree.XMLParser(recover=True))
+
+        if 'xslt' in config.current_profile:
+            config.log.info(u'Applying XSLT transformations "{0}"'.format(config.current_profile['xslt']))
+            self.transform = etree.XSLT(etree.parse(config.current_profile['xslt']))
+            self.tree = self.transform(self.tree)
+            for entry in self.transform.error_log:
+                self.log.warning(entry)
+
         self.root = self.tree.getroot()
 
         self.hyphenator = Hyphenator('ru')
@@ -773,19 +780,11 @@ class Fb2XHTML:
                 self.inline_image_mode = True
 
         if elem.text:
-            if self.hyphenator and self.hyphenate and not (self.header or self.subheader):
-                hstring = ' '.join([self.hyphenator.hyphenate_word(w, SOFT_HYPHEN) for w in elem.text.split()])
-                if elem.text[0].isspace():
-                    hstring = ' ' + hstring
-                if elem.text[-1].isspace():
-                    hstring += ' '
-            else:
-                hstring = elem.text
-
+            hs = self.insert_hyphenation(elem.text)
             if dodropcaps:
-                self.buff.append('<span class="dropcaps">%s</span>%s' % (hstring[0], save_html(hstring[1:])))
+                self.buff.append('<span class="dropcaps">%s</span>%s' % (hs[0], save_html(hs[1:])))
             else:
-                self.buff.append(save_html(hstring))
+                self.buff.append(save_html(hs))
 
         for e in elem:
             if e.tag == etree.Comment:
@@ -865,7 +864,6 @@ class Fb2XHTML:
         if elem.tail:
             self.buff.append(save_html(self.insert_hyphenation(elem.tail)))
 
-
     def parse_table_element(self, elem):
         self.buff.append('<{0}'.format(ns_tag(elem.tag)))
 
@@ -876,22 +874,16 @@ class Fb2XHTML:
         self.parse_format(elem)
         self.buff.append('</{0}>'.format(ns_tag(elem.tag)))
 
+    def insert_hyphenation(self, s):
+        hs = ''
 
-    def insert_hyphenation(self, string):
-        hstring = ''
-
-        if string:
+        if s:
             if self.hyphenator and self.hyphenate and not (self.header or self.subheader):
-                hstring = ' '.join([self.hyphenator.hyphenate_word(w, SOFT_HYPHEN) for w in string.split()])
-                if string[0].isspace():
-                    hstring = ' ' + hstring
-                if string[-1].isspace():
-                    hstring += ' '
+                hs = ' '.join([self.hyphenator.hyphenate_word(html.unescape(w), SOFT_HYPHEN) for w in s.split(' ')])
             else:
-                hstring = string
+                hs = html.unescape(s)
 
-        return hstring
-
+        return hs
 
     def parse_body(self, elem):
         self.body_name = elem.attrib['name'] if 'name' in elem.attrib else ''

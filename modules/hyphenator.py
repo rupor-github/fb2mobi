@@ -30,7 +30,7 @@ class Hyphenator:
     def _init_patterns(self, patterns, exceptions):
         for pattern in patterns.split():
             self._insert_pattern(pattern)
-        
+
         for ex in exceptions.split():
             # Convert the hyphenated pattern into a point array for use later.
             self.exceptions[ex.replace('-', '')] = [0] + [ int(h == '-') for h in re.split(r'[\w]', ex, flags=re.U) ]
@@ -78,6 +78,9 @@ class Hyphenator:
         """
         # Short words aren't hyphenated.
         if len(word) <= 3:
+            return [word]
+        # rupor - just in case HTML entities aren't hyphenated
+        if word.startswith('&') and word.endswith(';'):
             return [word]
         # If the word is an exception, get the stored points.
         if word.lower() in self.exceptions:

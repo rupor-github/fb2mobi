@@ -1,5 +1,6 @@
 # vim
 *.swp
+*_clip.txt
 
 # releases
 *.7z

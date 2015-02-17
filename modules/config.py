@@ -164,6 +164,9 @@ class ConverterConfig:
                             else:
                                 self.profiles[prof_name]['parse_css'] = True
 
+                        elif p.tag == 'xslt':
+                            self.profiles[prof_name]['xslt'] = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), p.text))
+
                         elif p.tag == 'chapterOnNewPage':
                             self.profiles[prof_name]['chapterOnNewPage'] = p.text.lower() == 'true'
 
