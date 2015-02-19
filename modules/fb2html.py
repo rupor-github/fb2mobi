@@ -35,12 +35,6 @@ HTMLHEAD = (u'<?xml version="1.0"?>'
 HTMLFOOT = (u'</body>'
             '</html>')
 
-HTMLENTITIES = [
-    ('&nbsp;',  '&#160;'),
-    ('&ensp;',  '&#8194;'),
-    ('&emsp;',  '&#8195;'),
-    ]
-
 def transliterate(string):
     '''Транслитерация строки'''
 
@@ -278,15 +272,7 @@ class Fb2XHTML:
 
         self.mobi_file = mobifile
 
-        with codecs.open(fb2file, 'r', 'utf-8') as fin:
-            fb2_str = fin.read()
-
-        # rupor - No matter what I do &nbsp &ensp and &emsp are being eaten by XML parser
-        #         and there are probably more of those...
-        for before, after in HTMLENTITIES:
-            fb2_str = fb2_str.replace(before, after)
-
-        self.tree = etree.parse(io.BytesIO(bytes(fb2_str,'utf-8')), parser=etree.XMLParser(recover=True))
+        self.tree = etree.parse(fb2file, parser=etree.XMLParser(recover=True))
 
         if 'xslt' in config.current_profile:
             config.log.info(u'Applying XSLT transformations "{0}"'.format(config.current_profile['xslt']))
