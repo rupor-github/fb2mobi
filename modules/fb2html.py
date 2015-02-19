@@ -968,7 +968,7 @@ class Fb2XHTML:
         # Включим содержание в навигацию, если содержание помещается в начале книги
         if self.tocbeforebody and len(self.toc.items()) > 0 and self.generate_toc_page:
             self.buff.append('<navPoint id="navpoint%s" playOrder="%s">' % (i, i))
-            self.buff.append(u'<navLabel><text>Содержание</text></navLabel>')
+            self.buff.append(u'<navLabel><text>%s</text></navLabel>' % self.toc_title)
             self.buff.append('<content src="toc.xhtml" />')
             self.buff.append('</navPoint>')
             i += 1
@@ -1003,7 +1003,7 @@ class Fb2XHTML:
         # Включим содержание в навигацию, если содержание помещается в конце книги
         if not self.tocbeforebody and len(self.toc.items()) > 0 and self.generate_toc_page:
             self.buff.append('<navPoint id="navpoint%s" playOrder="%s">' % (i, i))
-            self.buff.append(u'<navLabel><text>Содержание</text></navLabel>')
+            self.buff.append(u'<navLabel><text>%s</text></navLabel>' % self.toc_title)
             self.buff.append('<content src="toc.xhtml" />')
             self.buff.append('</navPoint>')
 
