@@ -275,27 +275,32 @@ class Fb2XHTML:
 
         self.tree = etree.parse(fb2file, parser=etree.XMLParser(recover=True))
 
+        import sys
+
         if 'xslt' in config.current_profile:
 
             # rupor - this allows for smaller xsl, quicker replacement and allows handling of tags in the paragraphs
             class MyExtElement(etree.XSLTExtension):
-                    def execute(self, context, self_node, input_node, output_parent):
-                        child = deepcopy(input_node)
-                        old_text = child.text
-                        child.text = self_node.text
-                        if len(old_text) > 1:
-                            i = 1
-                            for c in old_text[1:]:
-                                if c.isspace(): i = i + 1
-                                else:           break;
-                            child.text = child.text + old_text[i:]
-                            for e in child.getiterator():
-                                if not hasattr(e.tag, 'find'): continue
-                                i = e.tag.find('}')
-                                if i >= 0:
-                                    e.tag = e.tag[i+1:]
-                            objectify.deannotate(child, cleanup_namespaces=True)
-                        output_parent.append(child)
+                def execute(self, context, self_node, input_node, output_parent):
+                    child = deepcopy(input_node)
+                    found = False
+                    for elem in child.getiterator():
+                        if not found and elem.text is not None:
+                            found = True
+                            old_text = elem.text
+                            elem.text = self_node.text
+                            if len(old_text) > 1:
+                                i = 1
+                                for c in old_text[1:]:
+                                    if c.isspace(): i = i + 1
+                                    else:           break;
+                                elem.text = elem.text + old_text[i:]
+                        if not hasattr(elem.tag, 'find'): continue
+                        i = elem.tag.find('}')
+                        if i >= 0:
+                            elem.tag = elem.tag[i+1:]
+                    objectify.deannotate(child, cleanup_namespaces=True)
+                    output_parent.append(child)
 
             config.log.info(u'Applying XSLT transformations "{0}"'.format(config.current_profile['xslt']))
             self.transform = etree.XSLT(etree.parse(config.current_profile['xslt']), extensions = { ('fb2mobi_ns', 'katz_tr') : MyExtElement() })
