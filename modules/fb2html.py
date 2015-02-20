@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-from lxml import etree, html
+from lxml import etree, html, objectify
 import re
 import shutil
 import io
@@ -14,6 +14,7 @@ import hashlib
 import html
 
 from hyphenator import Hyphenator
+from copy import deepcopy
 
 SOFT_HYPHEN = u'\u00AD'  # Символ 'мягкого' переноса
 
@@ -177,7 +178,7 @@ def copy_file(src, dest):
 
 def indent(elem, level=0):
     '''Функция для улучшения вида xml/html.
-    Вставляет символы табуляции согласно уровня вложенности тэга
+    Вставляет символы табуляции согласно уровню вложенности тэга
     '''
 
     i = '\n' + level*'\t'
@@ -275,8 +276,29 @@ class Fb2XHTML:
         self.tree = etree.parse(fb2file, parser=etree.XMLParser(recover=True))
 
         if 'xslt' in config.current_profile:
+
+            # rupor - this allows for smaller xsl, quicker replacement and allows handling of tags in the paragraphs
+            class MyExtElement(etree.XSLTExtension):
+                    def execute(self, context, self_node, input_node, output_parent):
+                        child = deepcopy(input_node)
+                        old_text = child.text
+                        child.text = self_node.text
+                        if len(old_text) > 1:
+                            i = 1
+                            for c in old_text[1:]:
+                                if c.isspace(): i = i + 1
+                                else:           break;
+                            child.text = child.text + old_text[i:]
+                            for e in child.getiterator():
+                                if not hasattr(e.tag, 'find'): continue
+                                i = e.tag.find('}')
+                                if i >= 0:
+                                    e.tag = e.tag[i+1:]
+                            objectify.deannotate(child, cleanup_namespaces=True)
+                        output_parent.append(child)
+
             config.log.info(u'Applying XSLT transformations "{0}"'.format(config.current_profile['xslt']))
-            self.transform = etree.XSLT(etree.parse(config.current_profile['xslt']))
+            self.transform = etree.XSLT(etree.parse(config.current_profile['xslt']), extensions = { ('fb2mobi_ns', 'katz_tr') : MyExtElement() })
             self.tree = self.transform(self.tree)
             for entry in self.transform.error_log:
                 self.log.warning(entry)
@@ -756,7 +778,6 @@ class Fb2XHTML:
                 self.links_location[elem.attrib['id']] = self.current_file
             if href:
                 self.buff.append(' href="%s"' % save_html(href))
-        if tag:
             if css == 'section':
                 self.buff.append(' />')
             else:

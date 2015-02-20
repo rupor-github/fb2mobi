@@ -8,11 +8,10 @@ Here is brief list of changes:
 
 * Renamed from fb2conv to fb2mobi (MyHomeLib integration)
 * Ported to Python 3.4.2
-* Lost UI
-* Lost "Send To Kindle" functionality
-* All messages got translated to English
-* All profile descriptions got translated to English
-* Added processing of some HTML entities which XML parser normally ignores (nbsp, acirc)
+* Lost UI and "Send To Kindle" functionality
+* All messages and profile descriptions got translated to English
 * Fixed all problems I was aware of at the moment (see git log)
+* Added ability to apply xslt transformation from external file to fb2 before further processing
+* Added xslt extension "katz_tr" to speedup and simplify transformation of direct speech in dialogs
 
 Enjoy!
