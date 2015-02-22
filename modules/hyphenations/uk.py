@@ -1,4 +1,4 @@
-#coding=utf-8
+# -*- coding: utf-8 -*-
 # Ukrainian hyphenation patterns in LCY (cp866nav) encoding.
 # Copyright 1998-2001 Maksym Polyakov.
 # Released 2001/05/10.
@@ -8,7 +8,7 @@
 #   polyama@auburn.edu
 #   mpoliak@i.com.ua
 
-patterns = u"""
+patterns = """
 2а1 а3а а3е а3і а3о а3у а3ю а3я а3є а3ї 2е1 е3а е3е е3і е3о е3у е3ю е3я е3є е3ї
 2и1 и3а и3е и3і и3о и3у и3ю и3я и3є и3ї 2і1 і3а і3е і3и і3о і3у і3ю і3я і3є і3ї
 2о1 о3а о3е о3і о3о о3у о3ю о3я о3є о3ї 2у1 у3а у3е у3і у3о у3у у3ю у3я у3є у3ї
@@ -380,4 +380,4 @@ patterns = u"""
 8'8я- -'8'8 8'8'-
 """
 
-exceptions = u''
+exceptions = ''

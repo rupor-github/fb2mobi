@@ -63,7 +63,7 @@ def get_mobi_filename(filename, translit=False):
     if translit:
         out_file = transliterate(out_file)
 
-    return u'{0}.mobi'.format(out_file)
+    return '{0}.mobi'.format(out_file)
 
 def unzip(filename, tempdir):
     '''Разархивация файла.
@@ -110,26 +110,26 @@ def process_file(config, infile, outfile=None):
     temp_dir = tempfile.mkdtemp()
 
     if not os.path.exists(infile):
-        config.log.critical(u'File {0} not found'.format(infile))
+        config.log.critical('File {0} not found'.format(infile))
         return
 
-    config.log.info(u'Converting "{0}"...'.format(os.path.split(infile)[1]))
-    config.log.info(u'Using profile "{0}".'.format(config.current_profile['name']))
+    config.log.info('Converting "{0}"...'.format(os.path.split(infile)[1]))
+    config.log.info('Using profile "{0}".'.format(config.current_profile['name']))
 
     # Проверка корректности параметров
     if infile:
-        if not infile.lower().endswith((u'.fb2', '.fb2.zip', '.zip')):
-            config.log.critical(u'"{0}" not *.fb2, *.fb2.zip or *.zip'.format(infile))
+        if not infile.lower().endswith(('.fb2', '.fb2.zip', '.zip')):
+            config.log.critical('"{0}" not *.fb2, *.fb2.zip or *.zip'.format(infile))
             return -1
     if not config.current_profile['css']:
-        config.log.warning(u'Profile does not have link to css file.')
+        config.log.warning('Profile does not have link to css file.')
 
     if 'xslt' in config.current_profile and not os.path.exists(config.current_profile['xslt']):
-        config.log.critical(u'Transformation file {0} not found'.format(config.current_profile['xslt']))
+        config.log.critical('Transformation file {0} not found'.format(config.current_profile['xslt']))
         return
 
     if config.kindle_compression_level < 0 or config.kindle_compression_level > 2:
-        config.log.warning(u'Parameter kindleCompressionLevel should be between 0 and 2, using default value (1).')
+        config.log.warning('Parameter kindleCompressionLevel should be between 0 and 2, using default value (1).')
         config.kindle_compression_level = 1
 
     # Если не задано имя выходного файла - вычислим
@@ -152,7 +152,7 @@ def process_file(config, infile, outfile=None):
     else:
         _output_format = os.path.splitext(outfile)[1].lower()[1:]
         if _output_format not in ('mobi', 'azw3', 'epub'):
-            config.log.critical(u'Unknown output format: {0}'.format(_output_format))
+            config.log.critical('Unknown output format: {0}'.format(_output_format))
             return -1
         else:
             if not config.mhl:
@@ -168,23 +168,23 @@ def process_file(config, infile, outfile=None):
         debug_dir = os.path.splitext(debug_dir)[0]
 
     if os.path.splitext(infile)[1].lower() == '.zip':
-        config.log.info(u'Unpacking...')
+        config.log.info('Unpacking...')
         try:
             infile = unzip(infile, temp_dir)
         except:
-            config.log.critical(u'Error unpacking file "{0}".'.format(infile))
+            config.log.critical('Error unpacking file "{0}".'.format(infile))
             return -1
 
         if not infile:
-            config.log.critical(u'Error unpacking file "{0}".'.format(infile))
+            config.log.critical('Error unpacking file "{0}".'.format(infile))
             return -1
 
     # Конвертируем в html
-    config.log.info(u'Converting to html...')
+    config.log.info('Converting to html...')
     fb2parser = Fb2XHTML(infile, outfile, temp_dir, config)
     fb2parser.generate()
 
-    config.log.info(u'Converting to html took {0} sec.'.format(round(time.clock() - start_time, 2)))
+    config.log.info('Converting to html took {0} sec.'.format(round(time.clock() - start_time, 2)))
 
     if config.output_format.lower() in ('mobi', 'azw3'):
         # Запускаем kindlegen
@@ -201,7 +201,7 @@ def process_file(config, infile, outfile=None):
                 kindlegen_cmd = 'kindlegen'
 
         try:
-            config.log.info(u'Running kindlegen...')
+            config.log.info('Running kindlegen...')
             kindlegen_cmd_pars = '-c{0}'.format(config.kindle_compression_level)
 
             startupinfo = None
@@ -209,20 +209,15 @@ def process_file(config, infile, outfile=None):
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
-            result = subprocess.Popen([kindlegen_cmd, os.path.join(temp_dir, 'OEBPS','content.opf'), kindlegen_cmd_pars, '-locale', 'en'],
-                                      stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo)
+            result = subprocess.Popen( [kindlegen_cmd, os.path.join(temp_dir, 'OEBPS','content.opf'), kindlegen_cmd_pars, '-locale', 'en'],
+                                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=startupinfo)
 
             res = result.stdout.read()
-            try:
-                config.log.debug(unicode(res, 'utf-8'))
-            except:
-                config.log.debug(u'Error converting kindlegen output to Unicode')
-
-            result.communicate()
+            config.log.debug(str(res, 'utf-8', errors='replace' ))
 
         except OSError as e:
             if e.errno == os.errno.ENOENT:
-                config.log.critical(u'{0} not found'.format(kindlegen_cmd))
+                config.log.critical('{0} not found'.format(kindlegen_cmd))
                 critical_error = True
             else:
                 config.log.critical(e.winerror)
@@ -231,12 +226,12 @@ def process_file(config, infile, outfile=None):
     elif config.output_format.lower() == 'epub':
         # Собираем epub
         outfile = os.path.splitext(outfile)[0] + '.epub'
-        config.log.info(u'Creating epub...')
+        config.log.info('Creating epub...')
         create_epub(temp_dir, outfile)
 
     if config.debug:
         # В режиме отладки копируем получившиеся файлы в выходной каталог
-        config.log.info(u'Copying intermediate files to {0}...'.format(debug_dir))
+        config.log.info('Copying intermediate files to {0}...'.format(debug_dir))
         if os.path.exists(debug_dir):
             rm_tmp_files(debug_dir)
         shutil.copytree(temp_dir, debug_dir)
@@ -246,25 +241,25 @@ def process_file(config, infile, outfile=None):
         if config.output_format.lower() in ('mobi', 'azw3'):
             result_book = os.path.join(temp_dir, 'OEBPS', 'content.mobi')
             if not os.path.isfile(result_book):
-                config.log.critical(u'kindlegen error, convertion interrupted.')
+                config.log.critical('kindlegen error, convertion interrupted.')
                 critical_error = True
             else:
                 if config.output_format.lower() == 'mobi':
                     shutil.copyfile(result_book, outfile)
 
                 elif config.output_format.lower() == 'azw3':
-                    config.log.info(u'Extracting azw3 from mobi...')
+                    config.log.info('Extracting azw3 from mobi...')
                     try:
                         splitter = mobi_split(result_book, config.current_profile['kindleRemovePersonalLabel'])
                         open(os.path.splitext(outfile)[0] + '.azw3', 'wb').write(splitter.getResult8())
                     except:
-                        config.log.critical(u'Error processing azw3, convertion interrupted.')
+                        config.log.critical('Error processing azw3, convertion interrupted.')
                         critical_error = True
     else:
         return -1
 
     if not critical_error:
-        config.log.info(u'Book convertion completed in {0} sec.\n'.format(round(time.clock() - start_time, 2)))
+        config.log.info('Book convertion completed in {0} sec.\n'.format(round(time.clock() - start_time, 2)))
 
     # Чистим временные файлы
     rm_tmp_files(temp_dir)
@@ -300,20 +295,20 @@ def process_folder(config, inputdir, outputdir=None):
                                 try:
                                     os.remove(inputfile)
                                 except:
-                                    log.error(u'Unable to remove file "{0}"'.format(inputfile))
+                                    log.error('Unable to remove file "{0}"'.format(inputfile))
 
                             continue
                 except KeyboardInterrupt as e:
-                    print(u'User interrupt. Exiting...')
+                    print('User interrupt. Exiting...')
                     sys.exit(-1)
 
                 except IOError as e:
-                    log.error(u'(I/O error {0}) {1} - {2}'.format(e.errno, e.strerror, e.filename))
+                    log.error('(I/O error {0}) {1} - {2}'.format(e.errno, e.strerror, e.filename))
                 except:
                     type, value, tb = sys.exc_info()
-                    log.error(u'({0}) {1}'.format(type.__name__, value.message))
+                    log.error('({0}) {1}'.format(type.__name__, value.message))
     else:
-        log.critical(u'Unable to find directory "{0}"'.format(inputdir))
+        log.critical('Unable to find directory "{0}"'.format(inputdir))
         sys.exit(-1)
 
 
@@ -353,7 +348,7 @@ def process(args):
 
     if args.profilelist:
 
-        print(u'Profile list in {0}:'.format(config.config_file))
+        print('Profile list in {0}:'.format(config.config_file))
         for p in config.profiles:
             print('\t{0}: {1}'.format(p, config.profiles[p]['description']))
         sys.exit(0)
@@ -443,7 +438,7 @@ def process(args):
             try:
                 rm_tmp_files(args.inputdir, False)
             except:
-                log.error(u'Unable to remove directory "{0}"'.format(args.inputdir))
+                log.error('Unable to remove directory "{0}"'.format(args.inputdir))
 
     elif infile:
         result = process_file(config, infile, outfile)
@@ -451,7 +446,7 @@ def process(args):
             try:
                 os.remove(infile)
             except:
-                log.error(u'Unable to remove file "{0}"'.format(infile))
+                log.error('Unable to remove file "{0}"'.format(infile))
     else:
         print(argparser.description)
         argparser.print_usage()
@@ -460,65 +455,65 @@ def process(args):
 
 if __name__ == '__main__':
     # Настройка парсера аргументов
-    argparser = argparse.ArgumentParser(description=u'Converter of fb2 ebooks to mobi, azw3 and epub formats. Version {0}'.format(version.VERSION))
+    argparser = argparse.ArgumentParser(description='Converter of fb2 ebooks to mobi, azw3 and epub formats. Version {0}'.format(version.VERSION))
 
     input_args_group = argparser.add_mutually_exclusive_group()
-    input_args_group.add_argument('infile', type=str, nargs='?', default=None, help=u'Source file name (fb2, fb2.zip or zip)')
-    input_args_group.add_argument('-i', '--input-dir', dest='inputdir', type=str, default=None, help=u'Source directory for batch conversion.')
+    input_args_group.add_argument('infile', type=str, nargs='?', default=None, help='Source file name (fb2, fb2.zip or zip)')
+    input_args_group.add_argument('-i', '--input-dir', dest='inputdir', type=str, default=None, help='Source directory for batch conversion.')
 
     output_args_group = argparser.add_mutually_exclusive_group()
-    output_args_group.add_argument('outfile', type=str, nargs='?', default=None, help=u'Destination file name (mobi, azw3 or epub)')
-    output_args_group.add_argument('-o', '--output-dir', dest='outputdir', type=str, default=None, help=u'Destination directory name for batch conversion')
+    output_args_group.add_argument('outfile', type=str, nargs='?', default=None, help='Destination file name (mobi, azw3 or epub)')
+    output_args_group.add_argument('-o', '--output-dir', dest='outputdir', type=str, default=None, help='Destination directory name for batch conversion')
 
-    argparser.add_argument('-f', '--output-format', dest='outputformat', type=str, default=None, help=u'Output format: mobi, azw3 or epub')
-    argparser.add_argument('-r', dest='recursive', action='store_true', default=False, help=u'Perform recursive processing of files in source directory')
-    argparser.add_argument('-s','--save-structure', dest='savestructure', action='store_true', default=False, help=u'Keep directory structure during batch processing')
-    argparser.add_argument('--delete-source-file', dest='deletesourcefile', action='store_true', default=False, help=u'In case of success remove source file')
-    argparser.add_argument('--delete-input-dir', dest='deleteinputdir', action='store_true', default=False, help=u'Remove source directory')
+    argparser.add_argument('-f', '--output-format', dest='outputformat', type=str, default=None, help='Output format: mobi, azw3 or epub')
+    argparser.add_argument('-r', dest='recursive', action='store_true', default=False, help='Perform recursive processing of files in source directory')
+    argparser.add_argument('-s','--save-structure', dest='savestructure', action='store_true', default=False, help='Keep directory structure during batch processing')
+    argparser.add_argument('--delete-source-file', dest='deletesourcefile', action='store_true', default=False, help='In case of success remove source file')
+    argparser.add_argument('--delete-input-dir', dest='deleteinputdir', action='store_true', default=False, help='Remove source directory')
 
-    argparser.add_argument('-d', '--debug', action='store_true', default=None, help=u'Keep imtermediate files in desctination directory')
-    argparser.add_argument('--log', type=str, default=None, help=u'Log file name')
-    argparser.add_argument('--log-level', dest='loglevel', type=str, default=None, help=u'Log level: INFO, ERROR, CRITICAL, DEBUG')
+    argparser.add_argument('-d', '--debug', action='store_true', default=None, help='Keep imtermediate files in desctination directory')
+    argparser.add_argument('--log', type=str, default=None, help='Log file name')
+    argparser.add_argument('--log-level', dest='loglevel', type=str, default=None, help='Log level: INFO, ERROR, CRITICAL, DEBUG')
     hyphenate_group = argparser.add_mutually_exclusive_group()
-    hyphenate_group.add_argument('--hyphenate', dest='hyphenate', action='store_true', default=None, help=u'Turn on hyphenation')
-    hyphenate_group.add_argument('--no-hyphenate', dest='hyphenate', action='store_false', default=None, help=u'Turn off hyphenation')
+    hyphenate_group.add_argument('--hyphenate', dest='hyphenate', action='store_true', default=None, help='Turn on hyphenation')
+    hyphenate_group.add_argument('--no-hyphenate', dest='hyphenate', action='store_false', default=None, help='Turn off hyphenation')
     transliterate_group = argparser.add_mutually_exclusive_group()
-    transliterate_group.add_argument('--transliterate', dest='transliterate', action='store_true', default=None, help=u'Transliterate destination file name')
-    transliterate_group.add_argument('--no-transliterate', dest='transliterate', action='store_false', default=None, help=u'Do not transliterate destination file name')
+    transliterate_group.add_argument('--transliterate', dest='transliterate', action='store_true', default=None, help='Transliterate destination file name')
+    transliterate_group.add_argument('--no-transliterate', dest='transliterate', action='store_false', default=None, help='Do not transliterate destination file name')
 
     transliterate_author_group = argparser.add_mutually_exclusive_group()
-    transliterate_author_group.add_argument('--transliterate-author-and-title', dest='transliterateauthorandtitle', action='store_true', default=None, help=u'Transliterate book title and author(s)')
-    transliterate_author_group.add_argument('--no-transliterate-author-and-title', dest='transliterateauthorandtitle', action='store_false', default=None, help=u'Do not transliterate book title and author(s)')
+    transliterate_author_group.add_argument('--transliterate-author-and-title', dest='transliterateauthorandtitle', action='store_true', default=None, help='Transliterate book title and author(s)')
+    transliterate_author_group.add_argument('--no-transliterate-author-and-title', dest='transliterateauthorandtitle', action='store_false', default=None, help='Do not transliterate book title and author(s)')
 
-    argparser.add_argument('--kindle-compression-level', dest='kindlecompressionlevel', type=int, default=None, help=u'Kindlegen compression level - 0, 1, 2')
+    argparser.add_argument('--kindle-compression-level', dest='kindlecompressionlevel', type=int, default=None, help='Kindlegen compression level - 0, 1, 2')
 
-    argparser.add_argument('-p', '--profile', type=str, default=None, help=u'Profile name from configuration')
-    argparser.add_argument('--css', type=str, default=None, help=u'css file name')
-    argparser.add_argument('--xslt', type=str, default=None, help=u'xslt file name')
+    argparser.add_argument('-p', '--profile', type=str, default=None, help='Profile name from configuration')
+    argparser.add_argument('--css', type=str, default=None, help='css file name')
+    argparser.add_argument('--xslt', type=str, default=None, help='xslt file name')
     dropcaps_group = argparser.add_mutually_exclusive_group()
-    dropcaps_group.add_argument('--dropcaps', dest='dropcaps', action='store_true', default=None, help=u'Use dropcaps')
-    dropcaps_group.add_argument('--no-dropcaps', dest='dropcaps', action='store_false', default=None, help=u'Do not use dropcaps')
-    argparser.add_argument('-l', '--profile-list', dest='profilelist', action='store_true', default=False, help=u'Show list of available profiles')
+    dropcaps_group.add_argument('--dropcaps', dest='dropcaps', action='store_true', default=None, help='Use dropcaps')
+    dropcaps_group.add_argument('--no-dropcaps', dest='dropcaps', action='store_false', default=None, help='Do not use dropcaps')
+    argparser.add_argument('-l', '--profile-list', dest='profilelist', action='store_true', default=False, help='Show list of available profiles')
 
-    argparser.add_argument('--toc-max-level', dest='tocmaxlevel', type=int, default=None, help=u'Maximum level of titles in the TOC')
-    argparser.add_argument('--notes-mode', dest='notesmode', type=str, default=None, help=u'How to show footnotes: default, inline or block')
-    argparser.add_argument('--notes-bodies', dest='notesbodies', type=str, default=None, help=u'List of fb2 part names (body) with footnotes (comma separated)')
-    argparser.add_argument('--annotation-title', dest='annotationtitle', type=str, default=None, help=u'Annotations title')
-    argparser.add_argument('--toc-title', dest='toctitle', type=str, default=None, help=u'TOC title')
+    argparser.add_argument('--toc-max-level', dest='tocmaxlevel', type=int, default=None, help='Maximum level of titles in the TOC')
+    argparser.add_argument('--notes-mode', dest='notesmode', type=str, default=None, help='How to show footnotes: default, inline or block')
+    argparser.add_argument('--notes-bodies', dest='notesbodies', type=str, default=None, help='List of fb2 part names (body) with footnotes (comma separated)')
+    argparser.add_argument('--annotation-title', dest='annotationtitle', type=str, default=None, help='Annotations title')
+    argparser.add_argument('--toc-title', dest='toctitle', type=str, default=None, help='TOC title')
     chapter_group = argparser.add_mutually_exclusive_group()
-    chapter_group.add_argument('--chapter-on-new-page', dest='chapteronnewpage', action='store_true', default=None, help=u'Start chapter from the new page')
-    chapter_group.add_argument('--no-chapter-on-new-page', dest='chapteronnewpage', action='store_false', default=None, help=u'Do not start chapter from the new page')
+    chapter_group.add_argument('--chapter-on-new-page', dest='chapteronnewpage', action='store_true', default=None, help='Start chapter from the new page')
+    chapter_group.add_argument('--no-chapter-on-new-page', dest='chapteronnewpage', action='store_false', default=None, help='Do not start chapter from the new page')
 
     tocplace_group = argparser.add_mutually_exclusive_group()
-    tocplace_group.add_argument('--toc-before-body', dest='tocbeforebody', action='store_true', default=None, help=u'Put TOC at the book beginning')
-    tocplace_group.add_argument('--toc-after-body', dest='tocbeforebody', action='store_false', default=None, help=u'Put TOC at the book end')
+    tocplace_group.add_argument('--toc-before-body', dest='tocbeforebody', action='store_true', default=None, help='Put TOC at the book beginning')
+    tocplace_group.add_argument('--toc-after-body', dest='tocbeforebody', action='store_false', default=None, help='Put TOC at the book end')
 
     # Для совместимости с MyHomeLib добавляем аргументы, которые передает MHL в fb2mobi.exe
     # Работает только в бинарной версии для Windows
-    argparser.add_argument('-nc', action='store_true', default=False, help=u'For MyHomeLib compatibility')
-    argparser.add_argument('-cl', action='store_true', help=u'For MyHomeLib compatibility')
-    argparser.add_argument('-us', action='store_true', help=u'For MyHomeLib compatibility')
-    argparser.add_argument('-nt', action='store_true', help=u'For MyHomeLib compatibility')
+    argparser.add_argument('-nc', action='store_true', default=False, help='For MyHomeLib compatibility')
+    argparser.add_argument('-cl', action='store_true', help='For MyHomeLib compatibility')
+    argparser.add_argument('-us', action='store_true', help='For MyHomeLib compatibility')
+    argparser.add_argument('-nt', action='store_true', help='For MyHomeLib compatibility')
 
 
     # Парсим аргументы командной строки

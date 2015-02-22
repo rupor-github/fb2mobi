@@ -1,4 +1,4 @@
-#coding=utf-8
+# -*- coding: utf-8 -*-
 # TeX-Trennmuster für die reformierte (2006) deutsche Rechtschreibung
 #
 #

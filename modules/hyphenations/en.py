@@ -1,4 +1,4 @@
-#coding=utf-8
+# -*- coding: utf-8 -*-
 # Knuth and Liang's original hyphenation patterns from classic TeX.
 # In the public domain.
 patterns = """
@@ -419,7 +419,7 @@ wrap3aro writ6er. x1q xquis3 y5che3d ym5e5try y1stro yes5ter1y z3ian. z3o1phr
 z2z3w
 """
 
-exceptions = u"""
+exceptions = """
 as-so-ciate as-so-ciates dec-li-na-tion oblig-a-tory phil-an-thropic present
 presents project projects reci-procity re-cog-ni-zance ref-or-ma-tion
 ret-ri-bu-tion ta-ble

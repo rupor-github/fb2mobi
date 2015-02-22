@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#coding=utf-8
+# -*- coding: utf-8 -*-
 """
 Hyphenation, using Frank Liang's algorithm.
 
@@ -39,7 +39,7 @@ class Hyphenator:
         # Convert the a pattern like 'a1bc3d4' into a string of chars 'abcd'
         # and a list of points [ 1, 0, 3, 4 ].
         chars = re.sub('[0-9]', '', pattern)
-        points = [ int(d or 0) for d in re.split(u'[^0-9]', pattern, flags=re.U) ]
+        points = [ int(d or 0) for d in re.split('[^0-9]', pattern, flags=re.U) ]
 
         # Insert the pattern into the tree.  Each character finds a dict
         # another level down in the tree, and leaf nodes have the list of
@@ -57,12 +57,12 @@ class Hyphenator:
 
     def hyphenate_word(self, word, separator='-'):
         """Returns a word with separators inserted as hyphens."""
-        result = u''
-        buf = u''
-        word += u'$'
+        result = ''
+        buf = ''
+        word += '$'
         for c in word:
             # Split URls: example.com/-test/-page.html
-            if c.isalpha() or (c == u'/' and buf):
+            if c.isalpha() or (c == '/' and buf):
                 buf += c
             else:
                 if len(buf):
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     hyphenator = Hyphenator('ru')
     if len(sys.argv) > 1:
         for word in sys.argv[1:]:
-            print(hyphenator.hyphenate_word(unicode(word, 'utf-8')))
+            print(hyphenator.hyphenate_word(str(word, 'utf-8')))
     else:
         import doctest
         doctest.testmod(verbose=True)

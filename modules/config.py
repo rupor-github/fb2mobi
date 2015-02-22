@@ -19,7 +19,7 @@ class ConverterConfig:
         self.log_level = 'Info'
         self.output_format = 'epub'
         self.kindle_compression_level = 1
-        self.no_dropcaps_symbols = u'\'"-.…0123456789‒–—«»'
+        self.no_dropcaps_symbols = '\'"-.…0123456789‒–—«»'
         self.transliterate = False
         self.transliterate_author_and_title = False
         self.default_profile = 'default'
@@ -34,7 +34,7 @@ class ConverterConfig:
         self.profiles = {}
         self.profiles['default'] = {}
         self.profiles['default']['name'] = 'default'
-        self.profiles['default']['description'] = u'Default profile'
+        self.profiles['default']['description'] = 'Default profile'
         self.profiles['default']['outputFormat'] = None
         self.profiles['default']['transliterate'] = None
         self.profiles['default']['transliterateAuthorAndTitle'] = None
@@ -49,8 +49,8 @@ class ConverterConfig:
         self.profiles['default']['chapterOnNewPage'] = True
         self.profiles['default']['authorFormat'] = '#l #f #m'
         self.profiles['default']['bookTitleFormat'] = '(#abbrseries #number) #title'
-        self.profiles['default']['annotationTitle'] = u'Annotation'
-        self.profiles['default']['tocTitle'] = u'Content'
+        self.profiles['default']['annotationTitle'] = 'Annotation'
+        self.profiles['default']['tocTitle'] = 'Content'
         self.profiles['default']['notesMode'] = 'default'
         self.profiles['default']['notesBodies'] = 'notes'
         self.profiles['default']['vignettes'] = {}
@@ -258,7 +258,7 @@ class ConverterConfig:
         try:
             self.current_profile = self.profiles[profile_name]
         except:
-            self.log.warning(u'Unable to locate profile "{0}". Using default one.'.format(profile_name))
+            self.log.warning('Unable to locate profile "{0}". Using default one.'.format(profile_name))
             self.current_profile = self.profiles[self.default_profile]
 
         if 'outputFormat' in self.current_profile:

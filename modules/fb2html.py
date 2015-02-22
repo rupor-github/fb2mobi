@@ -17,13 +17,13 @@ import html
 from hyphenator import Hyphenator
 from copy import deepcopy
 
-SOFT_HYPHEN = u'\u00AD'  # Символ 'мягкого' переноса
+SOFT_HYPHEN = '\u00AD'  # Символ 'мягкого' переноса
 
 CHAPTS_COUNT = 0 # Глобальная переменная для передачи значения в функцию rewrite_links
-TEMP_DIR = u'' # Глобальная переменная для передачи значения в функцию rewrite_links
+TEMP_DIR = '' # Глобальная переменная для передачи значения в функцию rewrite_links
 
 
-HTMLHEAD = (u'<?xml version="1.0"?>'
+HTMLHEAD = ('<?xml version="1.0"?>'
             '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" '
             '"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'
             '<html xmlns="http://www.w3.org/1999/xhtml">'
@@ -34,80 +34,80 @@ HTMLHEAD = (u'<?xml version="1.0"?>'
             '</head>'
             '<body>')
 
-HTMLFOOT = (u'</body>'
+HTMLFOOT = ('</body>'
             '</html>')
 
 def transliterate(string):
     '''Транслитерация строки'''
 
     transtable =  {
-        u'а' : 'a',
-        u'б' : 'b',
-        u'в' : 'v',
-        u'г' : 'g',
-        u'д' : 'd',
-        u'е' : 'e',
-        u'ё' : 'e',
-        u'ж' : 'zh',
-        u'з' : 'z',
-        u'и' : 'i',
-        u'й' : 'i',
-        u'к' : 'k',
-        u'л' : 'l',
-        u'м' : 'm',
-        u'н' : 'n',
-        u'о' : 'o',
-        u'п' : 'p',
-        u'р' : 'r',
-        u'с' : 's',
-        u'т' : 't',
-        u'у' : 'u',
-        u'ф' : 'f',
-        u'х' : 'h',
-        u'ц' : 'c',
-        u'ч' : 'ch',
-        u'ш' : 'sh',
-        u'щ' : 'csh',
-        u'ъ' : "'",
-        u'ы' : 'i',
-        u'ь' : "'",
-        u'э' : 'e',
-        u'ю' : 'u',
-        u'я' : 'ya',
+        'а' : 'a',
+        'б' : 'b',
+        'в' : 'v',
+        'г' : 'g',
+        'д' : 'd',
+        'е' : 'e',
+        'ё' : 'e',
+        'ж' : 'zh',
+        'з' : 'z',
+        'и' : 'i',
+        'й' : 'i',
+        'к' : 'k',
+        'л' : 'l',
+        'м' : 'm',
+        'н' : 'n',
+        'о' : 'o',
+        'п' : 'p',
+        'р' : 'r',
+        'с' : 's',
+        'т' : 't',
+        'у' : 'u',
+        'ф' : 'f',
+        'х' : 'h',
+        'ц' : 'c',
+        'ч' : 'ch',
+        'ш' : 'sh',
+        'щ' : 'csh',
+        'ъ' : "'",
+        'ы' : 'i',
+        'ь' : "'",
+        'э' : 'e',
+        'ю' : '',
+        'я' : 'ya',
 
-        u'А' : 'A',
-        u'Б' : 'B',
-        u'В' : 'V',
-        u'Г' : 'G',
-        u'Д' : 'D',
-        u'Е' : 'E',
-        u'Ё' : 'E',
-        u'Ж' : 'Zh',
-        u'З' : 'Z',
-        u'И' : 'I',
-        u'Й' : 'I',
-        u'К' : 'K',
-        u'Л' : 'L',
-        u'М' : 'M',
-        u'Н' : 'N',
-        u'О' : 'O',
-        u'П' : 'P',
-        u'Р' : 'R',
-        u'С' : 'S',
-        u'Т' : 'T',
-        u'У' : 'U',
-        u'Ф' : 'F',
-        u'Х' : 'H',
-        u'Ц' : 'C',
-        u'Ч' : 'Ch',
-        u'Ш' : 'Sh',
-        u'Щ' : 'Csh',
-        u'Ъ' : "'",
-        u'Ы' : 'I',
-        u'Ь' : "'",
-        u'Э' : 'E',
-        u'Ю' : 'U',
-        u'Я' : 'YA'
+        'А' : 'A',
+        'Б' : 'B',
+        'В' : 'V',
+        'Г' : 'G',
+        'Д' : 'D',
+        'Е' : 'E',
+        'Ё' : 'E',
+        'Ж' : 'Zh',
+        'З' : 'Z',
+        'И' : 'I',
+        'Й' : 'I',
+        'К' : 'K',
+        'Л' : 'L',
+        'М' : 'M',
+        'Н' : 'N',
+        'О' : 'O',
+        'П' : 'P',
+        'Р' : 'R',
+        'С' : 'S',
+        'Т' : 'T',
+        'У' : 'U',
+        'Ф' : 'F',
+        'Х' : 'H',
+        'Ц' : 'C',
+        'Ч' : 'Ch',
+        'Ш' : 'Sh',
+        'Щ' : 'Csh',
+        'Ъ' : "'",
+        'Ы' : 'I',
+        'Ь' : "'",
+        'Э' : 'E',
+        'Ю' : 'U',
+        'Я' : 'YA'
     }
 
     translatedstring = []
@@ -221,6 +221,7 @@ class Fb2XHTML:
 
         self.dropcaps = config.current_profile['dropcaps']      # Признак вставки стилей буквицы (dropcaps)
         self.nodropcaps = config.no_dropcaps_symbols  # Строка символов, для исключения буквицы
+
         # Максимальный уровень заголовка (секции) для помещения в содержание (toc.xhtml)
         # В toc.ncx помещаются все уровни
         self.toc_max_level = config.current_profile['tocMaxLevel'] if config.current_profile['tocMaxLevel'] else 1000000
@@ -300,7 +301,7 @@ class Fb2XHTML:
                     objectify.deannotate(child, cleanup_namespaces=True)
                     output_parent.append(child)
 
-            config.log.info(u'Applying XSLT transformations "{0}"'.format(config.current_profile['xslt']))
+            config.log.info('Applying XSLT transformations "{0}"'.format(config.current_profile['xslt']))
             self.transform = etree.XSLT(etree.parse(config.current_profile['xslt']), extensions = { ('fb2mobi_ns', 'katz_tr') : MyExtElement() })
             self.tree = self.transform(self.tree)
             for entry in self.transform.error_log:
@@ -347,7 +348,7 @@ class Fb2XHTML:
             try:
                 copy_file(v, os.path.join(os.path.join(self.temp_content_dir, 'vignettes'), os.path.split(v)[1]))
             except:
-                self.log.warning(u'File {} not found.'.format(v))
+                self.log.warning('File {} not found.'.format(v))
 
         self.generate_opf()
         self.generate_container()
@@ -373,7 +374,7 @@ class Fb2XHTML:
             try:
                 copy_file(source_file, dest_file)
             except:
-                self.log.error(u'File {0}, referred by css, not found.'.format(url))
+                self.log.error('File {0}, referred by css, not found.'.format(url))
 
             return new_url
 
@@ -549,7 +550,7 @@ class Fb2XHTML:
                             self.html_file_list.append(self.current_file)
 
                             self.buff.append(HTMLHEAD)
-                            self.buff.append(u'<div class="annotation"><div class="h1">%s</div>' % self.annotation_title)
+                            self.buff.append('<div class="annotation"><div class="h1">%s</div>' % self.annotation_title)
                             self.parse_format(t, 'div')
                             self.buff.append('</div>')
                             self.buff.append(HTMLFOOT)
@@ -935,7 +936,7 @@ class Fb2XHTML:
         self.current_file = 'toc.xhtml'
 
         self.buff.append('<div class="toc">')
-        self.buff.append(u'<div class="h1" id="toc">%s</div>' % self.toc_title)
+        self.buff.append('<div class="h1" id="toc">%s</div>' % self.toc_title)
         for (idx, item) in self.toc.items():
 
             if item[2] <= self.toc_max_level: # Ограничение уровня вложенности секций для TOC
@@ -950,9 +951,9 @@ class Fb2XHTML:
                                 self.buff.append(line.strip() + '<br/>')
                         self.buff.append('</a></div>')
                     else:
-                        self.buff.append(u'<div class="indent%s"><a href="%s">%s</a></div>' % (indent, item[0], save_html(' '.join(item[1].split()))))
+                        self.buff.append('<div class="indent%s"><a href="%s">%s</a></div>' % (indent, item[0], save_html(' '.join(item[1].split()))))
                 else:
-                    self.buff.append(u'<div class="indent0"><a href="%s">%s</a></div>' % (item[0], save_html(' '.join(item[1].split()))))
+                    self.buff.append('<div class="indent0"><a href="%s">%s</a></div>' % (item[0], save_html(' '.join(item[1].split()))))
 
         self.buff.append('</div>')
         self.buff.append(HTMLFOOT)
@@ -1105,7 +1106,7 @@ class Fb2XHTML:
         self.buff.append('<dc:publisher />')
 
         if self.annotation:
-            self.buff.append(u'<dc:description>{0}</dc:description>'.format(save_html(self.annotation)))
+            self.buff.append('<dc:description>{0}</dc:description>'.format(save_html(self.annotation)))
 
         if self.book_cover:
             self.buff.append('<meta name="cover" content="cover-image" />')
@@ -1184,4 +1185,4 @@ class Fb2XHTML:
         self.write_buff_to_xml(os.path.join(self.temp_content_dir, 'content.opf'))
 
     def get_buff(self):
-        return u''.join(self.buff)
+        return ''.join(self.buff)
