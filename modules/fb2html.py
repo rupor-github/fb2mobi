@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 from lxml import etree, html, objectify
 import re
 import shutil
@@ -245,7 +246,6 @@ class Fb2XHTML:
         self.toc_title = config.current_profile['tocTitle']     # Заголовок для раздела содержания
 
         self.chaptersplit = config.current_profile['chapterOnNewPage'] # Разделять на отдельные файлы по главам
-        self.chapter_count = 0 # Счетчик глав (файлов)
 
         self.tocbeforebody = config.current_profile['tocBeforeBody']  # Положение содержания - в начале либо в конце книги
         self.transliterate_author_and_title = config.transliterate_author_and_title
@@ -274,8 +274,6 @@ class Fb2XHTML:
         self.mobi_file = mobifile
 
         self.tree = etree.parse(fb2file, parser=etree.XMLParser(recover=True))
-
-        import sys
 
         if 'xslt' in config.current_profile:
 
@@ -324,6 +322,10 @@ class Fb2XHTML:
             self.get_notes_dict('notes')
 
     def generate(self):
+
+        # stdout = sys.stdout
+        # sys.stdout = codecs.open('stdout.txt', 'w', 'utf-8')
+
         for child in self.root:
             if ns_tag(child.tag) == 'description':
                 self.parse_description(child)
@@ -350,6 +352,8 @@ class Fb2XHTML:
         self.generate_opf()
         self.generate_container()
         self.generate_mimetype()
+
+        # sys.stdout = stdout
 
     def copy_css(self):
         base_dir = os.path.abspath(os.path.dirname(self.css_file))
@@ -585,7 +589,6 @@ class Fb2XHTML:
         p = re.compile('\[.*\]')    # Удалим остатки ссылок
         toc_title = p.sub('', toc_title)
 
-
         if not self.body_name or self.first_header_in_body:
             self.header = True
             self.first_chapter_line = True
@@ -598,7 +601,6 @@ class Fb2XHTML:
                     self.buff.append('<div class="vignette_title_before"><img src="vignettes/{0}" /></div>'.format(vignette))
 
                 self.parse_format(elem, 'div', 'h0')
-                self.current_header_level = 0
 
                 vignette = self.get_vignette('h0', 'afterTitle')
                 if vignette:
@@ -617,6 +619,8 @@ class Fb2XHTML:
                 if vignette:
                     self.buff.append('<div class="vignette_title_after"><img src="vignettes/{0}" /></div>'.format(vignette))
 
+            if self.first_header_in_body:
+                    self.current_header_level = 0
             self.toc[self.toc_index] = ['%s#%s' % (self.current_file, toc_ref_id), toc_title, self.current_header_level, self.body_name]
         else:
             self.buff.append('<div class="titlenotes" id="%s">' % toc_ref_id)
@@ -741,10 +745,7 @@ class Fb2XHTML:
             if vignette:
                 self.buff.append('<p class="vignette_chapter_end"><img src="vignettes/{0}" /></p>'.format(vignette))
 
-
-        self.current_header_level = self.current_header_level - 1
-        if self.current_header_level < 0:
-            self.current_header_level = 0
+        self.current_header_level = max(0, self.current_header_level - 1)
 
     def parse_date(self, elem):
         self.parse_format(elem, 'time')
@@ -933,11 +934,6 @@ class Fb2XHTML:
         self.buff.append(HTMLHEAD)
         self.current_file = 'toc.xhtml'
 
-        if self.chapter_count > 0:
-            for (idx, item) in self.toc.items():
-                link = '#' + item[0].split('#')[1]
-                self.toc[idx] = [repl_link(link), item[1], item[2], item[3]]
-
         self.buff.append('<div class="toc">')
         self.buff.append(u'<div class="h1" id="toc">%s</div>' % self.toc_title)
         for (idx, item) in self.toc.items():
@@ -964,6 +960,14 @@ class Fb2XHTML:
         self.write_buff_to_xhtml()
         self.html_file_list.append(self.current_file)
 
+    def ncx_navp_beg(self, index, title, link):
+        self.buff.append('<navPoint id="navpoint%s" playOrder="%s">' % (index, index))
+        self.buff.append('<navLabel><text>%s</text></navLabel>' % title)
+        self.buff.append('<content src="%s" />' % link)
+
+    def ncx_navp_end(self):
+        self.buff.append('</navPoint>')
+
     def generate_ncx(self):
         self.buff = []
         self.buff.append('<?xml version="1.0"?>'
@@ -979,47 +983,70 @@ class Fb2XHTML:
 
         # Включим содержание в навигацию, если содержание помещается в начале книги
         if self.tocbeforebody and len(self.toc.items()) > 0 and self.generate_toc_page:
-            self.buff.append('<navPoint id="navpoint%s" playOrder="%s">' % (i, i))
-            self.buff.append(u'<navLabel><text>%s</text></navLabel>' % self.toc_title)
-            self.buff.append('<content src="toc.xhtml" />')
-            self.buff.append('</navPoint>')
+            self.ncx_navp_beg(i, self.toc_title, 'toc.xhtml')
+            self.ncx_navp_end()
             i += 1
 
         if self.flat_toc:
             for(idx, item) in self.toc.items():
-                self.buff.append('<navPoint id="navpoint%s" playOrder="%s">' % (i, i))
-                self.buff.append('<navLabel><text>%s</text></navLabel>' % save_html(' '.join(item[1].split())))
-                self.buff.append('<content src="%s" />' % item[0])
-                self.buff.append('</navPoint>')
+                self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
+                self.ncx_navp_end()
                 i += 1
         else:
-            current_level = -1
-            for(idx, item) in self.toc.items():
-                while current_level > item[2]:
-                    self.buff.append('</navPoint>')
-                    current_level -= 1
+            class Stack:
+                def __init__(self):
+                    self.items = []
+                def isempty(self):
+                    return self.items == []
+                def push(self, item):
+                    self.items.append(item)
+                def pop(self):
+                    return self.items.pop()
+                def peek(self):
+                    return self.items[len(self.items)-1]
+                def size(self):
+                    return len(self.items)
 
-                if current_level == item[2]:
-                    self.buff.append('</navPoint>')
+            history = Stack()
+            prev_item = None
+            for (idx,item) in self.toc.items():
+                if prev_item is None:               # first time
+                    self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
+                    history.push(item[2])
+                    i += 1
+                    prev_item = item
+                elif prev_item[2] < item[2]:        # Going in
+                    self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
+                    history.push(item[2])
+                    i += 1
+                    prev_item = item
+                elif prev_item[2] == item[2]:       # Same level
+                    self.ncx_navp_end()
+                    self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
+                    prev_item = item
+                elif prev_item[2] > item[2]:        # Going out
+                    while not history.isempty() and history.peek() >= item[2]:
+                        self.ncx_navp_end()
+                        history.pop()
+                    self.ncx_navp_beg(i, save_html(' '.join(item[1].split())),item[0])
+                    history.push(item[2])
+                    i += 1
+                    prev_item = item
+                else:
+                    assert False
 
-                self.buff.append('<navPoint id="navpoint%s" playOrder="%s">' % (i, i))
-                self.buff.append('<navLabel><text>%s</text></navLabel>' % save_html(' '.join(item[1].split())))
-                self.buff.append('<content src="%s" />' % item[0])
-                current_level = item[2]
-                i += 1
-
-            while current_level >= 0:
-                self.buff.append('</navPoint>')
-                current_level -= 1
+            # Close whats left
+            while not history.isempty():
+                self.ncx_navp_end()
+                history.pop()
 
         # Включим содержание в навигацию, если содержание помещается в конце книги
         if not self.tocbeforebody and len(self.toc.items()) > 0 and self.generate_toc_page:
-            self.buff.append('<navPoint id="navpoint%s" playOrder="%s">' % (i, i))
-            self.buff.append(u'<navLabel><text>%s</text></navLabel>' % self.toc_title)
-            self.buff.append('<content src="toc.xhtml" />')
-            self.buff.append('</navPoint>')
+            self.ncx_navp_beg(i, self.toc_title, 'toc.xhtml')
+            self.ncx_navp_end()
 
         self.buff.append('</navMap></ncx>')
+        write_file('\n'.join(self.buff),'z:/aaaa')
         self.write_buff_to_xml(os.path.join(self.temp_content_dir, 'toc.ncx'))
 
     def generate_mimetype(self):
