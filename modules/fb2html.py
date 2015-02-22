@@ -1047,7 +1047,6 @@ class Fb2XHTML:
             self.ncx_navp_end()
 
         self.buff.append('</navMap></ncx>')
-        write_file('\n'.join(self.buff),'z:/aaaa')
         self.write_buff_to_xml(os.path.join(self.temp_content_dir, 'toc.ncx'))
 
     def generate_mimetype(self):
