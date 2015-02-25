@@ -272,13 +272,7 @@ def process_folder(config, inputdir, outputdir=None):
     Если передан параметр --outputdir, сконвертированные файлы помещаются в этот каталог
     '''
 
-    if isinstance(inputdir, str):
-        inputdir = inputdir.decode(sys.getfilesystemencoding())
-
     if outputdir:
-        if isinstance(outputdir, str):
-            outputdir = outputdir.decode(sys.getfilesystemencoding())
-
         if not os.path.exists(outputdir):
             os.makedirs(outputdir)
 
