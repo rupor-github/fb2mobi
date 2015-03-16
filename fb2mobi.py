@@ -77,9 +77,8 @@ def unzip(filename, tempdir):
     zdirname, zfilename = os.path.split(zname)
     if zfilename:
         unzipped_file = os.path.join(tempdir, '_unzipped.fb2')
-        f = open(unzipped_file, 'w')
-        f.write(zfile.read(zname))
-        f.close()
+        with open(unzipped_file, 'wb') as f:
+            f.write(zfile.read(zname))
     else:
         unzipped_file = None
 
