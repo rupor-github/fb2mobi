@@ -214,6 +214,8 @@ def process_file(config, infile, outfile=None):
             res = result.stdout.read()
             config.log.debug(str(res, 'utf-8', errors='replace' ))
 
+            result.communicate()
+
         except OSError as e:
             if e.errno == os.errno.ENOENT:
                 config.log.critical('{0} not found'.format(kindlegen_cmd))
@@ -288,7 +290,7 @@ def process_folder(config, inputdir, outputdir=None):
                                 try:
                                     os.remove(inputfile)
                                 except:
-                                    log.error('Unable to remove file "{0}"'.format(inputfile))
+                                    config.log.error('Unable to remove file "{0}"'.format(inputfile))
 
                             continue
                 except KeyboardInterrupt as e:
@@ -296,12 +298,12 @@ def process_folder(config, inputdir, outputdir=None):
                     sys.exit(-1)
 
                 except IOError as e:
-                    log.error('(I/O error {0}) {1} - {2}'.format(e.errno, e.strerror, e.filename))
+                    config.log.error('(I/O error {0}) {1} - {2}'.format(e.errno, e.strerror, e.filename))
                 except:
                     type, value, tb = sys.exc_info()
-                    log.error('({0}) {1}'.format(type.__name__, value.message))
+                    config.log.error('({0}) {1}'.format(type.__name__, value.message))
     else:
-        log.critical('Unable to find directory "{0}"'.format(inputdir))
+        config.log.critical('Unable to find directory "{0}"'.format(inputdir))
         sys.exit(-1)
 
 
