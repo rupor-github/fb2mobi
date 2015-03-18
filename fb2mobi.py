@@ -45,7 +45,7 @@ def create_epub(rootdir, epubname):
             epub.write(root, relpath)
 
         for filename in files:
-            if filename != 'mimetype':
+            if filename != 'mimetype' and filename != '_unzipped.fb2':
                 epub.write(os.path.join(root, filename), os.path.join(relpath, filename), zipfile.ZIP_DEFLATED)
 
     epub.close()
