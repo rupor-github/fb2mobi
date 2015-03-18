@@ -208,13 +208,9 @@ def process_file(config, infile, outfile=None):
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
-            result = subprocess.Popen( [kindlegen_cmd, os.path.join(temp_dir, 'OEBPS','content.opf'), kindlegen_cmd_pars, '-locale', 'en'],
-                                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=startupinfo)
-
-            res = result.stdout.read()
-            config.log.debug(str(res, 'utf-8', errors='replace' ))
-
-            result.communicate()
+            with subprocess.Popen([kindlegen_cmd, os.path.join(temp_dir, 'OEBPS','content.opf'), kindlegen_cmd_pars, '-locale', 'en'], \
+                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=startupinfo) as result:
+                config.log.debug(str(result.stdout.read(), 'utf-8', errors='replace'))
 
         except OSError as e:
             if e.errno == os.errno.ENOENT:
