@@ -219,7 +219,7 @@ class Fb2XHTML:
         self.book_series_num = ''   # Номер в книжной серии
         self.book_cover = ''    # Ссылка на файл изображения обложки книги
 
-        self.dropcaps = config.current_profile['dropcaps']      # Признак вставки стилей буквицы (dropcaps)
+        self.dropcaps = config.current_profile['dropcaps'].lower()    # Признак вставки стилей буквицы (dropcaps)
         self.nodropcaps = config.no_dropcaps_symbols  # Строка символов, для исключения буквицы
 
         # Максимальный уровень заголовка (секции) для помещения в содержание (toc.xhtml)
@@ -752,17 +752,25 @@ class Fb2XHTML:
         self.parse_format(elem, 'time')
 
     def parse_format(self, elem, tag = None, css = None, href=None):
-        dodropcaps = False
+        dodropcaps = 0
         note_id = ''
         note = ''
 
         if elem.text:
             # Обработка dropcaps
-            if self.dropcaps and self.first_chapter_line and not (self.header or self.subheader) and tag == 'p' and not self.body_name:
+            if self.first_chapter_line and not (self.header or self.subheader) and tag == 'p' and not self.body_name:
                 if not self.no_paragraph:
-                    if elem.text[0] not in self.nodropcaps:
-                        dodropcaps = True
-                        css = 'dropcaps'
+                    if self.dropcaps == 'simple':
+                        if elem.text[0] not in self.nodropcaps:
+                            dodropcaps = 1
+                            css = 'dropcaps'
+                    elif self.dropcaps == 'smart':
+                        if elem.text[0] not in self.nodropcaps:
+                            dodropcaps = 1
+                            css = 'dropcaps'
+                        elif len(elem.text) > 1 and elem.text[1] not in self.nodropcaps:
+                            dodropcaps = 2
+                            css = 'dropcaps'
                     self.first_chapter_line = False
 
         if self.notes_mode in ('inline', 'block') and tag == 'a':
@@ -795,8 +803,8 @@ class Fb2XHTML:
 
         if elem.text:
             hs = self.insert_hyphenation(elem.text)
-            if dodropcaps:
-                self.buff.append('<span class="dropcaps">%s</span>%s' % (hs[0], save_html(hs[1:])))
+            if dodropcaps > 0:
+                self.buff.append('<span class="dropcaps">%s</span>%s' % (hs[0:dodropcaps], save_html(hs[dodropcaps:])))
             else:
                 self.buff.append(save_html(hs))
 

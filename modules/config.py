@@ -39,7 +39,7 @@ class ConverterConfig:
         self.profiles['default']['transliterate'] = None
         self.profiles['default']['transliterateAuthorAndTitle'] = None
         self.profiles['default']['hyphens'] = True
-        self.profiles['default']['dropcaps'] = False
+        self.profiles['default']['dropcaps'] = 'None'
         self.profiles['default']['tocMaxLevel'] = 1000
         self.profiles['default']['tocBeforeBody'] = False
         self.profiles['default']['flatTOC'] = True
@@ -124,7 +124,7 @@ class ConverterConfig:
                             self.profiles[prof_name]['hyphens'] = p.text.lower() == 'true'
 
                         elif p.tag == 'dropcaps':
-                            self.profiles[prof_name]['dropcaps'] = p.text.lower() == 'true'
+                            self.profiles[prof_name]['dropcaps'] = p.text
 
                         elif p.tag == 'outputFormat':
                             self.profiles[prof_name]['outputFormat'] = p.text

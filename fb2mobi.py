@@ -481,9 +481,7 @@ if __name__ == '__main__':
     argparser.add_argument('-p', '--profile', type=str, default=None, help='Profile name from configuration')
     argparser.add_argument('--css', type=str, default=None, help='css file name')
     argparser.add_argument('--xslt', type=str, default=None, help='xslt file name')
-    dropcaps_group = argparser.add_mutually_exclusive_group()
-    dropcaps_group.add_argument('--dropcaps', dest='dropcaps', action='store_true', default=None, help='Use dropcaps')
-    dropcaps_group.add_argument('--no-dropcaps', dest='dropcaps', action='store_false', default=None, help='Do not use dropcaps')
+    argparser.add_argument('--dropcaps', dest='dropcaps', type=str, default=None, choices=['Simple', 'Smart', 'None'], help='Control dropcaps processing (Simple, Smart, None)')
     argparser.add_argument('-l', '--profile-list', dest='profilelist', action='store_true', default=False, help='Show list of available profiles')
 
     argparser.add_argument('--toc-max-level', dest='tocmaxlevel', type=int, default=None, help='Maximum level of titles in the TOC')
