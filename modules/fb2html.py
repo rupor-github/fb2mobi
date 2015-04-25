@@ -765,12 +765,11 @@ class Fb2XHTML:
                             dodropcaps = 1
                             css = 'dropcaps'
                     elif self.dropcaps == 'smart':
-                        if elem.text[0] not in self.nodropcaps:
-                            dodropcaps = 1
-                            css = 'dropcaps'
-                        elif len(elem.text) > 1 and elem.text[1] not in self.nodropcaps:
-                            dodropcaps = 2
-                            css = 'dropcaps'
+                        for i, c in enumerate(elem.text):
+                            if c not in self.nodropcaps and not c.isspace():
+                                dodropcaps = i + 1
+                                css = 'dropcaps'
+                                break
                     self.first_chapter_line = False
 
         if self.notes_mode in ('inline', 'block') and tag == 'a':
