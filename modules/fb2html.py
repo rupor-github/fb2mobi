@@ -909,7 +909,6 @@ class Fb2XHTML:
         self.body_name = elem.attrib['name'] if 'name' in elem.attrib else ''
         self.current_header_level = 0
         self.first_header_in_body = True
-        self.current_file_index = 0
 
         if self.first_body:
             self.first_body = False
@@ -919,10 +918,10 @@ class Fb2XHTML:
         self.buff.append(HTMLHEAD)
 
         if not self.body_name:
+            self.current_file_index += 1
             self.current_file = 'index{0}.xhtml'.format(self.current_file_index)
             self.html_file_list.append(self.current_file)
         else:
-            #self.current_file = '{0}.xhtml'.format(self.body_name)
             self.current_file = '{0}.xhtml'.format(hashlib.md5(bytes(self.body_name,'utf-8')).hexdigest())
             self.html_file_list.append(self.current_file)
 
