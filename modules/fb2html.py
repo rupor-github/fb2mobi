@@ -1091,9 +1091,10 @@ class Fb2XHTML:
         else:
             abbr = ''.join(word[0] for word in self.book_series.split())
             title = self.bookseriestitle
-            title = title.replace('#series', '' if not self.book_series else self.book_series.strip())
-            title = title.replace('#number', '' if not self.book_series_num else self.book_series_num.strip())
-            title = title.replace('#title', '' if not self.book_title else self.book_title.strip())
+            title = title.replace('#series',     '' if not self.book_series else self.book_series.strip())
+            title = title.replace('#number',     '' if not self.book_series_num else self.book_series_num.strip())
+            title = title.replace('#padnumber',  '' if not self.book_series_num else self.book_series_num.strip().zfill(2))
+            title = title.replace('#title',      '' if not self.book_title else self.book_title.strip())
             title = title.replace('#abbrseries', '' if not abbr else abbr.lower())
 
         book_author = self.book_author
