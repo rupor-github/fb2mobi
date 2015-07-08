@@ -133,6 +133,12 @@ def save_html(string):
     else:
         return ''
 
+def sanitize_id(string):
+    if string:
+        return string.replace('\r','').replace('\n','').replace(' ','')
+    else:
+        return ''
+
 def write_file(buff, filename):
     '''Сохраняет указанный строковый буфер в указанный файл.
     Если конечный каталог отсутствует, он предварительно создается.
@@ -787,8 +793,11 @@ class Fb2XHTML:
             if css:
                 self.buff.append(' class="%s"' % css)
             if 'id' in elem.attrib:
-                self.buff.append(' id="%s"' % elem.attrib['id'])
-                self.links_location[elem.attrib['id']] = self.current_file
+                new_id = save_html(sanitize_id(elem.attrib['id']))
+                if new_id != elem.attrib['id']:
+                    self.log.warning('id "{}" for tag "{}" was sanitized. This may create problems with links (TOC, notes) - it is better to fix original file.'.format(new_id,tag))
+                self.buff.append(' id="%s"' % new_id)
+                self.links_location[new_id] = self.current_file
             if href:
                 self.buff.append(' href="%s"' % save_html(href))
             if css == 'section':
