@@ -323,8 +323,8 @@ class Fb2XHTML:
 
     def generate(self):
 
-        # stdout = sys.stdout
-        # sys.stdout = codecs.open('stdout.txt', 'w', 'utf-8')
+#        stdout = sys.stdout
+#        sys.stdout = codecs.open('stdout.txt', 'w', 'utf-8')
 
         for child in self.root:
             if ns_tag(child.tag) == 'description':
@@ -353,7 +353,7 @@ class Fb2XHTML:
         self.generate_container()
         self.generate_mimetype()
 
-        # sys.stdout = stdout
+#        sys.stdout = stdout
 
     def copy_css(self):
         base_dir = os.path.abspath(os.path.dirname(self.css_file))
@@ -953,7 +953,7 @@ class Fb2XHTML:
                         self.buff.append('<div class="indent0"><a href="%s">' % item[0])
                         for line in lines:
                             if line.strip():
-                                self.buff.append(line.strip() + '<br/>')
+                                self.buff.append(save_html(line.strip()) + '<br/>')
                         self.buff.append('</a></div>')
                     else:
                         self.buff.append('<div class="indent%s"><a href="%s">%s</a></div>' % (indent, item[0], save_html(' '.join(item[1].split()))))
