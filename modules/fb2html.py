@@ -384,6 +384,12 @@ class Fb2XHTML:
             return new_url
 
         if self.parse_css:
+            cssutils.profile.addProfile('CSS extentions', 
+                    {'-webkit-hyphens': 'none',
+                     'adobe-hyphenate': 'none',
+                     '-moz-hyphens': 'none',
+                     '-ms-hyphens': 'none',
+                     'hyphens': 'none|manual|auto'})
             stylesheet = cssutils.parseFile(self.css_file)
             cssutils.replaceUrls(stylesheet, replaceUrl)
             write_file(str(stylesheet.cssText,'utf-8'), os.path.join(self.temp_content_dir, 'stylesheet.css'))
