@@ -33,6 +33,14 @@ def get_executable_path():
 
     return executable_path
 
+def get_executable_name():
+    if getattr(sys, 'frozen', False):
+        name, ext = os.path.splitext(os.path.basename((sys.executable)))
+    else:
+        name, ext = os.path.splitext(os.path.basename((sys.argv[0])))
+
+    return name
+
 def create_epub(rootdir, epubname):
     ''' Генерация epub
     '''
@@ -320,11 +328,8 @@ def process(args):
     result = 0
 
     infile = args.infile
-
     outfile = args.outfile
-
-    config_file_name = 'fb2mobi.config'
-
+    config_file_name = "%s.config" % get_executable_name()
     application_path = get_executable_path()
 
     if os.path.exists(os.path.join(application_path, config_file_name)):

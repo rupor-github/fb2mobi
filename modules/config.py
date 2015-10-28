@@ -291,15 +291,3 @@ class ConverterConfig:
         with codecs.open(self.config_file, "w", 'utf-8') as f:
             f.write(str(etree.tostring(config, encoding="utf-8", pretty_print=True, xml_declaration=True),'utf-8'))
             f.close()
-
-if __name__ == '__main__':
-    cfg_file = 'fb2mobi.config'
-
-    log.basicConfig(level=log.INFO)
-    config = ConverterConfig(cfg_file)
-    print(config.profiles)
-
-
-
-
-
