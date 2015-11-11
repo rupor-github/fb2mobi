@@ -6,12 +6,11 @@ it lost number of features and gained some bug fixes...
 
 Here is brief list of changes:
 
-* Renamed from fb2conv to fb2mobi (MyHomeLib integration)
-* Ported to Python 3.4.2
 * Lost UI and "Send To Kindle" functionality
 * All messages and profile descriptions got translated to English
 * Fixed all problems I was aware of at the moment (see git log)
 * Added ability to apply xslt transformation from external file to fb2 before further processing
 * Added xslt extension "katz_tr" to speedup and simplify transformation of direct speech in dialogs
+* Added some rudimentary epub processing (like title rewriting based on calibre metadata)
 
 Enjoy!
