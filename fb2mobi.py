@@ -94,6 +94,23 @@ def unzip(filename, tempdir):
 
     return unzipped_file
 
+def unzip_epub(filename, tempdir):
+    '''Разархивация файла.
+    Возвращает имя opf файла, либо None, если произошла ошибка
+    '''
+
+    unzipped_file = None
+
+    zfile = zipfile.ZipFile(filename)
+    zname = next((x for x in zfile.namelist() if x.lower().endswith('.opf')), None)
+    if zname:
+        zfile.extractall(tempdir)
+        unzipped_file = os.path.normpath(os.path.join(tempdir, zname))
+
+    zfile.close()
+
+    return unzipped_file
+
 def rm_tmp_files(dir, deleteroot=True):
     '''Рекурсивное удаление файлов и подкаталогов в указанном каталоге,
     а также и самого каталога, переданного в качестве параметра
@@ -110,7 +127,7 @@ def rm_tmp_files(dir, deleteroot=True):
 
 
 def process_file(config, infile, outfile=None):
-    '''Конвертация одного файла fb2, fb2.zip'''
+    '''Конвертация одного файла'''
     critical_error = False
 
     start_time = time.clock()
@@ -125,10 +142,11 @@ def process_file(config, infile, outfile=None):
 
     # Проверка корректности параметров
     if infile:
-        if not infile.lower().endswith(('.fb2', '.fb2.zip', '.zip')):
-            config.log.critical('"{0}" not *.fb2, *.fb2.zip or *.zip'.format(infile))
+        if not infile.lower().endswith(('.fb2', '.fb2.zip', '.zip', '.epub')):
+            config.log.critical('"{0}" not *.fb2, *.fb2.zip, *.zip or *.epub'.format(infile))
             return -1
-    if not config.current_profile['css']:
+
+    if not config.current_profile['css'] and not infile.lower().endswith(('.epub')):
         config.log.warning('Profile does not have link to css file.')
 
     if 'xslt' in config.current_profile and not os.path.exists(config.current_profile['xslt']):
@@ -174,22 +192,49 @@ def process_file(config, infile, outfile=None):
     if os.path.splitext(debug_dir)[1].lower() == '.fb2':
         debug_dir = os.path.splitext(debug_dir)[0]
 
+    input_epub = False
+
     if os.path.splitext(infile)[1].lower() == '.zip':
         config.log.info('Unpacking...')
+        tmp_infile = infile
         try:
             infile = unzip(infile, temp_dir)
         except:
-            config.log.critical('Error unpacking file "{0}".'.format(infile))
+            config.log.critical('Error unpacking file "{0}".'.format(tmp_infile))
             return -1
 
         if not infile:
-            config.log.critical('Error unpacking file "{0}".'.format(infile))
+            config.log.critical('Error unpacking file "{0}".'.format(tmp_infile))
             return -1
 
-    # Конвертируем в html
-    config.log.info('Converting to html...')
-    fb2parser = Fb2XHTML(infile, outfile, temp_dir, config)
-    fb2parser.generate()
+    elif os.path.splitext(infile)[1].lower() == '.epub':
+        config.log.info('Unpacking epub...')
+        tmp_infile = infile
+        try:
+            infile = unzip_epub(infile, temp_dir)
+        except:
+            config.log.critical('Error unpacking file "{0}".'.format(tmp_infile))
+            return -1
+
+        if not infile:
+            config.log.critical('Error unpacking file "{0}".'.format(tmp_infile))
+            return -1
+
+        input_epub = True
+
+    if input_epub:
+        '''TODO 
+        Presently there is no need to unpack epub and then pack it back,
+        but it gives us oportunity to process its content in the future.
+        For example I could see a need for hyphenation and some metainfo processing
+        '''
+        pass
+    else:
+        # Конвертируем в html
+        config.log.info('Converting fb2 to html...')
+        fb2parser = Fb2XHTML(infile, outfile, temp_dir, config)
+        fb2parser.generate()
+        infile = os.path.join(temp_dir, 'OEBPS','content.opf')
 
     config.log.info('Converting to html took {0} sec.'.format(round(time.clock() - start_time, 2)))
 
@@ -216,8 +261,7 @@ def process_file(config, infile, outfile=None):
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
-            with subprocess.Popen([kindlegen_cmd, os.path.join(temp_dir, 'OEBPS','content.opf'), kindlegen_cmd_pars, '-locale', 'en'], \
-                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=startupinfo) as result:
+            with subprocess.Popen([kindlegen_cmd, infile, kindlegen_cmd_pars, '-locale', 'en'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=startupinfo) as result:
                 config.log.debug(str(result.stdout.read(), 'utf-8', errors='replace'))
 
         except OSError as e:
@@ -228,6 +272,7 @@ def process_file(config, infile, outfile=None):
                 config.log.critical(e.winerror)
                 config.log.critical(e.strerror)
                 raise e
+
     elif config.output_format.lower() == 'epub':
         # Собираем epub
         outfile = os.path.splitext(outfile)[0] + '.epub'
@@ -244,7 +289,7 @@ def process_file(config, infile, outfile=None):
     # Копируем mobi(azw3) из временного в выходной каталог
     if not critical_error:
         if config.output_format.lower() in ('mobi', 'azw3'):
-            result_book = os.path.join(temp_dir, 'OEBPS', 'content.mobi')
+            result_book = infile.replace('.opf', '.mobi')
             if not os.path.isfile(result_book):
                 config.log.critical('kindlegen error, convertion interrupted.')
                 critical_error = True
@@ -273,7 +318,7 @@ def process_file(config, infile, outfile=None):
 
 def process_folder(config, inputdir, outputdir=None):
     ''' Обработка каталога со вложенными подкаталогами.
-    Обрабатываются все файлы *.fb2, *.fb2.zip.
+    Обрабатываются все подходящие файлы.
     Если передан параметр --outputdir, сконвертированные файлы помещаются в этот каталог
     '''
 
@@ -285,7 +330,7 @@ def process_folder(config, inputdir, outputdir=None):
         for root, dirs, files in os.walk(inputdir):
             for file in files:
                 try:
-                    if file.lower().endswith(('.fb2', '.fb2.zip', '.zip')):
+                    if file.lower().endswith(('.fb2', '.fb2.zip', '.zip', '.epub')):
                         inputfile = os.path.join(root, file)
                         # Обработка каталога. Смотрим признак рекурсии по подкаталогам
                         if (not config.recursive and inputdir == root) or config.recursive:
@@ -451,10 +496,10 @@ def process(args):
 
 if __name__ == '__main__':
     # Настройка парсера аргументов
-    argparser = argparse.ArgumentParser(description='Converter of fb2 ebooks to mobi, azw3 and epub formats. Version {0}'.format(version.VERSION))
+    argparser = argparse.ArgumentParser(description='Converter of fb2 and epub ebooks to mobi, azw3 and epub formats. Version {0}'.format(version.VERSION))
 
     input_args_group = argparser.add_mutually_exclusive_group()
-    input_args_group.add_argument('infile', type=str, nargs='?', default=None, help='Source file name (fb2, fb2.zip or zip)')
+    input_args_group.add_argument('infile', type=str, nargs='?', default=None, help='Source file name (fb2, fb2.zip, zip or epub)')
     input_args_group.add_argument('-i', '--input-dir', dest='inputdir', type=str, default=None, help='Source directory for batch conversion.')
 
     output_args_group = argparser.add_mutually_exclusive_group()
