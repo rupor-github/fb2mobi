@@ -20,7 +20,9 @@ import version
 #import traceback
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), 'modules'))
-from fb2html import Fb2XHTML, transliterate
+from utils import transliterate
+from fb2html import Fb2XHTML
+from epub import EpubProc
 from config import ConverterConfig
 
 from mobi_split import mobi_split
@@ -223,12 +225,10 @@ def process_file(config, infile, outfile=None):
         input_epub = True
 
     if input_epub:
-        '''TODO 
-        Presently there is no need to unpack epub and then pack it back,
-        but it gives us oportunity to process its content in the future.
-        For example I could see a need for hyphenation and some metainfo processing
-        '''
-        pass
+        # Let's see what we could do
+        config.log.info('Processing epub...')
+        epubparser = EpubProc(infile,config)
+        epubparser.process()
     else:
         # Конвертируем в html
         config.log.info('Converting fb2 to html...')
@@ -236,7 +236,7 @@ def process_file(config, infile, outfile=None):
         fb2parser.generate()
         infile = os.path.join(temp_dir, 'OEBPS','content.opf')
 
-    config.log.info('Converting to html took {0} sec.'.format(round(time.clock() - start_time, 2)))
+    config.log.info('Processing took {0} sec.'.format(round(time.clock() - start_time, 2)))
 
     if config.output_format.lower() in ('mobi', 'azw3'):
         # Запускаем kindlegen
