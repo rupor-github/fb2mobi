@@ -57,10 +57,14 @@ class EpubProc:
                 title = title.replace('#padnumber',  '' if not self.book_series_num else self.book_series_num.strip().zfill(2))
                 title = title.replace('#title',      '' if not self.book_title else self.book_title.strip())
                 title = title.replace('#abbrseries', '' if not abbr else abbr.lower())
+                if self.transliterate_author_and_title:
+                    title = transliterate(title)
                 node.text = title
 
+        # TODO: Do we need profile per file extension?
         # TODO: Hyphenator?
         # TODO: Replace stylesheets?
+        # TODO: book_author = transliterate(book_author)
 
         indent(self.root)
         self.tree.write(self.opffile, encoding='utf-8', method='xml', xml_declaration=True)
