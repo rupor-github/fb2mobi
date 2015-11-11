@@ -180,6 +180,8 @@ class Fb2XHTML:
         self.html_file_list = [] # Массив для хранения списка сгенерированных xhtml файлов
         self.image_file_list = [] # Массив для хранения списка картинок
 
+        self.genres = []
+
         self.mobi_file = mobifile
 
         self.tree = etree.parse(fb2file, parser=etree.XMLParser(recover=True))
@@ -430,6 +432,9 @@ class Fb2XHTML:
                                     if ns_tag(a) == 'href':
                                         self.book_cover = 'images/' + c.attrib[a][1:]
                                         break
+
+                    elif ns_tag(t.tag) == 'genre':
+                        self.genres.append(t.text)
 
                     elif ns_tag(t.tag) == 'author':
                         if self.book_author == '':
@@ -1027,6 +1032,9 @@ class Fb2XHTML:
         self.buff.append('<dc:identifier id="BookId" opf:scheme="uuid">urn:uuid:{0}</dc:identifier>'.format(self.book_uuid))
         self.buff.append('<dc:creator opf:role="aut">%s</dc:creator>' % book_author)
         self.buff.append('<dc:publisher />')
+
+        for genre in self.genres:
+            self.buff.append('<dc:subject>{0}</dc:subject>'.format(genre))
 
         if self.annotation:
             self.buff.append('<dc:description>{0}</dc:description>'.format(save_html(self.annotation)))
