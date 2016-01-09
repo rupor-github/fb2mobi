@@ -10,8 +10,8 @@ set PYTHON_DIR=d:\python
 %PYTHON_DIR%\python%PYTHON_VER%\python.exe setup-cli.win32.py
 call release.cmd x64
 
-%PYTHON_DIR%\python%PYTHON_VER%_32\python.exe setup-cli.win32.py
-call release.cmd x86
+REM %PYTHON_DIR%\python%PYTHON_VER%_32\python.exe setup-cli.win32.py
+REM call release.cmd x86
 
 endlocal
 
