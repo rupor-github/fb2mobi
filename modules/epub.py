@@ -41,10 +41,11 @@ class EpubProc:
         # Lookup series/sequences data if any
         for node in self.root.iter('{*}meta'):
             attributes = node.attrib
-            if attributes['name'].endswith('series_index'):
-                self.book_series_num = attributes['content']
-            elif attributes['name'].endswith('series'):
-                self.book_series = attributes['content']
+            if 'name' in attributes:
+                if attributes['name'].endswith('series_index'):
+                    self.book_series_num = attributes['content']
+                elif attributes['name'].endswith('series'):
+                    self.book_series = attributes['content']
 
         # And reformat book title accordingly
         if self.book_series != '':

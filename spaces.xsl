@@ -11,7 +11,7 @@
 		<xsl:copy>
 			<xsl:apply-templates select="node()|@*"/>
 		</xsl:copy>
-	</xsl:template>                                                                                                                                              
+	</xsl:template>
 
 	<xsl:template match="fb:p[starts-with(.,'‐') or starts-with(.,'‑') or starts-with(.,'−') or starts-with(.,'–') or starts-with(.,'—') or starts-with(.,'―') or starts-with(.,'…')]">
 		<rupor:katz_tr>–&#8198;</rupor:katz_tr>

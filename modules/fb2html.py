@@ -185,7 +185,6 @@ class Fb2XHTML:
         self.mobi_file = mobifile
 
         self.tree = etree.parse(fb2file, parser=etree.XMLParser(recover=True))
-
         if 'xslt' in config.current_profile:
 
             # rupor - this allows for smaller xsl, quicker replacement and allows handling of tags in the paragraphs
@@ -264,7 +263,7 @@ class Fb2XHTML:
         self.generate_container()
         self.generate_mimetype()
 
-#        sys.stdout = stdout
+#       sys.stdout = stdout
 
     def copy_css(self):
         base_dir = os.path.abspath(os.path.dirname(self.css_file))
