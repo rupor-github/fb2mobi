@@ -4,6 +4,7 @@
 
 # releases
 *.7z
+kindlegen.exe
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

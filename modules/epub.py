@@ -25,6 +25,7 @@ class EpubProc:
         self.book_series_num = ''   # Номер в книжной серии
 
         self.opffile = opffile
+        self.path = os.path.dirname(opffile)
 
         self.log = config.log
         self.bookseriestitle = config.current_profile['bookTitleFormat']
@@ -61,6 +62,18 @@ class EpubProc:
                 if self.transliterate_author_and_title:
                     title = transliterate(title)
                 node.text = title
+
+        # See if we have items to correct
+        for node in self.root.iter('{*}item'):
+            attributes = node.attrib
+            if 'href' in attributes and 'media-type' in attributes:
+                if attributes['media-type'] == 'application/xhtml+xml':
+                    filename = os.path.join(self.path, attributes['href'])
+                    self.log.debug('Formatting {}'.format(filename))
+                    # Proper XML encoding needed by kndlegen
+                    xhtml = etree.parse(filename, parser=etree.XMLParser(recover=True))
+                    indent(xhtml.getroot())
+                    xhtml.write(filename, encoding='utf-8', method='xml', xml_declaration=True)
 
         # TODO: Do we need profile per file extension?
         # TODO: Hyphenator?
