@@ -51,7 +51,7 @@ def save_html(string):
     '''
 
     if string:
-        return html.escape(string)
+        return html.escape(string, quote=False)
     else:
         return ''
 
