@@ -1,9 +1,11 @@
 IF .%1. == .. GOTO ERR
 
 del fb2mobi_%1.7z >nul
-copy dist\fb2mobi.exe .
-7z.exe a fb2mobi_%1.7z fb2mobi.exe fb2mobi.config spaces.xsl profiles
-del fb2mobi.exe
+cd dist
+7z.exe a ..\fb2mobi_%1.7z fb2mobi.exe dictionaries
+cd ..
+
+7z.exe a fb2mobi_%1.7z fb2mobi.config spaces.xsl profiles
 
 goto FIN
 

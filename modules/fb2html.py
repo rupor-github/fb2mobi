@@ -12,16 +12,15 @@ import cssutils
 import base64
 import hashlib
 import html
+import pyphen
 
 from utils import transliterate, indent
-from hyphenator import Hyphenator
 from copy import deepcopy
 
 SOFT_HYPHEN = '\u00AD'  # Символ 'мягкого' переноса
 
 CHAPTS_COUNT = 0 # Глобальная переменная для передачи значения в функцию rewrite_links
 TEMP_DIR = '' # Глобальная переменная для передачи значения в функцию rewrite_links
-
 
 HTMLHEAD = ('<?xml version="1.0"?>'
             '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" '
@@ -218,7 +217,7 @@ class Fb2XHTML:
 
         self.root = self.tree.getroot()
 
-        self.hyphenator = Hyphenator('ru')
+        self.hyphenator = pyphen.Pyphen(lang=self.book_lang)
         self.hyphenate = config.current_profile['hyphens']
 
         self.first_body = True  # Признак первого body
@@ -423,7 +422,7 @@ class Fb2XHTML:
                             self.book_lang = t.text
                         else:
                             self.book_lang = 'ru'
-                        self.hyphenator = Hyphenator(self.book_lang)
+                        self.hyphenator = pyphen.Pyphen(lang=self.book_lang)
                     elif ns_tag(t.tag) == 'coverpage':
                         for c in t:
                             if ns_tag(c.tag) == 'image':
@@ -821,7 +820,7 @@ class Fb2XHTML:
 
         if s:
             if self.hyphenator and self.hyphenate and not (self.header or self.subheader):
-                hs = ' '.join([self.hyphenator.hyphenate_word(html.unescape(w), SOFT_HYPHEN) for w in s.split(' ')])
+                hs = ' '.join([self.hyphenator.inserted(html.unescape(w), SOFT_HYPHEN) for w in s.split(' ')])
             else:
                 hs = html.unescape(s)
 

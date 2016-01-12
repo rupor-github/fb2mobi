@@ -1,4 +1,6 @@
 from distutils.core import setup
+from glob import glob
+
 import py2exe
 import sys
 import os
@@ -20,11 +22,8 @@ except:
 includes = [
     'lxml.etree', 
     'lxml._elementpath', 
-    'gzip', 
-    'hyphenations.ru', 
-    'hyphenations.en',
-    'hyphenations.uk',
-    'hyphenations.de',  
+    'gzip',
+    'pyphen',
     'default_css'
 ]
 
@@ -44,6 +43,7 @@ excludes = [
 ]
 
 setup(
+    data_files = [("dictionaries", glob(os.path.join(base_dir, 'modules', 'dictionaries', '*.dic')))],
     options = {
         'py2exe': {
             'compressed': 1,

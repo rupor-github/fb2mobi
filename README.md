@@ -11,6 +11,7 @@ Here is brief list of changes:
 * Fixed all problems I was aware of at the moment (see git log)
 * Added ability to apply xslt transformation from external file to fb2 before further processing
 * Added xslt extension "katz_tr" to speedup and simplify transformation of direct speech in dialogs
-* Added some rudimentary epub processing (like title rewriting based on calibre metadata)
+* Added some rudimentary epub processing (like title rewriting based on calibre metadata and hyphenation)
+* Switched hyphenator to Pyphen (https://github.com/Kozea/Pyphen) which uses properly maintained dictionaries from LibreOffice, so now many languages are supported and you could add more
 
 Enjoy!

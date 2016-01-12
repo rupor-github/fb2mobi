@@ -12,9 +12,9 @@ import cssutils
 import base64
 import hashlib
 import html
+import pyphen
 
 from utils import transliterate, indent
-from hyphenator import Hyphenator
 
 SOFT_HYPHEN = '\u00AD'  # Символ 'мягкого' переноса
 
@@ -34,7 +34,7 @@ class EpubProc:
         self.book_series_num = ''   # Номер в книжной серии
 
         self.book_lang = 'ru'
-        self.hyphenator = Hyphenator('ru')
+        self.hyphenator = pyphen.Pyphen(lang=self.book_lang)
         self.hyphenate = config.current_profile['hyphens']
 
         self.opffile = opffile
@@ -52,7 +52,7 @@ class EpubProc:
 
         if s:
             if self.hyphenator and self.hyphenate:
-                hs = ' '.join([self.hyphenator.hyphenate_word(html.unescape(w), SOFT_HYPHEN) for w in s.split(' ')])
+                hs = ' '.join([self.hyphenator.inserted(html.unescape(w), SOFT_HYPHEN) for w in s.split(' ')])
             else:
                 hs = html.unescape(s)
 
@@ -88,9 +88,9 @@ class EpubProc:
                 node.text = title
 
         for node in self.root.iter('{*}language'):
-            self.book_lang = node.text
+            self.book_lang = pyphen.language_fallback(node.text)
 
-        self.hyphenator = Hyphenator(self.book_lang)
+        self.hyphenator = pyphen.Pyphen(lang=self.book_lang)
 
         indent(self.root)
         self.tree.write(self.opffile, encoding='utf-8', method='xml', xml_declaration=True)
@@ -102,19 +102,21 @@ class EpubProc:
                 if attributes['media-type'] == 'application/xhtml+xml':
                     filename = os.path.join(self.path, attributes['href'])
                     self.log.debug('Processing {}'.format(filename))
-                    # Proper XML encoding needed by kndlegen and do some hyphenation if desiried
+                    # Proper XML encoding needed by kndlegen
                     xhtml = etree.parse(filename, parser=etree.XMLParser(recover=True))
-                    for body in xhtml.getroot().iter('{*}body'):
-                        for elem in body.iter('{*}p','{*}div'):
-                            if elem.text:
-                                elem.text = save_html(self.insert_hyphenation(elem.text))
-                            for child in elem.iter():
-                                if child.text:
-                                    child.text = save_html(self.insert_hyphenation(child.text))
-                                if child.tail:
-                                    child.tail = save_html(self.insert_hyphenation(child.tail))
-                            if elem.tail:
-                                elem.tail = save_html(self.insert_hyphenation(elem.tail))
+                    if self.hyphenate:
+                        # Do hyphenation if desiried
+                        for body in xhtml.getroot().iter('{*}body'):
+                            for elem in body.iter('{*}p','{*}div'):
+                                if elem.text:
+                                    elem.text = save_html(self.insert_hyphenation(elem.text))
+                                if elem.tail:
+                                    elem.tail = save_html(self.insert_hyphenation(elem.tail))
+                                for child in elem.iterchildren():
+                                    if child.text:
+                                        child.text = save_html(self.insert_hyphenation(child.text))
+                                    if child.tail:
+                                        child.tail = save_html(self.insert_hyphenation(child.tail))
                     xhtml.write(filename, encoding='utf-8', method='xml', xml_declaration=True)
 
         # TODO: Do we need profile per file extension?

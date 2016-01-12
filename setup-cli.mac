@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-rm -rf build
-rm -rf dist
-pyinstaller --onefile --console --paths=modules:modules/hyphenations/:modules/kindleunpack --hidden-import=hyphenations.ru --hidden-import=hyphenations.en --hidden-import=default_css fb2mobi.py 
