@@ -112,11 +112,12 @@ class EpubProc:
                                     elem.text = save_html(self.insert_hyphenation(elem.text))
                                 if elem.tail:
                                     elem.tail = save_html(self.insert_hyphenation(elem.tail))
-                                for child in elem.iterchildren():
-                                    if child.text:
-                                        child.text = save_html(self.insert_hyphenation(child.text))
-                                    if child.tail:
-                                        child.tail = save_html(self.insert_hyphenation(child.tail))
+                                for child in elem.iterchildren(tag=etree.Element):
+                                    if not child.tag.endswith('pre'):
+                                        if child.text:
+                                            child.text = save_html(self.insert_hyphenation(child.text))
+                                        if child.tail:
+                                            child.tail = save_html(self.insert_hyphenation(child.tail))
                     xhtml.write(filename, encoding='utf-8', method='xml', xml_declaration=True)
 
         # TODO: Do we need profile per file extension?
