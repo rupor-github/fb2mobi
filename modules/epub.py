@@ -16,7 +16,7 @@ import pyphen
 
 from utils import transliterate, indent
 
-SOFT_HYPHEN = '\u00AD'  # Символ 'мягкого' переноса
+SOFT_HYPHEN = '\u00AD'
 
 def save_html(string):
     if string:
@@ -34,7 +34,6 @@ class EpubProc:
         self.book_series_num = ''   # Номер в книжной серии
 
         self.book_lang = 'ru'
-        self.hyphenator = pyphen.Pyphen(lang=self.book_lang)
         self.hyphenate = config.current_profile['hyphens']
 
         self.opffile = opffile
@@ -47,15 +46,26 @@ class EpubProc:
         self.tree = etree.parse(opffile, parser=etree.XMLParser(recover=True))
         self.root = self.tree.getroot()
 
+    def hyphenate_word(self, w):
+        l = 2
+        for i, c in enumerate(w):
+            if c.isalpha():
+                l += i
+                break
+        r = 2 
+        for i, c in enumerate(reversed(w)):
+            if c.isalpha():
+                r += i
+                break
+        return self.hyphenator.inserted(w, SOFT_HYPHEN, l, r)
+
     def insert_hyphenation(self, s):
         hs = ''
-
         if s:
             if self.hyphenator and self.hyphenate:
-                hs = ' '.join([self.hyphenator.inserted(html.unescape(w), SOFT_HYPHEN) for w in s.split(' ')])
+                hs = ' '.join([self.hyphenate_word(html.unescape(w)) for w in s.split(' ')])
             else:
                 hs = html.unescape(s)
-
         return hs
 
     def process(self):

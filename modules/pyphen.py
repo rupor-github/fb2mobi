@@ -42,11 +42,7 @@ hdcache = {}
 parse_hex = re.compile(r'\^{2}([0-9a-f]{2})').sub
 parse = re.compile(r'(\d?)(\D?)').findall
 
-""" rupor - start changes
-I had to modify initialization code to allow
-Pyphen to work in py2exe and to compensate
-for git soft-links - at least on Windows
-"""
+""" rupor - modify """
 
 dictionaries_root = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])) if getattr(sys, 'frozen', False) else os.path.dirname(__file__), 'dictionaries')
 
@@ -58,14 +54,12 @@ def real_path(filename):
             realpath = real_path(os.path.join(dictionaries_root, line))
     return realpath
 
+""" rupor - end modify """
+
 LANGUAGES = dict(
     (filename[5:-4], real_path(filename))
     for filename in os.listdir(dictionaries_root)
     if filename.endswith('.dic'))
-
-""" rupor - end changes
-The rest of the file is untouched
-"""
 
 def language_fallback(language):
     """Get a fallback language available in our dictionaries.
@@ -249,7 +243,7 @@ class Pyphen(object):
             hdcache[filename] = HyphDict(filename)
         self.hd = hdcache[filename]
 
-    def positions(self, word):
+    def positions(self, word, left, right):
         """Get a list of positions where the word can be hyphenated.
 
         :param word: unicode string of the word to hyphenate
@@ -257,9 +251,12 @@ class Pyphen(object):
         See also ``HyphDict.positions``. The points that are too far to the
         left or right are removed.
 
+        rupor - add left andf right arguments
+
         """
-        right = len(word) - self.right
-        return [i for i in self.hd.positions(word) if self.left <= i <= right]
+        r = len(word) - (self.right if right < 0 else right)
+        l = self.left if left < 0 else left
+        return [i for i in self.hd.positions(word) if l <= i <= r]
 
     def iterate(self, word):
         """Iterate over all hyphenation possibilities, the longest first.
@@ -267,7 +264,7 @@ class Pyphen(object):
         :param word: unicode string of the word to hyphenate
 
         """
-        for position in reversed(self.positions(word)):
+        for position in reversed(self.positions(word, -1, -1)):
             if position.data:
                 # get the nonstandard hyphenation data
                 change, index, cut = position.data
@@ -297,7 +294,7 @@ class Pyphen(object):
             if len(w1) <= width:
                 return w1 + hyphen, w2
 
-    def inserted(self, word, hyphen='-'):
+    def inserted(self, word, hyphen='-', left = -1, right = -1):
         """Get the word as a string with all the possible hyphens inserted.
 
         :param word: unicode string of the word to hyphenate
@@ -307,9 +304,11 @@ class Pyphen(object):
         unicode string ``'let-ter-gre-pen'``. The hyphen string to use can be
         given as the second parameter, that defaults to ``'-'``.
 
+        rupor - add left and right agruments
+
         """
         word_list = list(word)
-        for position in reversed(self.positions(word)):
+        for position in reversed(self.positions(word, left, right)):
             if position.data:
                 # get the nonstandard hyphenation data
                 change, index, cut = position.data

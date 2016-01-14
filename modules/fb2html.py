@@ -815,15 +815,26 @@ class Fb2XHTML:
         self.parse_format(elem)
         self.buff.append('</{0}>'.format(ns_tag(elem.tag)))
 
+    def hyphenate_word(self, w):
+        l = 2
+        for i, c in enumerate(w):
+            if c.isalpha():
+                l += i
+                break
+        r = 2 
+        for i, c in enumerate(reversed(w)):
+            if c.isalpha():
+                r += i
+                break
+        return self.hyphenator.inserted(w, SOFT_HYPHEN, l, r)
+
     def insert_hyphenation(self, s):
         hs = ''
-
         if s:
             if self.hyphenator and self.hyphenate and not (self.header or self.subheader):
-                hs = ' '.join([self.hyphenator.inserted(html.unescape(w), SOFT_HYPHEN) for w in s.split(' ')])
+                hs = ' '.join([self.hyphenate_word(html.unescape(w)) for w in s.split(' ')])
             else:
                 hs = html.unescape(s)
-
         return hs
 
     def parse_body(self, elem):
