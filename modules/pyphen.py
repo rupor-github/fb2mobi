@@ -44,7 +44,7 @@ parse = re.compile(r'(\d?)(\D?)').findall
 
 """ rupor - modify """
 
-dictionaries_root = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])) if getattr(sys, 'frozen', False) else os.path.dirname(__file__), 'dictionaries')
+dictionaries_root = os.path.join(os.path.abspath(os.path.dirname(sys.executable)) if getattr(sys, 'frozen', False) else os.path.dirname(__file__), 'dictionaries')
 
 def real_path(filename):
     realpath = os.path.join(dictionaries_root, filename)
