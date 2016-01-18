@@ -826,7 +826,7 @@ class Fb2XHTML:
             if c.isalpha():
                 r += i
                 break
-        return self.hyphenator.inserted(w, SOFT_HYPHEN, l, r)
+        return self.hyphenator.inserted(w, SOFT_HYPHEN, l, r).replace('-' + SOFT_HYPHEN, '-')
 
     def insert_hyphenation(self, s):
         hs = ''
