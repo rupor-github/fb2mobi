@@ -535,7 +535,7 @@ if __name__ == '__main__':
     argparser.add_argument('-l', '--profile-list', dest='profilelist', action='store_true', default=False, help='Show list of available profiles')
 
     argparser.add_argument('--toc-max-level', dest='tocmaxlevel', type=int, default=None, help='Maximum level of titles in the TOC')
-    argparser.add_argument('--notes-mode', dest='notesmode', type=str, default=None, help='How to show footnotes: default, inline or block')
+    argparser.add_argument('--notes-mode', dest='notesmode', type=str, default=None, help='How to show footnotes: default, inline, block or float')
     argparser.add_argument('--notes-bodies', dest='notesbodies', type=str, default=None, help='List of fb2 part names (body) with footnotes (comma separated)')
     argparser.add_argument('--annotation-title', dest='annotationtitle', type=str, default=None, help='Annotations title')
     argparser.add_argument('--toc-title', dest='toctitle', type=str, default=None, help='TOC title')

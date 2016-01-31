@@ -168,6 +168,7 @@ class Fb2XHTML:
 
         # Для включения сносок и комментариев в текст книги
         self.notes_dict = {}    # Словарь со сносками и комментариями
+        self.notes_order = []   # Notes in order of discovery
         self.notes_mode = config.current_profile['notesMode'] # Режим отображения сносок: inline, block
         self.notes_bodies = config.current_profile['notesBodies']
         self.current_notes = []  # Переменная для хранения текущей сноски
@@ -227,7 +228,7 @@ class Fb2XHTML:
 
         self.links_location = {}
 
-        if self.notes_mode in ('inline', 'block'):
+        if self.notes_mode in ('inline', 'block', 'float'):
             self.get_notes_dict('notes')
 
     def generate(self):
@@ -262,7 +263,7 @@ class Fb2XHTML:
         self.generate_container()
         self.generate_mimetype()
 
-#       sys.stdout = stdout
+#        sys.stdout = stdout
 
     def copy_css(self):
         base_dir = os.path.abspath(os.path.dirname(self.css_file))
@@ -362,6 +363,7 @@ class Fb2XHTML:
                     notetext.append(etree.tostring(e, method='text', encoding='utf-8').decode('utf-8').strip())
 
             self.notes_dict[id] = (note_title, ' '.join(notetext))
+            self.notes_order.append(id)
             note_title = ''
         else:
             for e in elem:
@@ -369,6 +371,7 @@ class Fb2XHTML:
 
     def get_notes_dict(self, body_names):
         self.notes_dict = {}
+        self.notes_order = []
         note_title = None
 
         notes_bodies = self.notes_bodies.replace(' ', '').split(',')
@@ -544,7 +547,7 @@ class Fb2XHTML:
             self.buff.append('<div class="titlenotes" id="%s">' % toc_ref_id)
             self.parse_format(elem, 'div')
 
-        self.buff.append('</div>\n')
+        self.buff.append('</div>')
         self.first_header_in_body = False;
         self.toc_index += 1
         self.header = False
@@ -602,7 +605,6 @@ class Fb2XHTML:
 
     def parse_stanza(self, elem):
         self.parse_format(elem, 'div', 'stanza')
-        #self.buff.append('<br/>')
 
     def parse_v(self, elem):
         self.parse_format(elem, 'p')
@@ -653,9 +655,7 @@ class Fb2XHTML:
                 self.html_file_list.append(self.current_file)
                 self.buff.append(HTMLHEAD)
 
-
         self.parse_format(elem, tag = 'div', css = 'section')
-        #self.parse_format(elem)
 
         if not self.body_name:
             level = 'h%s' % (self.current_header_level if self.current_header_level <= 6 else 6)
@@ -699,6 +699,8 @@ class Fb2XHTML:
                 href = None
             except KeyError:
                 note = ''
+        elif self.notes_mode in ('float') and tag == 'a':
+            elem.set('id', 'back_' + href[1:])
 
         if tag:
             self.buff.append('<%s' % tag)
@@ -857,10 +859,16 @@ class Fb2XHTML:
             self.current_file = '{0}.xhtml'.format(hashlib.md5(bytes(self.body_name,'utf-8')).hexdigest())
             self.html_file_list.append(self.current_file)
 
-        if self.notes_mode in ('inline', 'block'):
+        if self.notes_mode in ('inline', 'block', 'float'):
             notes_bodies = self.notes_bodies.replace(' ', '').split(',')
             if self.body_name not in notes_bodies:
                 self.parse_format(elem)
+            elif self.notes_mode == 'float':
+                for id in self.notes_order:
+                    note = self.notes_dict[id]
+                    id_b = 'back_' + id
+                    self.links_location[id] = self.current_file
+                    self.buff.append('<div class="floatnote"><a href="%s#%s" id="%s">%s</a><p>%s</p></div>' % (self.links_location[id_b], id_b, id, note[0], save_html(note[1])))
         else:
             self.parse_format(elem)
 

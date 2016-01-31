@@ -235,6 +235,16 @@ p.title {
     border: 1px #505050 solid;  
 }
 
+.floatnote {
+    font-size: 80%;
+    text-indent: 0em;
+}
+
+.floatnote p {
+    text-indent: 0em;
+    page-break-after: avoid;
+}
+
 .notenum {
  font-weight: bold;
 }
