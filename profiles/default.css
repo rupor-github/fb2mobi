@@ -218,11 +218,6 @@ p.title {
     text-indent: 0em;
 }
 
-.floatnote p {
-    text-indent: 0em;
-    page-break-after: avoid;
-}
-
 .notenum {
     font-weight: bold;
 }

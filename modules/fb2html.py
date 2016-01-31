@@ -864,11 +864,32 @@ class Fb2XHTML:
             if self.body_name not in notes_bodies:
                 self.parse_format(elem)
             elif self.notes_mode == 'float':
+                if len(self.notes_order) > 0:
+                    toc_title = self.body_name[0].upper() + self.body_name[1:]
+                    toc_ref_id = 'tocref%s' % self.toc_index
+
+                    self.buff.append('<div class="titleblock" id="%s">' % toc_ref_id)
+
+                    vignette = self.get_vignette('h0', 'beforeTitle')
+                    if vignette:
+                        self.buff.append('<div class="vignette_title_before"><img src="vignettes/{0}" /></div>'.format(vignette))
+
+                    self.buff.append('<div class="h0"><p class="title">%s</p></div>' % toc_title)
+
+                    vignette = self.get_vignette('h0', 'afterTitle')
+                    if vignette:
+                        self.buff.append('<div class="vignette_title_after"><img src="vignettes/{0}" /></div>'.format(vignette))
+
+                    self.toc[self.toc_index] = ['%s#%s' % (self.current_file, toc_ref_id), toc_title, 0, self.body_name]
+
+                    self.buff.append('</div>')
+                    self.toc_index += 1
+
                 for id in self.notes_order:
                     note = self.notes_dict[id]
                     id_b = 'back_' + id
                     self.links_location[id] = self.current_file
-                    self.buff.append('<div class="floatnote"><a href="%s#%s" id="%s">%s</a><p>%s</p></div>' % (self.links_location[id_b], id_b, id, note[0], save_html(note[1])))
+                    self.buff.append('<p class="floatnote"><a href="%s#%s" id="%s">%s).</a>&#160;%s</p>' % (self.links_location[id_b], id_b, id, note[0], save_html(note[1])))
         else:
             self.parse_format(elem)
 
