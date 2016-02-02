@@ -2,15 +2,7 @@
 
 import os
 import sys
-from lxml import etree, html, objectify
-import re
-import shutil
-import io
-import codecs
-import uuid
-import cssutils
-import base64
-import hashlib
+from lxml import etree
 import html
 import pyphen
 
@@ -18,20 +10,22 @@ from utils import transliterate, indent
 
 SOFT_HYPHEN = '\u00AD'
 
+
 def save_html(string):
     if string:
-        return html.escape(string,quote=False)
+        return html.escape(string, quote=False)
     else:
         return ''
+
 
 class EpubProc:
     def __init__(self, opffile, config):
         self.buff = []
 
-        self.book_title = ''    # Название книги
-        self.book_author = ''   # Автор
-        self.book_series = ''   # Книжная серия
-        self.book_series_num = ''   # Номер в книжной серии
+        self.book_title = ''  # Название книги
+        self.book_author = ''  # Автор
+        self.book_series = ''  # Книжная серия
+        self.book_series_num = ''  # Номер в книжной серии
 
         self.book_lang = 'ru'
         self.hyphenate = config.current_profile['hyphens']
@@ -52,7 +46,7 @@ class EpubProc:
             if c.isalpha():
                 l += i
                 break
-        r = 2 
+        r = 2
         for i, c in enumerate(reversed(w)):
             if c.isalpha():
                 r += i
@@ -70,8 +64,8 @@ class EpubProc:
 
     def process(self):
 
-#        stdout = sys.stdout
-#        sys.stdout = codecs.open('stdout.txt', 'w', 'utf-8')
+        #        stdout = sys.stdout
+        #        sys.stdout = codecs.open('stdout.txt', 'w', 'utf-8')
 
         # Lookup series/sequences data if any
         for node in self.root.iter('{*}meta'):
@@ -88,10 +82,10 @@ class EpubProc:
                 self.book_title = node.text
                 abbr = ''.join(word[0] for word in self.book_series.split())
                 title = self.bookseriestitle
-                title = title.replace('#series',     '' if not self.book_series else self.book_series.strip())
-                title = title.replace('#number',     '' if not self.book_series_num else self.book_series_num.strip())
-                title = title.replace('#padnumber',  '' if not self.book_series_num else self.book_series_num.strip().zfill(2))
-                title = title.replace('#title',      '' if not self.book_title else self.book_title.strip())
+                title = title.replace('#series', '' if not self.book_series else self.book_series.strip())
+                title = title.replace('#number', '' if not self.book_series_num else self.book_series_num.strip())
+                title = title.replace('#padnumber', '' if not self.book_series_num else self.book_series_num.strip().zfill(2))
+                title = title.replace('#title', '' if not self.book_title else self.book_title.strip())
                 title = title.replace('#abbrseries', '' if not abbr else abbr.lower())
                 if self.transliterate_author_and_title:
                     title = transliterate(title)
@@ -117,7 +111,7 @@ class EpubProc:
                     if self.hyphenate:
                         # Do hyphenation if desiried
                         for body in xhtml.getroot().iter('{*}body'):
-                            for elem in body.iter('{*}p','{*}div'):
+                            for elem in body.iter('{*}p', '{*}div'):
                                 if elem.text:
                                     elem.text = save_html(self.insert_hyphenation(elem.text))
                                 if elem.tail:
@@ -130,8 +124,8 @@ class EpubProc:
                                             child.tail = save_html(self.insert_hyphenation(child.tail))
                     xhtml.write(filename, encoding='utf-8', method='xml', xml_declaration=True)
 
-        # TODO: Do we need profile per file extension?
-        # TODO: Replace stylesheets?
-        # TODO: book_author = transliterate(book_author)
+                    # TODO: Do we need profile per file extension?
+                    # TODO: Replace stylesheets?
+                    # TODO: book_author = transliterate(book_author)
 
-#        sys.stdout = stdout
+# sys.stdout = stdout

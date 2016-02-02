@@ -2,13 +2,12 @@
 
 from lxml import etree
 from lxml.builder import E
-import logging as log
 from importlib import import_module
 
 import os, codecs
 
-class ConverterConfig:
 
+class ConverterConfig:
     def __init__(self, config_file):
         self.config_file = config_file
 
@@ -203,7 +202,6 @@ class ConverterConfig:
                                 self.profiles[prof_name]['vignettes'][vignettes_level] = vign_arr
                                 self.profiles[prof_name]['vignettes_save'][vignettes_level] = vign_arr_save
 
-
     def _getVignette(self, vignette_arr):
         for v in vignette_arr:
             print(v)
@@ -214,11 +212,11 @@ class ConverterConfig:
         try:
             for v in self.profiles[profile]['vignettes_save']:
                 result.append(E('vignette',
-                        E('beforeTitle', self.profiles[profile]['vignettes_save'][v]['beforeTitle'] if self.profiles[profile]['vignettes_save'][v]['beforeTitle'] else 'None'),
-                        E('afterTitle', self.profiles[profile]['vignettes_save'][v]['afterTitle'] if self.profiles[profile]['vignettes_save'][v]['afterTitle'] else 'None'),
-                        E('chapterEnd', self.profiles[profile]['vignettes_save'][v]['chapterEnd'] if self.profiles[profile]['vignettes_save'][v]['chapterEnd'] else 'None'),
-                    level=v
-                    ))
+                                E('beforeTitle', self.profiles[profile]['vignettes_save'][v]['beforeTitle'] if self.profiles[profile]['vignettes_save'][v]['beforeTitle'] else 'None'),
+                                E('afterTitle', self.profiles[profile]['vignettes_save'][v]['afterTitle'] if self.profiles[profile]['vignettes_save'][v]['afterTitle'] else 'None'),
+                                E('chapterEnd', self.profiles[profile]['vignettes_save'][v]['chapterEnd'] if self.profiles[profile]['vignettes_save'][v]['chapterEnd'] else 'None'),
+                                level=v
+                                ))
 
         except:
             pass
@@ -229,27 +227,27 @@ class ConverterConfig:
         result = []
         for p in self.profiles:
             result.append(E('profile',
-                E('hyphens', str(self.profiles[p]['hyphens'])),
-                E('dropcaps', str(self.profiles[p]['dropcaps'])),
-                E('tocMaxLevel', str(self.profiles[p]['tocMaxLevel'])),
-                E('tocBeforeBody', str(self.profiles[p]['tocBeforeBody'])),
-                E('flatTOC', str(self.profiles[p]['flatTOC'])),
-                E('css', self.profiles[p]['originalcss'], parse=str(self.profiles[p]['parse_css'])),
-                E('chapterOnNewPage', str(self.profiles[p]['chapterOnNewPage'])),
-                E('authorFormat', self.profiles[p]['authorFormat']),
-                E('bookTitleFormat', self.profiles[p]['bookTitleFormat']),
-                E('annotationTitle', self.profiles[p]['annotationTitle']),
-                E('tocTitle', self.profiles[p]['tocTitle']),
-                E('notesMode', self.profiles[p]['notesMode']),
-                E('notesBodies', self.profiles[p]['notesBodies']),
-                E('generateTOCPage', str(self.profiles[p]['generateTOCPage'])),
-                E('generateAnnotationPage', str(self.profiles[p]['generateAnnotationPage'])),
-                E('generateOPFGuide', str(self.profiles[p]['generateOPFGuide'])),
-                E('kindleRemovePersonalLabel', str(self.profiles[p]['kindleRemovePersonalLabel'])),
-                E('vignettes',
-                        *self._getVignettes(p)
-                    ),
-                name=p, description=self.profiles[p]['description']))
+                            E('hyphens', str(self.profiles[p]['hyphens'])),
+                            E('dropcaps', str(self.profiles[p]['dropcaps'])),
+                            E('tocMaxLevel', str(self.profiles[p]['tocMaxLevel'])),
+                            E('tocBeforeBody', str(self.profiles[p]['tocBeforeBody'])),
+                            E('flatTOC', str(self.profiles[p]['flatTOC'])),
+                            E('css', self.profiles[p]['originalcss'], parse=str(self.profiles[p]['parse_css'])),
+                            E('chapterOnNewPage', str(self.profiles[p]['chapterOnNewPage'])),
+                            E('authorFormat', self.profiles[p]['authorFormat']),
+                            E('bookTitleFormat', self.profiles[p]['bookTitleFormat']),
+                            E('annotationTitle', self.profiles[p]['annotationTitle']),
+                            E('tocTitle', self.profiles[p]['tocTitle']),
+                            E('notesMode', self.profiles[p]['notesMode']),
+                            E('notesBodies', self.profiles[p]['notesBodies']),
+                            E('generateTOCPage', str(self.profiles[p]['generateTOCPage'])),
+                            E('generateAnnotationPage', str(self.profiles[p]['generateAnnotationPage'])),
+                            E('generateOPFGuide', str(self.profiles[p]['generateOPFGuide'])),
+                            E('kindleRemovePersonalLabel', str(self.profiles[p]['kindleRemovePersonalLabel'])),
+                            E('vignettes',
+                              *self._getVignettes(p)
+                              ),
+                            name=p, description=self.profiles[p]['description']))
 
         return result
 
@@ -271,23 +269,23 @@ class ConverterConfig:
 
     def write(self):
         config = E('settings',
-                E('debug', str(self.debug)),
-                E('logFile', self.original_log_file) if self.original_log_file else E('logFile'),
-                E('logLevel', self.log_level),
-                E('outputFormat', self.output_format),
-                E('kindleCompressionLevel', str(self.kindle_compression_level)),
-                E('noDropcapsSymbols', self.no_dropcaps_symbols),
-                E('transliterate', str(self.transliterate)),
-                E('defaultProfile', self.default_profile),
-                E('profiles',
-                    *self._getProfiles()
-                    ),
-            )
+                   E('debug', str(self.debug)),
+                   E('logFile', self.original_log_file) if self.original_log_file else E('logFile'),
+                   E('logLevel', self.log_level),
+                   E('outputFormat', self.output_format),
+                   E('kindleCompressionLevel', str(self.kindle_compression_level)),
+                   E('noDropcapsSymbols', self.no_dropcaps_symbols),
+                   E('transliterate', str(self.transliterate)),
+                   E('defaultProfile', self.default_profile),
+                   E('profiles',
+                     *self._getProfiles()
+                     ),
+                   )
 
         config_dir = os.path.dirname(self.config_file)
         if not os.path.exists(config_dir):
             os.makedirs(config_dir)
 
         with codecs.open(self.config_file, "w", 'utf-8') as f:
-            f.write(str(etree.tostring(config, encoding="utf-8", pretty_print=True, xml_declaration=True),'utf-8'))
+            f.write(str(etree.tostring(config, encoding="utf-8", pretty_print=True, xml_declaration=True), 'utf-8'))
             f.close()

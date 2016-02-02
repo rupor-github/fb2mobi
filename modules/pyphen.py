@@ -46,6 +46,7 @@ parse = re.compile(r'(\d?)(\D?)').findall
 
 dictionaries_root = os.path.join(os.path.abspath(os.path.dirname(sys.executable)) if getattr(sys, 'frozen', False) else os.path.dirname(__file__), 'dictionaries')
 
+
 def real_path(filename):
     realpath = os.path.join(dictionaries_root, filename)
     with open(realpath, 'rb') as stream:
@@ -54,12 +55,14 @@ def real_path(filename):
             realpath = real_path(os.path.join(dictionaries_root, line))
     return realpath
 
+
 """ rupor - end modify """
 
 LANGUAGES = dict(
     (filename[5:-4], real_path(filename))
     for filename in os.listdir(dictionaries_root)
     if filename.endswith('.dic'))
+
 
 def language_fallback(language):
     """Get a fallback language available in our dictionaries.
@@ -85,6 +88,7 @@ class AlternativeParser(object):
     the pattern when called with an odd value.
 
     """
+
     def __init__(self, pattern, alternative):
         alternative = alternative.split(',')
         self.change = alternative[0]
@@ -104,6 +108,7 @@ class AlternativeParser(object):
 
 class DataInt(int):
     """``int`` with some other data can be stuck to in a ``data`` attribute."""
+
     def __new__(cls, value, data=None, reference=None):
         """Create a new ``DataInt``.
 
@@ -207,7 +212,7 @@ class HyphDict(object):
 
             for i in range(len(pointed_word) - 1):
                 for j in range(
-                        i + 1, min(i + self.maxlen, len(pointed_word)) + 1):
+                                i + 1, min(i + self.maxlen, len(pointed_word)) + 1):
                     pattern = self.patterns.get(pointed_word[i:j])
                     if pattern:
                         offset, values = pattern
@@ -294,7 +299,7 @@ class Pyphen(object):
             if len(w1) <= width:
                 return w1 + hyphen, w2
 
-    def inserted(self, word, hyphen='-', left = -1, right = -1):
+    def inserted(self, word, hyphen='-', left=-1, right=-1):
         """Get the word as a string with all the possible hyphens inserted.
 
         :param word: unicode string of the word to hyphenate
