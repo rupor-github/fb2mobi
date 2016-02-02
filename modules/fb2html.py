@@ -229,7 +229,7 @@ class Fb2XHTML:
         self.links_location = {}
 
         if self.notes_mode in ('inline', 'block', 'float'):
-            self.get_notes_dict('notes')
+            self.get_notes_dict()
 
     def generate(self):
 
@@ -348,7 +348,7 @@ class Fb2XHTML:
         indent(xml.getroot())
         xml.write(filename, encoding='utf-8', method='xml', xml_declaration=True)
 
-    def parse_note_elem(self, elem):
+    def parse_note_elem(self, elem, body_name):
         note_title = ''
 
         if ns_tag(elem.tag) == 'section' and 'id' in elem.attrib:
@@ -363,15 +363,14 @@ class Fb2XHTML:
                     notetext.append(etree.tostring(e, method='text', encoding='utf-8').decode('utf-8').strip())
 
             self.notes_dict[id] = (note_title, ' '.join(notetext))
-            self.notes_order.append(id)
+            self.notes_order.append((id,body_name))
             note_title = ''
         else:
             for e in elem:
-                self.parse_note_elem(e)
+                self.parse_note_elem(e, body_name)
 
-    def get_notes_dict(self, body_names):
+    def get_notes_dict(self):
         self.notes_dict = {}
-        self.notes_order = []
         note_title = None
 
         notes_bodies = self.notes_bodies.replace(' ', '').split(',')
@@ -381,7 +380,7 @@ class Fb2XHTML:
                 if 'name' in item.attrib:
                     if item.attrib['name'] in notes_bodies:
                         for section in item:
-                            self.parse_note_elem(section)
+                            self.parse_note_elem(section, item.attrib['name'])
 
     def get_vignette(self, level, type):
         vignette = None
@@ -885,11 +884,14 @@ class Fb2XHTML:
                     self.buff.append('</div>')
                     self.toc_index += 1
 
-                for id in self.notes_order:
-                    note = self.notes_dict[id]
-                    id_b = 'back_' + id
-                    self.links_location[id] = self.current_file
-                    self.buff.append('<p class="floatnote"><a href="%s#%s" id="%s">%s).</a>&#160;%s</p>' % (self.links_location[id_b], id_b, id, note[0], save_html(note[1])))
+                for id,body_name in self.notes_order:
+                    if body_name == self.body_name:
+                        note = self.notes_dict[id]
+                        id_b = 'back_' + id
+                        self.links_location[id] = self.current_file
+                        self.buff.append('<p class="floatnote"><a href="%s#%s" id="%s">%s).</a>&#160;%s</p>' % (self.links_location[id_b], id_b, id, note[0], save_html(note[1])))
+                    else:
+                        continue
         else:
             self.parse_format(elem)
 
