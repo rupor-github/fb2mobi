@@ -4,10 +4,9 @@ from glob import glob
 import py2exe
 import sys
 import os
+import shutil
 
 base_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
-sys.path.append(os.path.join(base_dir, 'modules'))
-
 sys.argv.append('py2exe')
 
 try:
@@ -20,11 +19,11 @@ except:
     pass
 
 includes = [
-    'lxml.etree', 
-    'lxml._elementpath', 
+    'collections.abc',
+    'lxml.etree',
+    'lxml._elementpath',
     'gzip',
-    'pyphen',
-    'default_css'
+    'modules.default_css',
 ]
 
 dll_excludes = [
@@ -32,19 +31,19 @@ dll_excludes = [
 ]
 
 excludes = [
-    'pywin', 
-    'pywin.debugger', 
+    'pywin',
+    'pywin.debugger',
     'pywin.debugger.dbgcon',
-    'pywin.dialogs', 
-    'pywin.dialogs.list', 
+    'pywin.dialogs',
+    'pywin.dialogs.list',
     'Tkconstants',
     'Tkinter',
     'tcl'
 ]
 
 setup(
-    data_files = [("dictionaries", glob(os.path.join(base_dir, 'modules', 'dictionaries', '*.dic')))],
-    options = {
+    data_files=[("dictionaries", glob(os.path.join(base_dir, 'modules', 'dictionaries', '*.dic')))],
+    options={
         'py2exe': {
             'compressed': 1,
             'optimize': 2,
@@ -57,4 +56,3 @@ setup(
     console=['fb2mobi.py'],
     zipfile=None
 )
-

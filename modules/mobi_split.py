@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import sys
 import struct
-import binascii
 
 # important  pdb header offsets
 unique_id_seed = 68

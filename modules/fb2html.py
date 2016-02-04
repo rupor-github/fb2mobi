@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-from lxml import etree, objectify
 import re
 import shutil
 import io
@@ -11,10 +10,11 @@ import cssutils
 import base64
 import hashlib
 import html
-import pyphen
+import modules.pyphen as pyphen
 
-from utils import transliterate, indent
 from copy import deepcopy
+from lxml import etree, objectify
+from modules.utils import transliterate, indent
 
 SOFT_HYPHEN = '\u00AD'  # Символ 'мягкого' переноса
 

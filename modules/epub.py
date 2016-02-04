@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-from lxml import etree
 import html
-import pyphen
+import os
+import modules.pyphen as pyphen
 
-from utils import transliterate, indent
+from lxml import etree
+from modules.utils import transliterate, indent
 
 SOFT_HYPHEN = '\u00AD'
 

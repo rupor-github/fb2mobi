@@ -13,14 +13,11 @@ import time
 import shutil
 import version
 
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), 'modules'))
-
-from utils import transliterate
-from fb2html import Fb2XHTML
-from epub import EpubProc
-from config import ConverterConfig
-
-from mobi_split import mobi_split
+from modules.utils import transliterate
+from modules.fb2html import Fb2XHTML
+from modules.epub import EpubProc
+from modules.config import ConverterConfig
+from modules.mobi_split import mobi_split
 
 
 def get_executable_path():
