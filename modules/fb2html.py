@@ -390,7 +390,16 @@ class Fb2XHTML:
         firstname = ''
 
         for e in elem:
-            if ns_tag(e.tag) == 'title-info':
+            if ns_tag(e.tag) == 'document-info':
+                for t in e:
+                    if ns_tag(t.tag) == 'id':
+                        if t.text:
+                            try:
+                                self.book_uuid = uuid.UUID(t.text)
+                            except:
+                                pass
+                            break
+            elif ns_tag(e.tag) == 'title-info':
                 for t in e:
                     if ns_tag(t.tag) == 'book-title':
                         if t.text:

@@ -2,6 +2,7 @@
 
 import html
 import os
+import uuid
 import modules.pyphen as pyphen
 
 from lxml import etree
@@ -36,6 +37,8 @@ class EpubProc:
         self.bookseriestitle = config.current_profile['bookTitleFormat']
         self.transliterate_author_and_title = config.transliterate_author_and_title
 
+        self.book_uuid = uuid.uuid4()
+
         self.tree = etree.parse(opffile, parser=etree.XMLParser(recover=True))
         self.root = self.tree.getroot()
 
@@ -66,6 +69,13 @@ class EpubProc:
         #        stdout = sys.stdout
         #        sys.stdout = codecs.open('stdout.txt', 'w', 'utf-8')
 
+        # get uuid if any
+        for node in self.root.iter('{*}identifier'):
+            try:
+                self.book_uuid = uuid.UUID(node.text)
+            except:
+                pass
+            break
         # Lookup series/sequences data if any
         for node in self.root.iter('{*}meta'):
             attributes = node.attrib

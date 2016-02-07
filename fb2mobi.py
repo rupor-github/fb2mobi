@@ -207,11 +207,13 @@ def process_file(config, infile, outfile=None):
         config.log.info('Processing epub...')
         epubparser = EpubProc(infile, config)
         epubparser.process()
+        document_id = epubparser.book_uuid
     else:
         # Конвертируем в html
         config.log.info('Converting fb2 to html...')
         fb2parser = Fb2XHTML(infile, outfile, temp_dir, config)
         fb2parser.generate()
+        document_id = fb2parser.book_uuid
         infile = os.path.join(temp_dir, 'OEBPS', 'content.opf')
 
     config.log.info('Processing took {0} sec.'.format(round(time.clock() - start_time, 2)))
@@ -270,26 +272,31 @@ def process_file(config, infile, outfile=None):
         if config.output_format.lower() in ('mobi', 'azw3'):
             result_book = infile.replace('.opf', '.mobi')
             if not os.path.isfile(result_book):
-                config.log.critical('kindlegen error, convertion interrupted.')
+                config.log.critical('kindlegen error, conversion interrupted.')
                 critical_error = True
             else:
                 if config.output_format.lower() == 'mobi':
-                    shutil.copyfile(result_book, outfile)
-
+                    config.log.info('Optimizing mobi file...')
+                    try:
+                        splitter = mobi_split(result_book, document_id, config.current_profile['kindleRemovePersonalLabel'], config.output_format.lower())
+                        open(outfile, 'wb').write(splitter.getResult())
+                    except:
+                        config.log.critical('Error processing mobi, conversion interrupted.')
+                        critical_error = True
                 elif config.output_format.lower() == 'azw3':
                     config.log.info('Extracting azw3 from mobi...')
                     try:
-                        splitter = mobi_split(result_book, config.current_profile['kindleRemovePersonalLabel'])
+                        splitter = mobi_split(result_book, config.current_profile['kindleRemovePersonalLabel'], config.output_format.lower())
                         open(os.path.splitext(outfile)[0] + '.azw3', 'wb').write(splitter.getResult8())
                     except:
-                        config.log.critical('Error processing azw3, convertion interrupted.')
+                        config.log.critical('Error processing azw3, conversion interrupted.')
                         critical_error = True
 
     else:
         return -1
 
     if not critical_error:
-        config.log.info('Book convertion completed in {0} sec.\n'.format(round(time.clock() - start_time, 2)))
+        config.log.info('Book conversion completed in {0} sec.\n'.format(round(time.clock() - start_time, 2)))
 
     # Чистим временные файлы
     rm_tmp_files(temp_dir)
