@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import struct
+import string
+from PIL import Image
+from io import BytesIO
 
 # important  pdb header offsets
 unique_id_seed = 68
@@ -32,6 +35,22 @@ datp_index = 256
 huffoff = 112
 hufftbloff = 120
 
+def to_base(num, base=32, min_num_digits=None):
+    digits = string.digits + string.ascii_uppercase
+    sign = 1 if num >= 0 else -1
+    if num == 0:
+        return ('0' if min_num_digits is None else '0'*min_num_digits)
+    num *= sign
+    ans = []
+    while num:
+        ans.append(digits[(num % base)])
+        num //= base
+    if min_num_digits is not None and len(ans) < min_num_digits:
+        ans.extend('0'*(min_num_digits - len(ans)))
+    if sign < 0:
+        ans.append('-')
+    ans.reverse()
+    return ''.join(ans)
 
 def getint(datain, ofs, sz='L'):
     i, = struct.unpack_from('>' + sz, datain, ofs)
@@ -354,13 +373,47 @@ class mobi_split:
             if n != 0xffffffff:
                 datain_kfrec0 = writeint(datain_kfrec0, ofs, n + lastimage - firstimage + 1, sz)
 
-        if remove_personal_label:
-            # Удаляем метку "Personal" и корректируем обложку (?)
-            ex201 = read_exth(datain_kfrec0, 201)
-            if len(ex201) > 0:
-                datain_kfrec0 = del_exth(datain_kfrec0, 202)
-                datain_kfrec0 = add_exth(datain_kfrec0, 202, ex201[0])
+        # rupor - correcting cover and thumbnail
 
+        exth_cover_offset = 201
+        exth_thumb_offset = 202
+        exth_thumbnail_uri = 129
+
+        exth_cover = read_exth(datain_kfrec0, exth_cover_offset)
+        if len(exth_cover) > 0:
+            cover_index, = struct.unpack_from('>L', exth_cover[0], 0)
+            cover_index += target
+        else:
+            cover_index = 0xffffffff
+
+        exth_thumb = read_exth(datain_kfrec0, exth_thumb_offset)
+        if len(exth_thumb) > 0:
+            thumb_index, = struct.unpack_from('>L', exth_thumb[0], 0)
+            thumb_index += target
+        else:
+            thumb_index = 0xffffffff
+
+        if cover_index != 0xffffffff:
+            if thumb_index != 0xffffffff:
+                # make sure embedded thumbnail has the right size
+                cover_image = readsection(self.result_file8, cover_index)
+                self.result_file8 = deletesectionrange(self.result_file8, thumb_index, thumb_index)
+                thumb = BytesIO()
+                im = Image.open(BytesIO(cover_image))
+                im.thumbnail((330,470), Image.ANTIALIAS)
+                im.save(thumb, format='JPEG')
+                self.result_file8 = writesection(self.result_file8, thumb_index, thumb.getvalue())
+            else:
+                # if nothing works - fall back to the old trick, set thumbnail to the cover image
+                datain_kfrec0 = add_exth(datain_kfrec0, exth_thumb_offset, exth_cover[0])
+                thumb_index = cover_index
+
+            exth = read_exth(datain_kfrec0, exth_thumbnail_uri)
+            if len(exth) > 0:
+                datain_kfrec0 = del_exth(datain_kfrec0, exth_thumbnail_uri)
+            datain_kfrec0 = add_exth(datain_kfrec0, exth_thumbnail_uri, bytes('kindle:embed:%s' %(to_base(thumb_index - target, base=32, min_num_digits=4)), 'utf-8'))
+
+        if remove_personal_label:
             datain_kfrec0 = add_exth(datain_kfrec0, 501, b"EBOK");
 
         self.result_file8 = writesection(self.result_file8, 0, datain_kfrec0)

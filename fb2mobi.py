@@ -284,6 +284,7 @@ def process_file(config, infile, outfile=None):
                     except:
                         config.log.critical('Error processing azw3, convertion interrupted.')
                         critical_error = True
+
     else:
         return -1
 

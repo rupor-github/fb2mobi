@@ -15,6 +15,9 @@ import modules.pyphen as pyphen
 from copy import deepcopy
 from lxml import etree, objectify
 from modules.utils import transliterate, indent
+from PIL import Image
+
+COVER_HEIGHT = 1322 # PW3/Voyage
 
 SOFT_HYPHEN = '\u00AD'  # Символ 'мягкого' переноса
 
@@ -1019,6 +1022,12 @@ class Fb2XHTML:
 
     def generate_cover(self):
         if self.book_cover:
+
+            # make sure kindlegen does not complain on cover size
+            im = Image.open(os.path.join(self.temp_content_dir, self.book_cover))
+            if im.height < COVER_HEIGHT:
+                im.resize((int(COVER_HEIGHT * im.width / im.height), COVER_HEIGHT), Image.ANTIALIAS).save(os.path.join(self.temp_content_dir, self.book_cover))
+
             self.buff = []
             self.buff.append(HTMLHEAD)
             self.buff.append(
@@ -1139,7 +1148,11 @@ class Fb2XHTML:
             if self.book_cover:
                 self.buff.append('<reference type="cover-page" href="cover.xhtml" />')
 
-            self.buff.append('<reference type="text" title="book" href="index0.xhtml"/>')
+            for item in self.html_file_list:
+                if item.split('.')[0].startswith('index'):
+                    self.buff.append('<reference type="text" title="book" href="{0}"/>'.format(item))
+                    break
+
             self.buff.append('<reference type="toc" title="toc" href="toc.xhtml"/>')
             self.buff.append('</guide>')
 
