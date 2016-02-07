@@ -39,6 +39,7 @@ data_files = [
     (os.path.join(base_dir, 'modules', 'dictionaries'), 'dictionaries'),
     (os.path.join(base_dir, 'profiles'), 'profiles'),
     (os.path.join(base_dir, 'fb2mobi.config'), 'fb2mobi.config'),
+    (os.path.join(base_dir, 'fb2epub.config'), 'fb2epub.config'),
     (os.path.join(base_dir, 'spaces.xsl'), 'spaces.xsl'),
     (os.path.join(base_dir, 'kindlegen.exe'), 'kindlegen.exe')
 ]
@@ -50,8 +51,8 @@ setup(
         'build_exe': {
             'build_exe': 'dist',
             'init_script':'Console',
-            'includes': includes,
             'include_files': data_files,
+            'includes': includes,
             'excludes': excludes,
             'bin_excludes': dll_excludes,
             'silent': 1,
@@ -62,6 +63,16 @@ setup(
         Executable(
             'fb2mobi.py',
             targetDir='dist',
+            includes = includes,
+            excludes = excludes,
+            base = 'Console'
+        ),
+        Executable(
+            'fb2mobi.py',
+            targetDir='dist',
+            targetName='fb2epub.exe',
+            includes = includes,
+            excludes = excludes,
             base = 'Console'
         )
     ]
