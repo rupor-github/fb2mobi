@@ -26,8 +26,6 @@ includes = [
     'modules.default_css'
 ]
 
-dll_excludes = []
-
 excludes = [
     'pywin',
     'Tkconstants',
@@ -49,31 +47,15 @@ setup(
     version = version.VERSION,
     options={
         'build_exe': {
+#            'silent': 1,
             'build_exe': 'dist',
-            'init_script':'Console',
             'include_files': data_files,
             'includes': includes,
-            'excludes': excludes,
-            'bin_excludes': dll_excludes,
-            'silent': 1,
-            'optimize': 2
+            'excludes': excludes
         }
     },
     executables = [
-        Executable(
-            'fb2mobi.py',
-            targetDir='dist',
-            includes = includes,
-            excludes = excludes,
-            base = 'Console'
-        ),
-        Executable(
-            'fb2mobi.py',
-            targetDir='dist',
-            targetName='fb2epub.exe',
-            includes = includes,
-            excludes = excludes,
-            base = 'Console'
-        )
+        Executable('fb2mobi.py'),
+        Executable('fb2mobi.py',targetName='fb2epub.exe')
     ]
 )

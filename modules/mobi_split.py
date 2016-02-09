@@ -408,7 +408,7 @@ class mobi_split:
                     thumb = BytesIO()
                     im = Image.open(BytesIO(cover_image))
                     im.thumbnail((330, 470), Image.ANTIALIAS)
-                    im.save(thumb, format='JPEG')
+                    im.save(thumb, format=im.format)
                     self.result_file = writesection(self.result_file, thumb_index, thumb.getvalue())
                 else:
                     # if nothing works - fall back to the old trick, set thumbnail to the cover image
@@ -578,7 +578,7 @@ class mobi_split:
                     thumb = BytesIO()
                     im = Image.open(BytesIO(cover_image))
                     im.thumbnail((330, 470), Image.ANTIALIAS)
-                    im.save(thumb, format='JPEG')
+                    im.save(thumb, format=im.format)
                     self.result_file8 = writesection(self.result_file8, thumb_index, thumb.getvalue())
                 else:
                     # if nothing works - fall back to the old trick, set thumbnail to the cover image

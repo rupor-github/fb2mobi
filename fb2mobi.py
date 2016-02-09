@@ -269,29 +269,21 @@ def process_file(config, infile, outfile=None):
 
     # Копируем mobi(azw3) из временного в выходной каталог
     if not critical_error:
-        if config.output_format.lower() in ('mobi', 'azw3'):
+        ext = config.output_format.lower()
+        if ext in ('mobi', 'azw3'):
             result_book = infile.replace('.opf', '.mobi')
             if not os.path.isfile(result_book):
                 config.log.critical('kindlegen error, conversion interrupted.')
                 critical_error = True
             else:
-                if config.output_format.lower() == 'mobi':
-                    config.log.info('Optimizing mobi file...')
-                    try:
-                        splitter = mobi_split(result_book, document_id, config.current_profile['kindleRemovePersonalLabel'], config.output_format.lower())
-                        open(outfile, 'wb').write(splitter.getResult())
-                    except:
-                        config.log.critical('Error processing mobi, conversion interrupted.')
-                        critical_error = True
-                elif config.output_format.lower() == 'azw3':
-                    config.log.info('Extracting azw3 from mobi...')
-                    try:
-                        splitter = mobi_split(result_book, config.current_profile['kindleRemovePersonalLabel'], config.output_format.lower())
-                        open(os.path.splitext(outfile)[0] + '.azw3', 'wb').write(splitter.getResult8())
-                    except:
-                        config.log.critical('Error processing azw3, conversion interrupted.')
-                        critical_error = True
-
+                config.log.info('Optimizing resulting file...')
+                try:
+                    splitter = mobi_split(result_book, document_id, config.current_profile['kindleRemovePersonalLabel'], ext)
+                    open(os.path.splitext(outfile)[0] + '.' + ext, 'wb').write(splitter.getResult() if ext == 'mobi' else splitter.getResult8())
+                except:
+                    config.log.critical('Error optimizing file, conversion interrupted.')
+                    config.log.debug('Getting details', exc_info=True, stack_info=True)
+                    critical_error = True
     else:
         return -1
 
