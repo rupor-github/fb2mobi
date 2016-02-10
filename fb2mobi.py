@@ -324,8 +324,9 @@ def process_folder(config, inputdir, outputdir=None):
                 except IOError as e:
                     config.log.error('(I/O error {0}) {1} - {2}'.format(e.errno, e.strerror, e.filename))
                 except:
-                    type, value, tb = sys.exc_info()
-                    config.log.error('({0}) {1}'.format(type.__name__, value.message))
+                    config.log.error('Error processing folder')
+                    config.log.debug('Getting details', exc_info=True, stack_info=True)
+
     else:
         config.log.critical('Unable to find directory "{0}"'.format(inputdir))
         sys.exit(-1)

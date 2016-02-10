@@ -56,6 +56,7 @@ setup(
     },
     executables = [
         Executable('fb2mobi.py'),
-        Executable('fb2mobi.py',targetName='fb2epub.exe')
+        Executable('fb2mobi.py',targetName='fb2epub.exe'),
+        Executable('synccovers.py')
     ]
 )

@@ -335,7 +335,6 @@ def del_exth(rec0, exth_num):
 class mobi_split:
     def __init__(self, infile, document_id, remove_personal_label, format):
         if format == 'mobi':
-
             datain = b''
             with open(pathof(infile), 'rb') as f:
                 datain = f.read()
@@ -449,6 +448,7 @@ class mobi_split:
                 if datain_kf8 == 0xffffffff:
                     self.combo = False
                     return
+
             datain_kfrec0 = readsection(datain, datain_kf8)
 
             # create the standalone mobi7
@@ -555,8 +555,6 @@ class mobi_split:
                 if n != 0xffffffff:
                     datain_kfrec0 = writeint(datain_kfrec0, ofs, n + lastimage - firstimage + 1, sz)
 
-            # rupor - correcting metadata
-
             exth_cover = read_exth(datain_kfrec0, exth_cover_offset)
             if len(exth_cover) > 0:
                 cover_index, = struct.unpack_from('>L', exth_cover[0], 0)
@@ -619,3 +617,68 @@ class mobi_split:
 
     def getResult7(self):
         return self.result_file7
+
+
+class mobi_read:
+    def __init__(self, infile):
+
+        self.asin = ''
+        self.thumbnail = None
+
+        datain = b''
+        with open(pathof(infile), 'rb') as f:
+            datain = f.read()
+        datain_rec0 = readsection(datain, 0)
+
+        exth121 = read_exth(datain_rec0, 121)
+        self.combo = True
+        if len(exth121) == 0:
+            self.combo = False
+        else:
+            # only pay attention to first exth121
+            # (there should only be one)
+            datain_kf8, = struct.unpack_from(b'>L', exth121[0], 0)
+            if datain_kf8 == 0xffffffff:
+                self.combo = False
+
+        exth = read_exth(datain_rec0, exth_asin)
+        if len(exth) > 0:
+            self.asin = exth[0].decode("ascii")
+
+        firstimage = getint(datain_rec0, first_resc_record)
+
+        exth_cover = read_exth(datain_rec0, exth_cover_offset)
+        if len(exth_cover) > 0:
+            cover_index, = struct.unpack_from('>L', exth_cover[0], 0)
+            cover_index += firstimage
+        else:
+            cover_index = 0xffffffff
+
+        exth_thumb = read_exth(datain_rec0, exth_thumb_offset)
+        if len(exth_thumb) > 0:
+            thumb_index, = struct.unpack_from('>L', exth_thumb[0], 0)
+            thumb_index += firstimage
+        else:
+            thumb_index = 0xffffffff
+
+        if cover_index != 0xffffffff:
+            if thumb_index != 0xffffffff:
+                image = readsection(datain, thumb_index)
+                self.thumbnail = Image.open(BytesIO(image))
+            else:
+                image = readsection(datain, cover_index)
+                self.thumbnail = Image.open(BytesIO(image))
+                self.thumbnail.thumbnail((330, 470), Image.ANTIALIAS)
+
+        if self.combo:
+            datain_kfrec0 = readsection(datain, datain_kf8)
+            exth = read_exth(datain_kfrec0, exth_asin)
+            # always try to use ASIN from KF8 part
+            if len(exth) > 0:
+                self.asin = exth[0].decode("ascii")
+
+    def getASIN(self):
+        return self.asin
+
+    def getThumbnail(self):
+        return self.thumbnail
