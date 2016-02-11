@@ -20,6 +20,7 @@ class ConverterConfig:
         self.no_dropcaps_symbols = '\'"-.…0123456789‒–—«»'
         self.transliterate = False
         self.transliterate_author_and_title = False
+        self.noMOBIoptimization = False
         self.default_profile = 'default'
 
         self.input_dir = None
@@ -101,6 +102,9 @@ class ConverterConfig:
 
             elif e.tag == 'defaultProfile':
                 self.default_profile = e.text
+
+            elif e.tag == 'noMOBIoptimization':
+                self.noMOBIoptimization = e.text.lower() == 'true'
 
             elif e.tag == 'profiles':
                 self.profiles = {}
@@ -277,6 +281,7 @@ class ConverterConfig:
                    E('noDropcapsSymbols', self.no_dropcaps_symbols),
                    E('transliterate', str(self.transliterate)),
                    E('defaultProfile', self.default_profile),
+                   E('noMOBIoptimization', str(self.noMOBIoptimization)),
                    E('profiles',
                      *self._getProfiles()
                      ),

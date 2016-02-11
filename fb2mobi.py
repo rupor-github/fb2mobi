@@ -276,10 +276,14 @@ def process_file(config, infile, outfile=None):
                 config.log.critical('kindlegen error, conversion interrupted.')
                 critical_error = True
             else:
-                config.log.info('Optimizing resulting file...')
                 try:
-                    splitter = mobi_split(result_book, document_id, config.current_profile['kindleRemovePersonalLabel'], ext)
-                    open(os.path.splitext(outfile)[0] + '.' + ext, 'wb').write(splitter.getResult() if ext == 'mobi' else splitter.getResult8())
+                    if ext in ('mobi') and config.noMOBIoptimization:
+                        config.log.info('Copying resulting file...')
+                        shutil.copyfile(result_book, outfile)
+                    else:
+                        config.log.info('Optimizing resulting file...')
+                        splitter = mobi_split(result_book, document_id, config.current_profile['kindleRemovePersonalLabel'], ext)
+                        open(os.path.splitext(outfile)[0] + '.' + ext, 'wb').write(splitter.getResult() if ext == 'mobi' else splitter.getResult8())
                 except:
                     config.log.critical('Error optimizing file, conversion interrupted.')
                     config.log.debug('Getting details', exc_info=True, stack_info=True)
@@ -435,6 +439,8 @@ def process(args):
             config.current_profile['tocTitle'] = args.toctitle
         if args.chapteronnewpage is not None:
             config.current_profile['chapterOnNewPage'] = args.chapteronnewpage
+        if args.noMOBIoptimization:
+            config.noMOBIoptimization = args.noMOBIoptimization
 
         if args.inputdir:
             config.input_dir = args.inputdir
@@ -477,87 +483,58 @@ if __name__ == '__main__':
             version.VERSION))
 
     input_args_group = argparser.add_mutually_exclusive_group()
-    input_args_group.add_argument('infile', type=str, nargs='?', default=None,
-                                  help='Source file name (fb2, fb2.zip, zip or epub)')
-    input_args_group.add_argument('-i', '--input-dir', dest='inputdir', type=str, default=None,
-                                  help='Source directory for batch conversion.')
+    input_args_group.add_argument('infile', type=str, nargs='?', default=None,  help='Source file name (fb2, fb2.zip, zip or epub)')
+    input_args_group.add_argument('-i', '--input-dir', dest='inputdir', type=str, default=None,  help='Source directory for batch conversion.')
 
     output_args_group = argparser.add_mutually_exclusive_group()
-    output_args_group.add_argument('outfile', type=str, nargs='?', default=None,
-                                   help='Destination file name (mobi, azw3 or epub)')
-    output_args_group.add_argument('-o', '--output-dir', dest='outputdir', type=str, default=None,
-                                   help='Destination directory name for batch conversion')
+    output_args_group.add_argument('outfile', type=str, nargs='?', default=None,  help='Destination file name (mobi, azw3 or epub)')
+    output_args_group.add_argument('-o', '--output-dir', dest='outputdir', type=str, default=None, help='Destination directory name for batch conversion')
 
-    argparser.add_argument('-f', '--output-format', dest='outputformat', type=str, default=None,
-                           help='Output format: mobi, azw3 or epub')
-    argparser.add_argument('-r', dest='recursive', action='store_true', default=False,
-                           help='Perform recursive processing of files in source directory')
-    argparser.add_argument('-s', '--save-structure', dest='savestructure', action='store_true', default=False,
-                           help='Keep directory structure during batch processing')
-    argparser.add_argument('--delete-source-file', dest='deletesourcefile', action='store_true', default=False,
-                           help='In case of success remove source file')
-    argparser.add_argument('--delete-input-dir', dest='deleteinputdir', action='store_true', default=False,
-                           help='Remove source directory')
+    argparser.add_argument('-f', '--output-format', dest='outputformat', type=str, default=None, help='Output format: mobi, azw3 or epub')
+    argparser.add_argument('-r', dest='recursive', action='store_true', default=False, help='Perform recursive processing of files in source directory')
+    argparser.add_argument('-s', '--save-structure', dest='savestructure', action='store_true', default=False, help='Keep directory structure during batch processing')
+    argparser.add_argument('--delete-source-file', dest='deletesourcefile', action='store_true', default=False, help='In case of success remove source file')
+    argparser.add_argument('--delete-input-dir', dest='deleteinputdir', action='store_true', default=False, help='Remove source directory')
 
-    argparser.add_argument('-d', '--debug', action='store_true', default=None,
-                           help='Keep imtermediate files in desctination directory')
+    argparser.add_argument('-d', '--debug', action='store_true', default=None, help='Keep imtermediate files in desctination directory')
     argparser.add_argument('--log', type=str, default=None, help='Log file name')
-    argparser.add_argument('--log-level', dest='loglevel', type=str, default=None,
-                           help='Log level: INFO, ERROR, CRITICAL, DEBUG')
+    argparser.add_argument('--log-level', dest='loglevel', type=str, default=None, help='Log level: INFO, ERROR, CRITICAL, DEBUG')
+
     hyphenate_group = argparser.add_mutually_exclusive_group()
-    hyphenate_group.add_argument('--hyphenate', dest='hyphenate', action='store_true', default=None,
-                                 help='Turn on hyphenation')
-    hyphenate_group.add_argument('--no-hyphenate', dest='hyphenate', action='store_false', default=None,
-                                 help='Turn off hyphenation')
+    hyphenate_group.add_argument('--hyphenate', dest='hyphenate', action='store_true', default=None, help='Turn on hyphenation')
+    hyphenate_group.add_argument('--no-hyphenate', dest='hyphenate', action='store_false', default=None, help='Turn off hyphenation')
+
     transliterate_group = argparser.add_mutually_exclusive_group()
-    transliterate_group.add_argument('--transliterate', dest='transliterate', action='store_true', default=None,
-                                     help='Transliterate destination file name')
-    transliterate_group.add_argument('--no-transliterate', dest='transliterate', action='store_false', default=None,
-                                     help='Do not transliterate destination file name')
+    transliterate_group.add_argument('--transliterate', dest='transliterate', action='store_true', default=None, help='Transliterate destination file name')
+    transliterate_group.add_argument('--no-transliterate', dest='transliterate', action='store_false', default=None, help='Do not transliterate destination file name')
 
     transliterate_author_group = argparser.add_mutually_exclusive_group()
-    transliterate_author_group.add_argument('--transliterate-author-and-title', dest='transliterateauthorandtitle',
-                                            action='store_true', default=None,
-                                            help='Transliterate book title and author(s)')
-    transliterate_author_group.add_argument('--no-transliterate-author-and-title', dest='transliterateauthorandtitle',
-                                            action='store_false', default=None,
-                                            help='Do not transliterate book title and author(s)')
+    transliterate_author_group.add_argument('--transliterate-author-and-title', dest='transliterateauthorandtitle', action='store_true', default=None, help='Transliterate book title and author(s)')
+    transliterate_author_group.add_argument('--no-transliterate-author-and-title', dest='transliterateauthorandtitle', action='store_false', default=None, help='Do not transliterate book title and author(s)')
 
-    argparser.add_argument('--kindle-compression-level', dest='kindlecompressionlevel', type=int, default=None,
-                           help='Kindlegen compression level - 0, 1, 2')
-
+    argparser.add_argument('--kindle-compression-level', dest='kindlecompressionlevel', type=int, default=None, help='Kindlegen compression level - 0, 1, 2')
     argparser.add_argument('-p', '--profile', type=str, default=None, help='Profile name from configuration')
+    argparser.add_argument('--no-MOBI-optimization', dest='noMOBIoptimization', action='store_true', default=False, help='Do not do anything with resulting mobi file (Old behavior)')
     argparser.add_argument('--css', type=str, default=None, help='css file name')
     argparser.add_argument('--xslt', type=str, default=None, help='xslt file name')
-    argparser.add_argument('--dropcaps', dest='dropcaps', type=str, default=None, choices=['Simple', 'Smart', 'None'],
-                           help='Control dropcaps processing (Simple, Smart, None)')
-    argparser.add_argument('-l', '--profile-list', dest='profilelist', action='store_true', default=False,
-                           help='Show list of available profiles')
+    argparser.add_argument('--dropcaps', dest='dropcaps', type=str, default=None, choices=['Simple', 'Smart', 'None'], help='Control dropcaps processing (Simple, Smart, None)')
+    argparser.add_argument('-l', '--profile-list', dest='profilelist', action='store_true', default=False, help='Show list of available profiles')
 
-    argparser.add_argument('--toc-max-level', dest='tocmaxlevel', type=int, default=None,
-                           help='Maximum level of titles in the TOC')
-    argparser.add_argument('--notes-mode', dest='notesmode', type=str, default=None,
-                           choices=['default', 'inline', 'block', 'float'],
-                           help='How to show footnotes: default, inline, block or float')
-    argparser.add_argument('--notes-bodies', dest='notesbodies', type=str, default=None,
-                           help='List of fb2 part names (body) with footnotes (comma separated)')
-    argparser.add_argument('--annotation-title', dest='annotationtitle', type=str, default=None,
-                           help='Annotations title')
+    argparser.add_argument('--toc-max-level', dest='tocmaxlevel', type=int, default=None, help='Maximum level of titles in the TOC')
+    argparser.add_argument('--notes-mode', dest='notesmode', type=str, default=None, choices=['default', 'inline', 'block', 'float'], help='How to show footnotes: default, inline, block or float')
+    argparser.add_argument('--notes-bodies', dest='notesbodies', type=str, default=None, help='List of fb2 part names (body) with footnotes (comma separated)')
+    argparser.add_argument('--annotation-title', dest='annotationtitle', type=str, default=None, help='Annotations title')
     argparser.add_argument('--toc-title', dest='toctitle', type=str, default=None, help='TOC title')
+
     chapter_group = argparser.add_mutually_exclusive_group()
-    chapter_group.add_argument('--chapter-on-new-page', dest='chapteronnewpage', action='store_true', default=None,
-                               help='Start chapter from the new page')
-    chapter_group.add_argument('--no-chapter-on-new-page', dest='chapteronnewpage', action='store_false', default=None,
-                               help='Do not start chapter from the new page')
+    chapter_group.add_argument('--chapter-on-new-page', dest='chapteronnewpage', action='store_true', default=None, help='Start chapter from the new page')
+    chapter_group.add_argument('--no-chapter-on-new-page', dest='chapteronnewpage', action='store_false', default=None, help='Do not start chapter from the new page')
 
     tocplace_group = argparser.add_mutually_exclusive_group()
-    tocplace_group.add_argument('--toc-before-body', dest='tocbeforebody', action='store_true', default=None,
-                                help='Put TOC at the book beginning')
-    tocplace_group.add_argument('--toc-after-body', dest='tocbeforebody', action='store_false', default=None,
-                                help='Put TOC at the book end')
+    tocplace_group.add_argument('--toc-before-body', dest='tocbeforebody', action='store_true', default=None, help='Put TOC at the book beginning')
+    tocplace_group.add_argument('--toc-after-body', dest='tocbeforebody', action='store_false', default=None, help='Put TOC at the book end')
 
     # Для совместимости с MyHomeLib добавляем аргументы, которые передает MHL в fb2mobi.exe
-    # Работает только в бинарной версии для Windows
     argparser.add_argument('-nc', action='store_true', default=False, help='For MyHomeLib compatibility')
     argparser.add_argument('-cl', action='store_true', help='For MyHomeLib compatibility')
     argparser.add_argument('-us', action='store_true', help='For MyHomeLib compatibility')

@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
-import sys
+import os, sys, traceback
+
 import argparse
 import version
-import traceback
-import win_unicode_console
 
 from modules.mobi_split import mobi_read
 
-def process_file(infile, kindle_dir):
 
+def process_file(infile, kindle_dir):
     if not os.path.exists(infile):
         print('File {0} not found'.format(infile))
         return
@@ -22,7 +20,7 @@ def process_file(infile, kindle_dir):
         asin = reader.getASIN()
         if len(asin) > 0:
             thumb = reader.getThumbnail()
-            if  thumb != None:
+            if thumb != None:
                 thumb.convert('RGB').save(os.path.join(kindle_dir, 'thumbnail_' + asin + '_EBOK_portrait.jpg'), 'JPEG')
                 print('Written thumbnail for {}'.format(asin))
             else:
@@ -34,6 +32,7 @@ def process_file(infile, kindle_dir):
         traceback.print_exc()
 
     return
+
 
 def process_folder(inputdir, outputdir=None):
     if outputdir:
@@ -71,24 +70,30 @@ def process_folder(inputdir, outputdir=None):
         print('Unable to find directory "{0}"'.format(inputdir))
         sys.exit(-1)
 
-def process(args):
-    result = 0
+
+if __name__ == '__main__':
+
+    if sys.platform == "win32":
+        class UniStream(object):
+            __slots__ = ("fileno", "softspace",)
+
+            def __init__(self, fileobject):
+                self.fileno = fileobject.fileno()
+                self.softspace = False
+            def write(self, text):
+                os.write(self.fileno, text.encode("utf_8"))
+            def flush(self):
+                pass
+
+    sys.stdout = UniStream(sys.stdout)
+    sys.stderr = UniStream(sys.stderr)
+
+    argparser = argparse.ArgumentParser(description='Sync covers for side-loaded books on Kindle. Version {0}'.format(version.VERSION))
+    argparser.add_argument('-i', '--input-dir', dest='inputdir', type=str, default=None, help='Directory on device to look for books.')
+    args = argparser.parse_args()
 
     if args.inputdir:
         process_folder(args.inputdir)
     else:
         print(argparser.description)
         argparser.print_usage()
-
-    return result
-
-
-if __name__ == '__main__':
-
-    win_unicode_console.enable()
-
-    argparser = argparse.ArgumentParser(description='Sync covers for side-loaded books on Kindle. Version {0}'.format(version.VERSION))
-    argparser.add_argument('-i', '--input-dir', dest='inputdir', type=str, default=None, help='Directory on device to look for books.')
-    args = argparser.parse_args()
-
-    process(args)
