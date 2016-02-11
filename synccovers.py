@@ -101,7 +101,7 @@ if __name__ == '__main__':
     args = argparser.parse_args()
 
     if args.inputdir:
-        process_folder(args.inputdir, args.verbose)
+        process_folder(os.path.normpath(args.inputdir), args.verbose)
         print('\nTotal files {0}, located {1}, thumbnails written for {2}'.format(count_files, count_located, count_processed))
     else:
         print(argparser.description)
