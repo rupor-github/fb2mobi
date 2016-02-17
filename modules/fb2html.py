@@ -17,21 +17,15 @@ from lxml import etree, objectify
 from modules.utils import transliterate, indent
 from PIL import Image
 
-COVER_HEIGHT = 1322 # PW3/Voyage
+COVER_HEIGHT = 1322  # PW3/Voyage
 
 SOFT_HYPHEN = '\u00AD'  # Символ 'мягкого' переноса
 
-CHAPTS_COUNT = 0  # Глобальная переменная для передачи значения в функцию rewrite_links
-TEMP_DIR = ''  # Глобальная переменная для передачи значения в функцию rewrite_links
-
-HTMLHEAD = ('<?xml version="1.0"?>'
-            '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" '
-            '"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'
-            '<html xmlns="http://www.w3.org/1999/xhtml">'
+HTMLHEAD = ('<html xmlns="http://www.w3.org/1999/xhtml">'
             '<head>'
             '<title>fb2mobi.py</title>'
-            '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />'
-            '<link rel="stylesheet" type="text/css" href="stylesheet.css" />'
+            '<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>'
+            '<link rel="stylesheet" type="text/css" href="stylesheet.css"/>'
             '</head>'
             '<body>')
 
@@ -136,6 +130,9 @@ class Fb2XHTML:
         self.tocbeforebody = config.current_profile[
             'tocBeforeBody']  # Положение содержания - в начале либо в конце книги
         self.transliterate_author_and_title = config.transliterate_author_and_title
+
+        self.screen_width = config.screen_width
+        self.screen_height = config.screen_height
 
         self.flat_toc = config.current_profile[
             'flatTOC']  # Признак плоского (одноуровнего оглавления), либо иерархического
@@ -1032,16 +1029,17 @@ class Fb2XHTML:
     def generate_cover(self):
         if self.book_cover:
 
-            # make sure kindlegen does not complain on cover size
+            # make sure kindlegen does not complain on cover size and make sure that epub cover takes whole screen
             im = Image.open(os.path.join(self.temp_content_dir, self.book_cover))
-            if im.height < COVER_HEIGHT:
-                im.resize((int(COVER_HEIGHT * im.width / im.height), COVER_HEIGHT), Image.ANTIALIAS).save(os.path.join(self.temp_content_dir, self.book_cover))
+            if im.height < self.screen_height:
+                im.resize((int(self.screen_height * im.width / im.height), self.screen_height), Image.ANTIALIAS).save(os.path.join(self.temp_content_dir, self.book_cover))
 
             self.buff = []
             self.buff.append(HTMLHEAD)
             self.buff.append(
-                '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0 0 573 800" preserveAspectRatio="xMidYMid meet">')
-            self.buff.append('<image width="573" height="800" xlink:href="{0}" />'.format(self.book_cover))
+                '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0 0 {0} {1}" preserveAspectRatio="xMidYMid meet">'.format(
+                    self.screen_width, self.screen_height))
+            self.buff.append('<image width="{0}" height="{1}" xlink:href="{2}" />'.format(self.screen_width, self.screen_height, self.book_cover))
             self.buff.append('</svg>')
             self.buff.append(HTMLFOOT)
             self.current_file = 'cover.xhtml'

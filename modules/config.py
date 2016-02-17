@@ -21,6 +21,8 @@ class ConverterConfig:
         self.transliterate = False
         self.transliterate_author_and_title = False
         self.noMOBIoptimization = False
+        self.screen_height = 800
+        self.screen_width = 573
         self.default_profile = 'default'
 
         self.input_dir = None
@@ -36,6 +38,8 @@ class ConverterConfig:
         self.profiles['default']['description'] = 'Default profile'
         self.profiles['default']['outputFormat'] = None
         self.profiles['default']['transliterate'] = None
+        self.profiles['default']['screenHeight'] = None
+        self.profiles['default']['screenWidth'] = None
         self.profiles['default']['transliterateAuthorAndTitle'] = None
         self.profiles['default']['hyphens'] = True
         self.profiles['default']['dropcaps'] = 'None'
@@ -100,6 +104,12 @@ class ConverterConfig:
             elif e.tag == 'transliterate':
                 self.transliterate = e.text.lower() == 'true'
 
+            elif e.tag == 'screenWidth':
+                self.screen_width = int(e.text)
+
+            elif e.tag == 'screenHeight':
+                self.screen_height = int(e.text)
+
             elif e.tag == 'defaultProfile':
                 self.default_profile = e.text
 
@@ -133,6 +143,12 @@ class ConverterConfig:
 
                         elif p.tag == 'transliterate':
                             self.profiles[prof_name]['transliterate'] = p.text.lower() == 'true'
+
+                        elif p.tag == 'screenWidth':
+                            self.profiles[prof_name]['screenWidth'] = int(p.text)
+
+                        elif p.tag == 'screenHeight':
+                            self.profiles[prof_name]['screenHeight'] = int(p.text)
 
                         elif p.tag == 'transliterateAuthorAndTitle':
                             self.profiles[prof_name]['transliterateAuthorAndTitle'] = p.text.lower() == 'true'
@@ -268,6 +284,12 @@ class ConverterConfig:
         if 'transliterate' in self.current_profile:
             self.transliterate = self.current_profile['transliterate']
 
+        if 'screenWidth' in self.current_profile:
+            self.screen_width = self.current_profile['screenWidth']
+
+        if 'screenHeight' in self.current_profile:
+            self.screen_height = self.current_profile['screenHeight']
+
         if 'transliterateAuthorAndTitle' in self.current_profile:
             self.transliterate_author_and_title = self.current_profile['transliterateAuthorAndTitle']
 
@@ -280,6 +302,8 @@ class ConverterConfig:
                    E('kindleCompressionLevel', str(self.kindle_compression_level)),
                    E('noDropcapsSymbols', self.no_dropcaps_symbols),
                    E('transliterate', str(self.transliterate)),
+                   E('screenWidth', str(self.screen_width)),
+                   E('screenHeight', str(self.screen_height)),
                    E('defaultProfile', self.default_profile),
                    E('noMOBIoptimization', str(self.noMOBIoptimization)),
                    E('profiles',

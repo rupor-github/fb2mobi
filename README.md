@@ -16,6 +16,7 @@ Here is brief list of changes:
 * Added support for "inline" footnotes
 * Added support for MOBI post-processing and optimization
 * Added cover and thumbnail image optimization
+* Made cover size user configurable
 * Added support for latest Kidle firmware (5.7.2)
 * Added simple tool to generate simple thumbnails on Kindle devices
 

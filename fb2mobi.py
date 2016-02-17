@@ -350,8 +350,6 @@ def get_log_level(log_level):
 
 
 def process(args):
-    result = 0
-
     infile = args.infile
     outfile = args.outfile
     config_file_name = "%s.config" % get_executable_name()
@@ -417,6 +415,10 @@ def process(args):
             config.current_profile['hyphens'] = args.hyphenate
         if args.transliterate is not None:
             config.transliterate = args.transliterate
+        if args.screen_width is not None:
+            config.screen_width = args.screen_width
+        if args.screen_height is not None:
+            config.screen_height = args.screen_height
         if args.kindlecompressionlevel:
             config.kindle_compression_level = args.kindlecompressionlevel
         if args.css:
@@ -473,8 +475,6 @@ def process(args):
         print(argparser.description)
         argparser.print_usage()
 
-    return result
-
 
 if __name__ == '__main__':
     # Настройка парсера аргументов
@@ -483,11 +483,11 @@ if __name__ == '__main__':
             version.VERSION))
 
     input_args_group = argparser.add_mutually_exclusive_group()
-    input_args_group.add_argument('infile', type=str, nargs='?', default=None,  help='Source file name (fb2, fb2.zip, zip or epub)')
-    input_args_group.add_argument('-i', '--input-dir', dest='inputdir', type=str, default=None,  help='Source directory for batch conversion.')
+    input_args_group.add_argument('infile', type=str, nargs='?', default=None, help='Source file name (fb2, fb2.zip, zip or epub)')
+    input_args_group.add_argument('-i', '--input-dir', dest='inputdir', type=str, default=None, help='Source directory for batch conversion.')
 
     output_args_group = argparser.add_mutually_exclusive_group()
-    output_args_group.add_argument('outfile', type=str, nargs='?', default=None,  help='Destination file name (mobi, azw3 or epub)')
+    output_args_group.add_argument('outfile', type=str, nargs='?', default=None, help='Destination file name (mobi, azw3 or epub)')
     output_args_group.add_argument('-o', '--output-dir', dest='outputdir', type=str, default=None, help='Destination directory name for batch conversion')
 
     argparser.add_argument('-f', '--output-format', dest='outputformat', type=str, default=None, help='Output format: mobi, azw3 or epub')
@@ -510,7 +510,12 @@ if __name__ == '__main__':
 
     transliterate_author_group = argparser.add_mutually_exclusive_group()
     transliterate_author_group.add_argument('--transliterate-author-and-title', dest='transliterateauthorandtitle', action='store_true', default=None, help='Transliterate book title and author(s)')
-    transliterate_author_group.add_argument('--no-transliterate-author-and-title', dest='transliterateauthorandtitle', action='store_false', default=None, help='Do not transliterate book title and author(s)')
+    transliterate_author_group.add_argument('--no-transliterate-author-and-title', dest='transliterateauthorandtitle', action='store_false', default=None,
+                                            help='Do not transliterate book title and author(s)')
+
+    screen_group = argparser.add_argument_group('Target device screen dimensions', 'default 800x573')
+    screen_group.add_argument('--screen-width', dest='screen_width', type=int, default=None, help='Target screen width')
+    screen_group.add_argument('--screen-height', dest='screen_height', type=int, default=None, help='Target screen height')
 
     argparser.add_argument('--kindle-compression-level', dest='kindlecompressionlevel', type=int, default=None, help='Kindlegen compression level - 0, 1, 2')
     argparser.add_argument('-p', '--profile', type=str, default=None, help='Profile name from configuration')
