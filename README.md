@@ -6,7 +6,7 @@ it lost number of features and gained some bug fixes...
 
 Here is brief list of changes:
 
-* Lost UI and "Send To Kindle" functionality
+* Lost UI functionality
 * All messages and profile descriptions got translated to English
 * Fixed all problems I was aware of at the moment (see git log)
 * Added ability to apply xslt transformation from external file to fb2 before further processing
@@ -17,7 +17,7 @@ Here is brief list of changes:
 * Added support for MOBI post-processing and optimization
 * Added cover and thumbnail image optimization
 * Made cover size user configurable
-* Added support for latest Kidle firmware (5.7.2)
+* Added support for latest Kidle firmware (>= 5.7.2)
 * Added simple tool to generate simple thumbnails on Kindle devices
 
 Program uses source code (modified) from following projects released under GPL:

@@ -17,8 +17,8 @@ from modules.utils import transliterate
 from modules.fb2html import Fb2XHTML
 from modules.epub import EpubProc
 from modules.config import ConverterConfig
+from modules.sendtokindle import SendToKindle
 from modules.mobi_split import mobi_split
-
 
 def get_executable_path():
     if getattr(sys, 'frozen', False):
@@ -124,7 +124,7 @@ def process_file(config, infile, outfile=None):
     if infile:
         if not infile.lower().endswith(('.fb2', '.fb2.zip', '.zip', '.epub')):
             config.log.critical('"{0}" not *.fb2, *.fb2.zip, *.zip or *.epub'.format(infile))
-            return -1
+            return
 
     if not config.current_profile['css'] and not infile.lower().endswith(('.epub')):
         config.log.warning('Profile does not have link to css file.')
@@ -181,11 +181,11 @@ def process_file(config, infile, outfile=None):
             infile = unzip(infile, temp_dir)
         except:
             config.log.critical('Error unpacking file "{0}".'.format(tmp_infile))
-            return -1
+            return
 
         if not infile:
             config.log.critical('Error unpacking file "{0}".'.format(tmp_infile))
-            return -1
+            return
 
     elif os.path.splitext(infile)[1].lower() == '.epub':
         config.log.info('Unpacking epub...')
@@ -194,11 +194,11 @@ def process_file(config, infile, outfile=None):
             infile = unzip_epub(infile, temp_dir)
         except:
             config.log.critical('Error unpacking file "{0}".'.format(tmp_infile))
-            return -1
+            return
 
         if not infile:
             config.log.critical('Error unpacking file "{0}".'.format(tmp_infile))
-            return -1
+            return
 
         input_epub = True
 
@@ -277,28 +277,58 @@ def process_file(config, infile, outfile=None):
                 critical_error = True
             else:
                 try:
+                    remove_personal = config.current_profile['kindleRemovePersonalLabel'] if not ext in ('mobi') or not config.send_to_kindle['send'] else False
                     if ext in ('mobi') and config.noMOBIoptimization:
                         config.log.info('Copying resulting file...')
                         shutil.copyfile(result_book, outfile)
                     else:
                         config.log.info('Optimizing resulting file...')
-                        splitter = mobi_split(result_book, document_id, config.current_profile['kindleRemovePersonalLabel'], ext)
+                        splitter = mobi_split(result_book, document_id, remove_personal, ext)
                         open(os.path.splitext(outfile)[0] + '.' + ext, 'wb').write(splitter.getResult() if ext == 'mobi' else splitter.getResult8())
                 except:
                     config.log.critical('Error optimizing file, conversion interrupted.')
                     config.log.debug('Getting details', exc_info=True, stack_info=True)
                     critical_error = True
-    else:
-        return -1
 
     if not critical_error:
         config.log.info('Book conversion completed in {0} sec.\n'.format(round(time.clock() - start_time, 2)))
 
+        if config.send_to_kindle['send']:
+            if config.output_format.lower() != 'mobi':
+                config.log.warning('Kindle Personal Documents Service only accepts personal mobi files')
+            else:
+                config.log.info('Sending book...')
+                try:
+                    kindle = SendToKindle(config.log)
+                    kindle.smtp_server = config.send_to_kindle['smtpServer']
+                    kindle.smtp_port = config.send_to_kindle['smtpPort']
+                    kindle.smtp_login = config.send_to_kindle['smtpLogin']
+                    kindle.smtp_password = config.send_to_kindle['smtpPassword']
+                    kindle.user_email = config.send_to_kindle['fromUserEmail']
+                    kindle.kindle_email = config.send_to_kindle['toKindleEmail']
+                    kindle.convert = False
+                    kindle.files.append(outfile.encode(sys.getfilesystemencoding()))
+                    kindle.send_mail()
+
+                    config.log.info('Book has been sent to "{0}"'.format(config.send_to_kindle['toKindleEmail']))
+
+                    if config.send_to_kindle['deleteSendedBook']:
+                        try:
+                            os.remove(outfile)
+                        except:
+                            config.log.error('Unable to remove file "{0}".'.format(outfile))
+                            return -1
+
+                except KeyboardInterrupt:
+                    print('User interrupt. Exiting...')
+                    sys.exit(-1)
+
+                except:
+                    config.log.error('Error sending file')
+                    config.log.debug('Getting details', exc_info=True, stack_info=True)
+
     # Чистим временные файлы
     rm_tmp_files(temp_dir)
-
-    return 0
-
 
 def process_folder(config, inputdir, outputdir=None):
     if outputdir:
@@ -443,6 +473,8 @@ def process(args):
             config.current_profile['chapterOnNewPage'] = args.chapteronnewpage
         if args.noMOBIoptimization:
             config.noMOBIoptimization = args.noMOBIoptimization
+        if args.sendtokindle is not None:
+            config.send_to_kindle['send'] = args.sendtokindle
 
         if args.inputdir:
             config.input_dir = args.inputdir
@@ -465,7 +497,7 @@ def process(args):
                 log.error('Unable to remove directory "{0}"'.format(args.inputdir))
 
     elif infile:
-        result = process_file(config, infile, outfile)
+        process_file(config, infile, outfile)
         if args.deletesourcefile:
             try:
                 os.remove(infile)
@@ -534,6 +566,11 @@ if __name__ == '__main__':
     chapter_group = argparser.add_mutually_exclusive_group()
     chapter_group.add_argument('--chapter-on-new-page', dest='chapteronnewpage', action='store_true', default=None, help='Start chapter from the new page')
     chapter_group.add_argument('--no-chapter-on-new-page', dest='chapteronnewpage', action='store_false', default=None, help='Do not start chapter from the new page')
+
+    sendtokindle_group = argparser.add_mutually_exclusive_group()
+    sendtokindle_group.add_argument('--send-to-kindle', dest='sendtokindle', action='store_true', default=None,
+                                    help='Use Kindle Personal Documents Service to send book to device (<sendToKindle> in configuration file must have proper values!)')
+    sendtokindle_group.add_argument('--no-send-to-kindle', dest='sendtokindle', action='store_false', default=None, help='Do not use Kindle Personal Documents Service to send book to device')
 
     tocplace_group = argparser.add_mutually_exclusive_group()
     tocplace_group.add_argument('--toc-before-body', dest='tocbeforebody', action='store_true', default=None, help='Put TOC at the book beginning')

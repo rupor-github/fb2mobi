@@ -67,6 +67,16 @@ class ConverterConfig:
         self.mhl = False
         self.recursive = False
 
+        self.send_to_kindle = {}
+        self.send_to_kindle['send'] = False
+        self.send_to_kindle['deleteSendedBook'] = True
+        self.send_to_kindle['smtpServer'] = 'smtp.gmail.com'
+        self.send_to_kindle['smtpPort'] = 465
+        self.send_to_kindle['smtpLogin'] = '[Your Google Email]'
+        self.send_to_kindle['smtpPassword'] = None
+        self.send_to_kindle['fromUserEmail'] = '[Your Google Email]'
+        self.send_to_kindle['toKindleEmail'] = '[Your Kindle Email]'
+
         if not os.path.exists(self.config_file):
             # Если файл настроек отсутствует, созданим файл по-умолчанию
             self.write()
@@ -115,6 +125,32 @@ class ConverterConfig:
 
             elif e.tag == 'noMOBIoptimization':
                 self.noMOBIoptimization = e.text.lower() == 'true'
+
+            elif e.tag == 'sendToKindle':
+                for s in e:
+                    if s.tag == 'send':
+                        self.send_to_kindle['send'] = s.text.lower() == 'true'
+
+                    elif s.tag == 'deleteSendedBook':
+                        self.send_to_kindle['deleteSendedBook'] = s.text.lower() == 'true'
+
+                    elif s.tag == 'smtpServer':
+                        self.send_to_kindle['smtpServer'] = s.text
+
+                    elif s.tag == 'smtpPort':
+                        self.send_to_kindle['smtpPort'] = int(s.text)
+
+                    elif s.tag == 'smtpLogin':
+                        self.send_to_kindle['smtpLogin'] = s.text
+
+                    elif s.tag == 'smtpPassword':
+                        self.send_to_kindle['smtpPassword'] = s.text
+
+                    elif s.tag == 'fromUserEmail':
+                        self.send_to_kindle['fromUserEmail'] = s.text
+
+                    elif s.tag == 'toKindleEmail':
+                        self.send_to_kindle['toKindleEmail'] = s.text
 
             elif e.tag == 'profiles':
                 self.profiles = {}
@@ -308,6 +344,16 @@ class ConverterConfig:
                    E('noMOBIoptimization', str(self.noMOBIoptimization)),
                    E('profiles',
                      *self._getProfiles()
+                     ),
+                   E('sendToKindle',
+                     E('send', str(self.send_to_kindle['send'])),
+                     E('deleteSendedBook', str(self.send_to_kindle['deleteSendedBook'])),
+                     E('smtpServer', self.send_to_kindle['smtpServer']),
+                     E('smtpPort', str(self.send_to_kindle['smtpPort'])),
+                     E('smtpLogin', self.send_to_kindle['smtpLogin']),
+                     E('smtpPassword', self.send_to_kindle['smtpPassword']) if self.send_to_kindle['smtpPassword'] else E('smtpPassword'),
+                     E('fromUserEmail', self.send_to_kindle['fromUserEmail']),
+                     E('toKindleEmail', self.send_to_kindle['toKindleEmail'])
                      ),
                    )
 

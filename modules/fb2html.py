@@ -17,8 +17,6 @@ from lxml import etree, objectify
 from modules.utils import transliterate, indent
 from PIL import Image
 
-COVER_HEIGHT = 1322  # PW3/Voyage
-
 SOFT_HYPHEN = '\u00AD'  # Символ 'мягкого' переноса
 
 HTMLHEAD = ('<html xmlns="http://www.w3.org/1999/xhtml">'
