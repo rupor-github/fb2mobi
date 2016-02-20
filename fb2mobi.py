@@ -307,7 +307,7 @@ def process_file(config, infile, outfile=None):
                     kindle.user_email = config.send_to_kindle['fromUserEmail']
                     kindle.kindle_email = config.send_to_kindle['toKindleEmail']
                     kindle.convert = False
-                    kindle.files.append(outfile.encode(sys.getfilesystemencoding()))
+                    kindle.files.append(outfile)
                     kindle.send_mail()
 
                     config.log.info('Book has been sent to "{0}"'.format(config.send_to_kindle['toKindleEmail']))

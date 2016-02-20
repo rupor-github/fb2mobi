@@ -29,7 +29,7 @@ class SendToKindle:
         msg.preamble = 'This email has been automatically sent by fb2mobi tool'
 
         for file_path in self.files:
-            fname = str(os.path.basename(file_path), 'utf-8')
+            fname = os.path.basename(file_path)
             msg.attach(MIMEApplication(open(file_path, 'rb').read(), Content_Disposition='attachment; filename="%s"' % fname, Name=fname))
 
         mail_server = smtplib.SMTP(host=self.smtp_server, port=self.smtp_port)
