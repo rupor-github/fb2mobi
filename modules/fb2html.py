@@ -877,8 +877,13 @@ class Fb2XHTML:
                         note = self.notes_dict[id]
                         id_b = 'back_' + id
                         self.links_location[id] = self.current_file
-                        self.buff.append('<p class="floatnote"><a href="%s#%s" id="%s">%s).</a>&#160;%s</p>' % (
-                            self.links_location[id_b], id_b, id, note[0], save_html(note[1])))
+                        # Sometimes due to an error document does not have a reference to note and numbers are all messed up
+                        back_ref = 'nowhere'
+                        try:
+                            back_ref = self.links_location[id_b]
+                        except:
+                            pass
+                        self.buff.append('<p class="floatnote"><a href="%s#%s" id="%s">%s).</a>&#160;%s</p>' % (back_ref, id_b, id, note[0] if len(note[0]) > 0 else '***', save_html(note[1])))
                     else:
                         continue
         else:
