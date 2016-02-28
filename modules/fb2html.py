@@ -32,8 +32,9 @@ HTMLFOOT = ('</body>'
 
 
 def ns_tag(tag):
-    if tag[0] == '{':
-        tag = tag.split('}', 1)[1]
+    if tag is not etree.Comment:
+        if tag[0] == '{':
+            tag = tag.split('}', 1)[1]
     return tag
 
 
