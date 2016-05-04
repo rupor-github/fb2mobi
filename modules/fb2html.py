@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import os
+import os, sys
 import re
 import shutil
 import io
@@ -10,14 +10,15 @@ import cssutils
 import base64
 import hashlib
 import html
-import modules.pyphen as pyphen
+import hyphen
 
 from copy import deepcopy
 from lxml import etree, objectify
 from modules.utils import transliterate, indent
 from PIL import Image
 
-SOFT_HYPHEN = '\u00AD'  # Символ 'мягкого' переноса
+SOFT_HYPHEN = '\u00AD'          # Символ 'мягкого' переноса
+NON_BREAKING_SPACE = '\u00A0'   # &nbsp
 
 HTMLHEAD = ('<html xmlns="http://www.w3.org/1999/xhtml">'
             '<head>'
@@ -30,6 +31,7 @@ HTMLHEAD = ('<html xmlns="http://www.w3.org/1999/xhtml">'
 HTMLFOOT = ('</body>'
             '</html>')
 
+dic_dir = os.path.join(os.path.abspath(os.path.dirname(sys.executable)) if getattr(sys, 'frozen', False) else os.path.dirname(__file__), 'dictionaries')
 
 def ns_tag(tag):
     if tag is not etree.Comment:
@@ -198,7 +200,7 @@ class Fb2XHTML:
 
         self.root = self.tree.getroot()
 
-        self.hyphenator = pyphen.Pyphen(lang=self.book_lang)
+        self.hyphenator = hyphen.Hyphenator(language=self.book_lang, directory=dic_dir)
         self.hyphenate = config.current_profile['hyphens']
 
         self.first_body = True  # Признак первого body
@@ -213,8 +215,8 @@ class Fb2XHTML:
 
     def generate(self):
 
-        #        stdout = sys.stdout
-        #        sys.stdout = codecs.open('stdout.txt', 'w', 'utf-8')
+        # stdout = sys.stdout
+        # sys.stdout = codecs.open('stdout.txt', 'w', 'utf-8')
 
         for child in self.root:
             if ns_tag(child.tag) == 'description':
@@ -243,7 +245,7 @@ class Fb2XHTML:
         self.generate_container()
         self.generate_mimetype()
 
-    #        sys.stdout = stdout
+        # sys.stdout = stdout
 
     def copy_css(self):
         base_dir = os.path.abspath(os.path.dirname(self.css_file))
@@ -405,7 +407,8 @@ class Fb2XHTML:
                             self.book_lang = t.text
                         else:
                             self.book_lang = 'ru'
-                        self.hyphenator = pyphen.Pyphen(lang=self.book_lang)
+                        self.hyphenator = hyphen.Hyphenator(language=self.book_lang,directory=dic_dir)
+
                     elif ns_tag(t.tag) == 'coverpage':
                         for c in t:
                             if ns_tag(c.tag) == 'image':
@@ -804,17 +807,11 @@ class Fb2XHTML:
         self.buff.append('</{0}>'.format(ns_tag(elem.tag)))
 
     def hyphenate_word(self, w):
-        l = 2
-        for i, c in enumerate(w):
-            if c.isalpha():
-                l += i
-                break
-        r = 2
-        for i, c in enumerate(reversed(w)):
-            if c.isalpha():
-                r += i
-                break
-        return self.hyphenator.inserted(w, SOFT_HYPHEN, l, r).replace('-' + SOFT_HYPHEN, '-')
+        res = []
+        for sub_w in str.split(w, NON_BREAKING_SPACE):
+            syl = self.hyphenator.syllables(sub_w)
+            res.append(sub_w if not syl else SOFT_HYPHEN.join(syl))
+        return NON_BREAKING_SPACE.join(res).replace(SOFT_HYPHEN + '-', '-')
 
     def insert_hyphenation(self, s):
         hs = ''
@@ -1157,14 +1154,14 @@ class Fb2XHTML:
         if self.generate_opf_guide:
             self.buff.append('<guide>')
             if self.book_cover:
-                self.buff.append('<reference type="cover-page" href="cover.xhtml" />')
+                self.buff.append('<reference type="cover-page" href="cover.xhtml"/>')
 
             for item in self.html_file_list:
                 if item.split('.')[0].startswith('index'):
-                    self.buff.append('<reference type="text" title="book" href="{0}"/>'.format(item))
+                    self.buff.append('<reference type="text" title="Starts here" href="{0}"/>'.format(item))
                     break
 
-            self.buff.append('<reference type="toc" title="toc" href="toc.xhtml"/>')
+            self.buff.append('<reference type="toc" title="Table of Contents" href="toc.xhtml"/>')
             self.buff.append('</guide>')
 
         self.buff.append('</package>')

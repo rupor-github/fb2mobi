@@ -12,7 +12,7 @@ Here is brief list of changes:
 * Added ability to apply xslt transformation from external file to fb2 before further processing
 * Added xslt extension "katz_tr" to speedup and simplify transformation of direct speech in dialogs
 * Added some rudimentary epub processing (like title rewriting based on calibre metadata and hyphenation)
-* Switched hyphenator to Pyphen which uses properly maintained dictionaries from LibreOffice, so now many languages are supported and you could add more
+* Switched hyphenator to hyphen which uses properly maintained dictionaries from LibreOffice, so now many languages are supported and you could add more
 * Added support for "inline" footnotes
 * Added support for MOBI post-processing and optimization
 * Added cover and thumbnail image optimization
@@ -23,6 +23,5 @@ Here is brief list of changes:
 Program uses source code (modified) from following projects released under GPL:
 
 * [KindleUnpack](https://github.com/kevinhendricks/KindleUnpack)
-* [Pyphen](http://pyphen.org/)
 
 Enjoy!

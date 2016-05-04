@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
 
+import os, sys
 import html
-import os
 import uuid
-import modules.pyphen as pyphen
+import hyphen
 
 from lxml import etree
 from modules.utils import transliterate, indent
 
-SOFT_HYPHEN = '\u00AD'
+SOFT_HYPHEN = '\u00AD'          # Символ 'мягкого' переноса
+NON_BREAKING_SPACE = '\u00A0'   # &nbsp
 
+dic_dir = os.path.join(os.path.abspath(os.path.dirname(sys.executable)) if getattr(sys, 'frozen', False) else os.path.dirname(__file__), 'dictionaries')
 
 def save_html(string):
     if string:
         return html.escape(string, quote=False)
     else:
         return ''
-
 
 class EpubProc:
     def __init__(self, opffile, config):
@@ -28,6 +29,7 @@ class EpubProc:
         self.book_series_num = ''  # Номер в книжной серии
 
         self.book_lang = 'ru'
+        self.hyphenator = hyphen.Hyphenator(language=self.book_lang, directory=dic_dir)
         self.hyphenate = config.current_profile['hyphens']
 
         self.opffile = opffile
@@ -43,17 +45,11 @@ class EpubProc:
         self.root = self.tree.getroot()
 
     def hyphenate_word(self, w):
-        l = 2
-        for i, c in enumerate(w):
-            if c.isalpha():
-                l += i
-                break
-        r = 2
-        for i, c in enumerate(reversed(w)):
-            if c.isalpha():
-                r += i
-                break
-        return self.hyphenator.inserted(w, SOFT_HYPHEN, l, r).replace('-' + SOFT_HYPHEN, '-')
+        res = []
+        for sub_w in str.split(w, NON_BREAKING_SPACE):
+            syl = self.hyphenator.syllables(sub_w)
+            res.append(sub_w if not syl else SOFT_HYPHEN.join(syl))
+        return NON_BREAKING_SPACE.join(res).replace(SOFT_HYPHEN + '-', '-')
 
     def insert_hyphenation(self, s):
         hs = ''
@@ -101,9 +97,9 @@ class EpubProc:
                 node.text = title
 
         for node in self.root.iter('{*}language'):
-            self.book_lang = pyphen.language_fallback(node.text)
+            self.book_lang = node.text
 
-        self.hyphenator = pyphen.Pyphen(lang=self.book_lang)
+        self.hyphenator = hyphen.Hyphenator(language=self.book_lang, directory=dic_dir)
 
         indent(self.root)
         self.tree.write(self.opffile, encoding='utf-8', method='xml', xml_declaration=True)

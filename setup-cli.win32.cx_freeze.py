@@ -23,6 +23,7 @@ includes = [
     'lxml._elementpath',
     'gzip',
     'PIL',
+    'hyphen',
     'modules.default_css'
 ]
 
