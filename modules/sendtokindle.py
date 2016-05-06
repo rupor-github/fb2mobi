@@ -8,8 +8,7 @@ from email.mime.multipart import MIMEMultipart
 
 
 class SendToKindle:
-    def __init__(self, log):
-        self.log = log
+    def __init__(self):
         self.smtp_server = None
         self.smtp_port = 0
         self.smtp_login = None

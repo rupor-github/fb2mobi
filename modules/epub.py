@@ -8,10 +8,24 @@ import hyphen
 from lxml import etree
 from modules.utils import transliterate, indent
 
-SOFT_HYPHEN = '\u00AD'          # Символ 'мягкого' переноса
-NON_BREAKING_SPACE = '\u00A0'   # &nbsp
-
 dic_dir = os.path.join(os.path.abspath(os.path.dirname(sys.executable)) if getattr(sys, 'frozen', False) else os.path.dirname(__file__), 'dictionaries')
+
+SOFT_HYPHEN = '\u00AD'
+NON_BREAKING_SPACE = '\u00A0'
+WORD_SEPARATORS = [' ', NON_BREAKING_SPACE, '-', '.', ',',';',':','!','?']
+
+
+def hyphenate_sentence(hyph, sentense, separators):
+    if not separators:
+        syl = hyph.syllables(sentense)
+        return sentense if not syl else SOFT_HYPHEN.join(syl)
+    else:
+        res = []
+        head, *tail = separators
+        for part in str.split(sentense, head):
+            res.append(hyphenate_sentence(hyph, part, tail))
+        return head.join(res)
+
 
 def save_html(string):
     if string:
@@ -54,8 +68,8 @@ class EpubProc:
     def insert_hyphenation(self, s):
         hs = ''
         if s:
-            if self.hyphenator and self.hyphenate:
-                hs = ' '.join([self.hyphenate_word(html.unescape(w)) for w in s.split(' ')])
+            if self.hyphenator and self.hyphenate and not (self.header or self.subheader):
+                hs = hyphenate_sentence(self.hyphenator, html.unescape(s), WORD_SEPARATORS)
             else:
                 hs = html.unescape(s)
         return hs

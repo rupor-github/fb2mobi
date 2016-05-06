@@ -299,7 +299,7 @@ def process_file(config, infile, outfile=None):
             else:
                 config.log.info('Sending book...')
                 try:
-                    kindle = SendToKindle(config.log)
+                    kindle = SendToKindle
                     kindle.smtp_server = config.send_to_kindle['smtpServer']
                     kindle.smtp_port = config.send_to_kindle['smtpPort']
                     kindle.smtp_login = config.send_to_kindle['smtpLogin']

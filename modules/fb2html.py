@@ -17,9 +17,6 @@ from lxml import etree, objectify
 from modules.utils import transliterate, indent
 from PIL import Image
 
-SOFT_HYPHEN = '\u00AD'          # Символ 'мягкого' переноса
-NON_BREAKING_SPACE = '\u00A0'   # &nbsp
-
 HTMLHEAD = ('<html xmlns="http://www.w3.org/1999/xhtml">'
             '<head>'
             '<title>fb2mobi.py</title>'
@@ -32,6 +29,23 @@ HTMLFOOT = ('</body>'
             '</html>')
 
 dic_dir = os.path.join(os.path.abspath(os.path.dirname(sys.executable)) if getattr(sys, 'frozen', False) else os.path.dirname(__file__), 'dictionaries')
+
+SOFT_HYPHEN = '\u00AD'
+NON_BREAKING_SPACE = '\u00A0'
+WORD_SEPARATORS = [' ', NON_BREAKING_SPACE, '-', '.', ',',';',':','!','?']
+
+
+def hyphenate_sentence(hyph, sentense, separators):
+    if not separators:
+        syl = hyph.syllables(sentense)
+        return sentense if not syl else SOFT_HYPHEN.join(syl)
+    else:
+        res = []
+        head, *tail = separators
+        for part in str.split(sentense, head):
+            res.append(hyphenate_sentence(hyph, part, tail))
+        return head.join(res)
+
 
 def ns_tag(tag):
     if tag is not etree.Comment:
@@ -806,18 +820,20 @@ class Fb2XHTML:
         self.parse_format(elem)
         self.buff.append('</{0}>'.format(ns_tag(elem.tag)))
 
+    '''
     def hyphenate_word(self, w):
         res = []
         for sub_w in str.split(w, NON_BREAKING_SPACE):
             syl = self.hyphenator.syllables(sub_w)
             res.append(sub_w if not syl else SOFT_HYPHEN.join(syl))
         return NON_BREAKING_SPACE.join(res).replace(SOFT_HYPHEN + '-', '-')
+    '''
 
     def insert_hyphenation(self, s):
         hs = ''
         if s:
             if self.hyphenator and self.hyphenate and not (self.header or self.subheader):
-                hs = ' '.join([self.hyphenate_word(html.unescape(w)) for w in s.split(' ')])
+                hs = hyphenate_sentence(self.hyphenator, html.unescape(s), WORD_SEPARATORS)
             else:
                 hs = html.unescape(s)
         return hs
