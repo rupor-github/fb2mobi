@@ -1,30 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import os, sys
+import os
 import html
 import uuid
-import hyphen
 
 from lxml import etree
 from modules.utils import transliterate, indent
-
-dic_dir = os.path.join(os.path.abspath(os.path.dirname(sys.executable)) if getattr(sys, 'frozen', False) else os.path.dirname(__file__), 'dictionaries')
-
-SOFT_HYPHEN = '\u00AD'
-NON_BREAKING_SPACE = '\u00A0'
-WORD_SEPARATORS = [' ', NON_BREAKING_SPACE, '-', '.', ',',';',':','!','?']
-
-
-def hyphenate_sentence(hyph, sentense, separators):
-    if not separators:
-        syl = hyph.syllables(sentense)
-        return sentense if not syl else SOFT_HYPHEN.join(syl)
-    else:
-        res = []
-        head, *tail = separators
-        for part in str.split(sentense, head):
-            res.append(hyphenate_sentence(hyph, part, tail))
-        return head.join(res)
+from modules.myhyphen import MyHyphen
 
 
 def save_html(string):
@@ -32,6 +14,7 @@ def save_html(string):
         return html.escape(string, quote=False)
     else:
         return ''
+
 
 class EpubProc:
     def __init__(self, opffile, config):
@@ -43,8 +26,9 @@ class EpubProc:
         self.book_series_num = ''  # Номер в книжной серии
 
         self.book_lang = 'ru'
-        self.hyphenator = hyphen.Hyphenator(language=self.book_lang, directory=dic_dir)
+        self.hyphenator = MyHyphen(self.book_lang)
         self.hyphenate = config.current_profile['hyphens']
+        self.replaceNBSP = config.current_profile['hyphensReplaceNBSP']
 
         self.opffile = opffile
         self.path = os.path.dirname(opffile)
@@ -58,21 +42,10 @@ class EpubProc:
         self.tree = etree.parse(opffile, parser=etree.XMLParser(recover=True))
         self.root = self.tree.getroot()
 
-    def hyphenate_word(self, w):
-        res = []
-        for sub_w in str.split(w, NON_BREAKING_SPACE):
-            syl = self.hyphenator.syllables(sub_w)
-            res.append(sub_w if not syl else SOFT_HYPHEN.join(syl))
-        return NON_BREAKING_SPACE.join(res).replace(SOFT_HYPHEN + '-', '-')
-
     def insert_hyphenation(self, s):
-        hs = ''
-        if s:
-            if self.hyphenator and self.hyphenate and not (self.header or self.subheader):
-                hs = hyphenate_sentence(self.hyphenator, html.unescape(s), WORD_SEPARATORS)
-            else:
-                hs = html.unescape(s)
-        return hs
+        if not s:
+            return ''
+        return html.unescape(s) if not self.hyphenator or not self.hyphenate or self.header or self.subheader else self.hyphenator.hyphenate_text(html.unescape(s), self.replaceNBSP)
 
     def process(self):
 
@@ -112,8 +85,7 @@ class EpubProc:
 
         for node in self.root.iter('{*}language'):
             self.book_lang = node.text
-
-        self.hyphenator = hyphen.Hyphenator(language=self.book_lang, directory=dic_dir)
+        self.hyphenator.set_language(self.book_lang)
 
         indent(self.root)
         self.tree.write(self.opffile, encoding='utf-8', method='xml', xml_declaration=True)

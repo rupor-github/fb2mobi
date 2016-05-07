@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import os, sys
+import os
 import re
 import shutil
 import io
@@ -10,12 +10,13 @@ import cssutils
 import base64
 import hashlib
 import html
-import hyphen
 
 from copy import deepcopy
 from lxml import etree, objectify
-from modules.utils import transliterate, indent
 from PIL import Image
+
+from modules.utils import transliterate, indent
+from modules.myhyphen import MyHyphen
 
 HTMLHEAD = ('<html xmlns="http://www.w3.org/1999/xhtml">'
             '<head>'
@@ -27,25 +28,6 @@ HTMLHEAD = ('<html xmlns="http://www.w3.org/1999/xhtml">'
 
 HTMLFOOT = ('</body>'
             '</html>')
-
-dic_dir = os.path.join(os.path.abspath(os.path.dirname(sys.executable)) if getattr(sys, 'frozen', False) else os.path.dirname(__file__), 'dictionaries')
-
-SOFT_HYPHEN = '\u00AD'
-NON_BREAKING_SPACE = '\u00A0'
-WORD_SEPARATORS = [' ', NON_BREAKING_SPACE, '-', '.', ',',';',':','!','?']
-
-
-def hyphenate_sentence(hyph, sentense, separators):
-    if not separators:
-        syl = hyph.syllables(sentense)
-        return sentense if not syl else SOFT_HYPHEN.join(syl)
-    else:
-        res = []
-        head, *tail = separators
-        for part in str.split(sentense, head):
-            res.append(hyphenate_sentence(hyph, part, tail))
-        return head.join(res)
-
 
 def ns_tag(tag):
     if tag is not etree.Comment:
@@ -214,8 +196,9 @@ class Fb2XHTML:
 
         self.root = self.tree.getroot()
 
-        self.hyphenator = hyphen.Hyphenator(language=self.book_lang, directory=dic_dir)
+        self.hyphenator = MyHyphen(self.book_lang)
         self.hyphenate = config.current_profile['hyphens']
+        self.replaceNBSP = config.current_profile['hyphensReplaceNBSP']
 
         self.first_body = True  # Признак первого body
         self.font_list = []
@@ -421,7 +404,7 @@ class Fb2XHTML:
                             self.book_lang = t.text
                         else:
                             self.book_lang = 'ru'
-                        self.hyphenator = hyphen.Hyphenator(language=self.book_lang,directory=dic_dir)
+                        self.hyphenator.set_language(self.book_lang)
 
                     elif ns_tag(t.tag) == 'coverpage':
                         for c in t:
@@ -820,23 +803,10 @@ class Fb2XHTML:
         self.parse_format(elem)
         self.buff.append('</{0}>'.format(ns_tag(elem.tag)))
 
-    '''
-    def hyphenate_word(self, w):
-        res = []
-        for sub_w in str.split(w, NON_BREAKING_SPACE):
-            syl = self.hyphenator.syllables(sub_w)
-            res.append(sub_w if not syl else SOFT_HYPHEN.join(syl))
-        return NON_BREAKING_SPACE.join(res).replace(SOFT_HYPHEN + '-', '-')
-    '''
-
     def insert_hyphenation(self, s):
-        hs = ''
-        if s:
-            if self.hyphenator and self.hyphenate and not (self.header or self.subheader):
-                hs = hyphenate_sentence(self.hyphenator, html.unescape(s), WORD_SEPARATORS)
-            else:
-                hs = html.unescape(s)
-        return hs
+        if not s:
+            return ''
+        return html.unescape(s) if not self.hyphenator or not self.hyphenate or self.header or self.subheader else self.hyphenator.hyphenate_text(html.unescape(s), self.replaceNBSP)
 
     def parse_body(self, elem):
         self.body_name = elem.attrib['name'] if 'name' in elem.attrib else ''

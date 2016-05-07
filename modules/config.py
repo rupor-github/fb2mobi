@@ -42,6 +42,7 @@ class ConverterConfig:
         self.profiles['default']['screenWidth'] = None
         self.profiles['default']['transliterateAuthorAndTitle'] = None
         self.profiles['default']['hyphens'] = True
+        self.profiles['default']['hyphensReplaceNBSP'] = True
         self.profiles['default']['dropcaps'] = 'None'
         self.profiles['default']['tocMaxLevel'] = 1000
         self.profiles['default']['tocBeforeBody'] = False
@@ -171,6 +172,9 @@ class ConverterConfig:
                         if p.tag == 'hyphens':
                             self.profiles[prof_name]['hyphens'] = p.text.lower() == 'true'
 
+                        elif p.tag == 'hyphensReplaceNBSP':
+                            self.profiles[prof_name]['hyphensReplaceNBSP'] = p.text.lower() == 'true'
+
                         elif p.tag == 'dropcaps':
                             self.profiles[prof_name]['dropcaps'] = p.text
 
@@ -284,6 +288,7 @@ class ConverterConfig:
         for p in self.profiles:
             result.append(E('profile',
                             E('hyphens', str(self.profiles[p]['hyphens'])),
+                            E('hyphensReplaceNBSP', str(self.profiles[p]['hyphensReplaceNBSP'])),
                             E('dropcaps', str(self.profiles[p]['dropcaps'])),
                             E('tocMaxLevel', str(self.profiles[p]['tocMaxLevel'])),
                             E('tocBeforeBody', str(self.profiles[p]['tocBeforeBody'])),
