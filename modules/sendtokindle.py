@@ -18,16 +18,15 @@ class SendToKindle:
         self.convert = False
 
         self.parser = None
-        self.files = []
 
-    def send_mail(self):
+    def send_mail(self, files):
         msg = MIMEMultipart()
         msg['From'] = self.user_email
         msg['To'] = self.kindle_email
         msg['Subject'] = 'Convert' if self.convert else 'Sent to Kindle'
         msg.preamble = 'This email has been automatically sent by fb2mobi tool'
 
-        for file_path in self.files:
+        for file_path in files:
             fname = os.path.basename(file_path)
             msg.attach(MIMEApplication(open(file_path, 'rb').read(), Content_Disposition='attachment; filename="%s"' % fname, Name=fname))
 

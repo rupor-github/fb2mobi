@@ -139,6 +139,7 @@ def process_file(config, infile, outfile=None):
 
     # Если не задано имя выходного файла - вычислим
     if not outfile:
+
         outdir, outputfile = os.path.split(infile)
         outputfile = get_mobi_filename(outputfile, config.transliterate)
 
@@ -299,7 +300,7 @@ def process_file(config, infile, outfile=None):
             else:
                 config.log.info('Sending book...')
                 try:
-                    kindle = SendToKindle
+                    kindle = SendToKindle()
                     kindle.smtp_server = config.send_to_kindle['smtpServer']
                     kindle.smtp_port = config.send_to_kindle['smtpPort']
                     kindle.smtp_login = config.send_to_kindle['smtpLogin']
@@ -307,8 +308,7 @@ def process_file(config, infile, outfile=None):
                     kindle.user_email = config.send_to_kindle['fromUserEmail']
                     kindle.kindle_email = config.send_to_kindle['toKindleEmail']
                     kindle.convert = False
-                    kindle.files.append(outfile)
-                    kindle.send_mail()
+                    kindle.send_mail([outfile])
 
                     config.log.info('Book has been sent to "{0}"'.format(config.send_to_kindle['toKindleEmail']))
 
