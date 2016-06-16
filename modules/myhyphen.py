@@ -6,9 +6,16 @@ import hyphen
 DICTIONARIES_DIR = os.path.join(os.path.abspath(os.path.dirname(sys.executable)) if getattr(sys, 'frozen', False) else os.path.dirname(__file__), 'dictionaries')
 
 SOFT_HYPHEN = '\u00AD'
-NON_BREAKING_SPACE = '\u00A0'
 
-WORD_SEPARATORS = [' ', NON_BREAKING_SPACE, '-', '.', ',', ';', ':', '!', '?']
+NON_BREAKING_SPACE = '\u00A0'
+HYPHEN = '\u2010'
+NON_BREAKING_HYPHEN = '\u2011'
+MINUS_SIGN = '\u2212'
+EN_DASH = '\u2013'
+EM_DASH = '\u2014'
+HORIZONTAL_BAR = '\u2015'
+
+WORD_SEPARATORS = [' ', '“', '”', '"', '-', '.', ',', ';', ':', '!', '?', NON_BREAKING_SPACE, HYPHEN, NON_BREAKING_HYPHEN, MINUS_SIGN, EN_DASH, EM_DASH, HORIZONTAL_BAR]
 
 
 class MyHyphen:
@@ -17,6 +24,8 @@ class MyHyphen:
 
     def process_text(self, text, replace_nbsp, separators):
         if not separators:
+            if len(text) >= 100:
+                return text
             syl = self.hyphenator.syllables(text)
             return text if not syl else SOFT_HYPHEN.join(syl)
         else:
