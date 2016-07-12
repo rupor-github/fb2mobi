@@ -24,4 +24,11 @@ Program uses source code (modified) from following projects released under GPL:
 
 * [KindleUnpack](https://github.com/kevinhendricks/KindleUnpack)
 
+In order to build [Windows releases](https://github.com/rupor-github/fb2mobi/releases) I am using [this fork](https://bitbucket.org/anthony_tuininga/cx_freeze/pull-requests/87/allow-proper-handling-of-unicode-command/diff) of cx_Freeze 5.0 and following libraries:
+
+* cssutils-1.0.1
+* lxml-3.5.0
+* Pillow-3.1.1
+* PyHyphen-2.0.5
+
 Enjoy!
