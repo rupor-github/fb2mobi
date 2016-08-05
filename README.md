@@ -1,7 +1,7 @@
 This program is based on fb2conv program published by dnkorpushov on [the-ebook.org](http://www.the-ebook.org/forum/viewtopic.php?t=28447&postdays=0&postorder=asc&start=0) site.
 
 Original program (being Python 2) did not work well under Windows when non-russian system codepage was selected for non-Unicode programs. 
-In order to improve the situation I had to port it to Python 3 (3.5.1 at the moment). As I am only using it as a companion converter from [MyHomeLib](http://home-lib.net/) 
+In order to improve the situation I had to port it to Python 3. As I am only using it as a companion converter from [MyHomeLib](http://home-lib.net/) 
 it lost number of features and gained some bug fixes...
 
 Here is brief list of changes:
@@ -24,11 +24,11 @@ Program uses source code (modified) from following projects released under GPL:
 
 * [KindleUnpack](https://github.com/kevinhendricks/KindleUnpack)
 
-In order to build [Windows releases](https://github.com/rupor-github/fb2mobi/releases) I am using [this fork](https://bitbucket.org/anthony_tuininga/cx_freeze/pull-requests/87/allow-proper-handling-of-unicode-command/diff) of cx_Freeze 5.0 and following libraries:
+In order to build [Windows releases](https://github.com/rupor-github/fb2mobi/releases) I am using Python 3.5.2, [this fork](https://bitbucket.org/anthony_tuininga/cx_freeze/pull-requests/87/allow-proper-handling-of-unicode-command/diff) of cx_Freeze 5.0 and following libraries:
 
 * cssutils-1.0.1
-* lxml-3.5.0
-* Pillow-3.1.1
+* lxml-3.6.0
+* Pillow-3.3.0
 * PyHyphen-2.0.5
 
 Enjoy!
