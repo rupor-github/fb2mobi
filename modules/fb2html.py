@@ -196,9 +196,10 @@ class Fb2XHTML:
 
         self.root = self.tree.getroot()
 
-        self.hyphenator = MyHyphen(self.book_lang)
         self.hyphenate = config.current_profile['hyphens']
-        self.replaceNBSP = config.current_profile['hyphensReplaceNBSP']
+        if self.hyphenate:
+            self.replaceNBSP = config.current_profile['hyphensReplaceNBSP']
+            self.hyphenator = MyHyphen(self.book_lang)
 
         self.first_body = True  # Признак первого body
         self.font_list = []
@@ -404,7 +405,8 @@ class Fb2XHTML:
                             self.book_lang = t.text
                         else:
                             self.book_lang = 'ru'
-                        self.hyphenator.set_language(self.book_lang)
+                        if self.hyphenate and self.hyphenator:
+                            self.hyphenator.set_language(self.book_lang)
 
                     elif ns_tag(t.tag) == 'coverpage':
                         for c in t:
@@ -806,7 +808,7 @@ class Fb2XHTML:
     def insert_hyphenation(self, s):
         if not s:
             return ''
-        return html.unescape(s) if not self.hyphenator or not self.hyphenate or self.header or self.subheader else self.hyphenator.hyphenate_text(html.unescape(s), self.replaceNBSP)
+        return html.unescape(s) if not self.hyphenate or not self.hyphenator or self.header or self.subheader else self.hyphenator.hyphenate_text(html.unescape(s), self.replaceNBSP)
 
     def parse_body(self, elem):
         self.body_name = elem.attrib['name'] if 'name' in elem.attrib else ''
