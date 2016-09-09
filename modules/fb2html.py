@@ -786,7 +786,7 @@ class Fb2XHTML:
                     self.buff.append('<div class="blocknote">')
                     for note in self.current_notes:
                         if note[1]:
-                            self.buff.append('<p><span class="notenum">%s) </span>%s</p>' % (note[0], save_html(self.insert_hyphenation(''.join(note[1])))))
+                            self.buff.append('<p><span class="notenum">%s) </span>%s</p>' % (save_html(note[0]), save_html(self.insert_hyphenation(''.join(note[1])))))
                     self.buff.append('</div>')
                     self.current_notes = []
 
@@ -867,7 +867,7 @@ class Fb2XHTML:
                             back_ref = self.links_location[id_b]
                         except:
                             pass
-                        self.buff.append('<p class="floatnote"><a href="%s#%s" id="%s">%s).</a>&#160;%s</p>' % (back_ref, id_b, id, note[0] if len(note[0]) > 0 else '***', save_html(note[1])))
+                        self.buff.append('<p class="floatnote"><a href="%s#%s" id="%s">%s).</a>&#160;%s</p>' % (back_ref, id_b, id, save_html(note[0]) if len(note[0]) > 0 else '***', save_html(note[1])))
                     else:
                         continue
         else:
@@ -1056,11 +1056,11 @@ class Fb2XHTML:
             title = transliterate(title)
             book_author = transliterate(book_author)
 
-        self.buff.append('<dc:title>%s</dc:title>' % title)
+        self.buff.append('<dc:title>%s</dc:title>' % save_html(title))
         self.buff.append('<dc:language>%s</dc:language>' % self.book_lang)
         self.buff.append(
             '<dc:identifier id="BookId" opf:scheme="uuid">urn:uuid:{0}</dc:identifier>'.format(self.book_uuid))
-        self.buff.append('<dc:creator opf:role="aut">%s</dc:creator>' % book_author)
+        self.buff.append('<dc:creator opf:role="aut">%s</dc:creator>' % save_html(book_author))
         self.buff.append('<dc:publisher />')
 
         for genre in self.genres:
