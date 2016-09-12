@@ -780,7 +780,7 @@ class Fb2XHTML:
                 self.inline_image_mode = False
 
             if self.current_notes:
-                if self.notes_mode == 'inline':
+                if self.notes_mode == 'inline' and tag == 'span':
                     self.buff.append('<span class="inlinenote">[%s]</span>' % save_html(
                         self.insert_hyphenation(''.join(self.current_notes[0][1]))))
                     self.current_notes = []
