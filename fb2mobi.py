@@ -212,10 +212,15 @@ def process_file(config, infile, outfile=None):
     else:
         # Конвертируем в html
         config.log.info('Converting fb2 to html...')
-        fb2parser = Fb2XHTML(infile, outfile, temp_dir, config)
-        fb2parser.generate()
-        document_id = fb2parser.book_uuid
-        infile = os.path.join(temp_dir, 'OEBPS', 'content.opf')
+        try:
+            fb2parser = Fb2XHTML(infile, outfile, temp_dir, config)
+            fb2parser.generate()
+            document_id = fb2parser.book_uuid
+            infile = os.path.join(temp_dir, 'OEBPS', 'content.opf')
+        except:
+            config.log.critical('Error while converting file "{0}"'.format(infile))
+            config.log.debug('Getting details', exc_info=True)
+            return
 
     config.log.info('Processing took {0} sec.'.format(round(time.clock() - start_time, 2)))
 
@@ -253,6 +258,7 @@ def process_file(config, infile, outfile=None):
             else:
                 config.log.critical(e.winerror)
                 config.log.critical(e.strerror)
+                config.log.debug('Getting details', exc_info=True, stack_info=True)
                 raise e
 
     elif config.output_format.lower() == 'epub':
