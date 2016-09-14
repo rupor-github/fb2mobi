@@ -416,25 +416,26 @@ def process(args):
             config.log_file = args.log
         if args.loglevel:
             config.log_level = args.loglevel
+        if args.consolelevel:
+            config.console_level = args.consolelevel
         if args.recursive:
             config.recursive = True
         if args.nc:
             config.mhl = True
 
     log = logging.getLogger('fb2mobi')
-    log.setLevel(get_log_level(config.log_level))
+    log.setLevel("DEBUG")
+
+    log_stream_handler = logging.StreamHandler()
+    log_stream_handler.setLevel(get_log_level(config.console_level))
+    log_stream_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
+    log.addHandler(log_stream_handler)
 
     if config.log_file:
-        log_handler = logging.FileHandler(filename=config.log_file, mode='a', encoding='utf-8')
-        log_handler.setLevel(get_log_level(config.log_level))
-        log_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
-    else:
-        log_handler = logging.StreamHandler()
-        log_handler.setLevel(get_log_level(config.log_level))
-        log_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
-
-    if len(log.handlers) == 0:
-        log.addHandler(log_handler)
+        log_file_handler = logging.FileHandler(filename=config.log_file, mode='a', encoding='utf-8')
+        log_file_handler.setLevel(get_log_level(config.log_level))
+        log_file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
+        log.addHandler(log_file_handler)
 
     config.log = log
 
@@ -537,6 +538,7 @@ if __name__ == '__main__':
     argparser.add_argument('-d', '--debug', action='store_true', default=None, help='Keep imtermediate files in desctination directory')
     argparser.add_argument('--log', type=str, default=None, help='Log file name')
     argparser.add_argument('--log-level', dest='loglevel', type=str, default=None, help='Log level: INFO, ERROR, CRITICAL, DEBUG')
+    argparser.add_argument('--console-level', dest='consolelevel', type=str, default=None, help='Log level: INFO, ERROR, CRITICAL, DEBUG')
 
     hyphenate_group = argparser.add_mutually_exclusive_group()
     hyphenate_group.add_argument('--hyphenate', dest='hyphenate', action='store_true', default=None, help='Turn on hyphenation')
