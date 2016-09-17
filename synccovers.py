@@ -5,6 +5,10 @@ import os, sys, traceback
 
 import argparse
 import version
+from version import WINDOWS
+
+if WINDOWS:
+    import wincon
 
 from modules.mobi_split import mobi_read
 
@@ -79,20 +83,8 @@ def process_folder(inputdir, verbose):
 
 if __name__ == '__main__':
 
-    if sys.platform == "win32":
-        class UniStream(object):
-            __slots__ = ("fileno", "softspace",)
-
-            def __init__(self, fileobject):
-                self.fileno = fileobject.fileno()
-                self.softspace = False
-            def write(self, text):
-                os.write(self.fileno, text.encode("utf-8", errors='ignore'))
-            def flush(self):
-                pass
-
-        sys.stdout = UniStream(sys.stdout)
-        sys.stderr = UniStream(sys.stderr)
+    if WINDOWS:
+        wincon.enable()
 
     argparser = argparse.ArgumentParser(description='Synchronize covers for side-loaded books on Kindle. Version {0}'.format(version.VERSION))
     argparser.add_argument('inputdir', type=str, nargs='?', default=None,  help='Directory on mounted device to look for books.')

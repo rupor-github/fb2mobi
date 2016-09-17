@@ -20,9 +20,10 @@ Here is brief list of changes:
 * Added support for latest Kidle firmware (>= 5.7.2)
 * Added simple tool to generate simple thumbnails on Kindle devices
 
-Program uses source code (modified) from following projects released under GPL:
+Program uses source code (modified) from following projects released under GPL and MIT licenses:
 
 * [KindleUnpack](https://github.com/kevinhendricks/KindleUnpack)
+* [win-unicode-console](https://github.com/Drekin/win-unicode-console)
 
 In order to build [Windows releases](https://github.com/rupor-github/fb2mobi/releases) I am using Python 3.5.2, [this fork](https://bitbucket.org/anthony_tuininga/cx_freeze/pull-requests/87/allow-proper-handling-of-unicode-command/diff) of cx_Freeze 5.0 and following libraries:
 
