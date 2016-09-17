@@ -15,6 +15,7 @@ class ConverterConfig:
         self.log_file = None
         self.original_log_file = None
         self.log_level = 'Info'
+        self.console_level = 'Info'
         self.output_format = 'epub'
         self.kindle_compression_level = 1
         self.no_dropcaps_symbols = '\'"-.…0123456789‒–—«»'
@@ -102,6 +103,9 @@ class ConverterConfig:
 
             elif e.tag == 'logLevel':
                 self.log_level = e.text
+
+            elif e.tag == 'consoleLevel':
+                self.console_level = e.text
 
             elif e.tag == 'outputFormat':
                 self.output_format = e.text
@@ -339,6 +343,7 @@ class ConverterConfig:
                    E('debug', str(self.debug)),
                    E('logFile', self.original_log_file) if self.original_log_file else E('logFile'),
                    E('logLevel', self.log_level),
+                   E('consoleLevel', self.console_level),
                    E('outputFormat', self.output_format),
                    E('kindleCompressionLevel', str(self.kindle_compression_level)),
                    E('noDropcapsSymbols', self.no_dropcaps_symbols),
