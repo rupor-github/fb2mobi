@@ -119,6 +119,8 @@ class Fb2XHTML:
         self.vignettes = config.current_profile['vignettes']
         self.vignette_files = []
 
+        self.removepngtransparency = config.current_profile['removePngTransparency']  # Remove transparency in PNG images
+
         self.annotation_title = config.current_profile['annotationTitle']  # Заголовок для раздела аннотации
         self.toc_title = config.current_profile['tocTitle']  # Заголовок для раздела содержания
 
@@ -224,6 +226,8 @@ class Fb2XHTML:
             elif ns_tag(child.tag) == 'binary':
                 self.parse_binary(child)
 
+        if self.removepngtransparency:
+            self.remove_png_transparency()
         self.correct_links()
         if self.generate_toc_page:
             self.generate_toc()
@@ -280,6 +284,39 @@ class Fb2XHTML:
             write_file(str(stylesheet.cssText, 'utf-8'), os.path.join(self.temp_content_dir, 'stylesheet.css'))
         else:
             copy_file(self.css_file, os.path.join(self.temp_content_dir, 'stylesheet.css'))
+
+    def remove_png_transparency(self):
+        self.log.info('Removing PNG transparency...')
+        for img_rel_path in self.image_file_list:
+            if os.path.splitext(img_rel_path)[1] == '.png':
+                self.log.debug('Processing file "{}"'.format(img_rel_path))
+
+                try:
+                    filename = os.path.split(img_rel_path)[1]
+                    img_full_path = os.path.join(self.temp_content_dir, 'images', filename)
+                    img = Image.open(img_full_path)
+
+                    if img.format == 'PNG' and (img.mode in ('RGBA', 'LA')
+                            or (img.mode in ('RGB', 'L', 'P') and 'transparency' in img.info)):
+
+                        if img.mode == "P" and type(img.info.get("transparency")) is bytes:
+                            img = img.convert("RGBA")
+
+                        if img.mode in ("L", "LA"):
+                            bg = Image.new("L", img.size, 255)
+                        else:
+                            bg = Image.new("RGB", img.size, (255, 255, 255))
+
+                        alpha = img.convert("RGBA").split()[-1]
+                        bg.paste(img, mask=alpha)
+
+                        img_temp_path = os.path.splitext(img_full_path)[0] + "-o.png"
+                        bg.save(img_temp_path, dpi=img.info.get("dpi"))
+                        os.replace(img_temp_path, img_full_path)
+
+                except:
+                    self.log.warning('Error while removing transparency in file "{}"'.format(img_rel_path))
+                    self.log.debug('Getting details:', exc_info=True)
 
     def correct_links(self):
         for fl in self.html_file_list:
