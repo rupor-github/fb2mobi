@@ -483,6 +483,8 @@ def process(args):
             config.current_profile['tocTitle'] = args.toctitle
         if args.chapteronnewpage is not None:
             config.current_profile['chapterOnNewPage'] = args.chapteronnewpage
+        if args.removepngtransparency is not None:
+            config.current_profile['removePngTransparency'] = args.removepngtransparency
         if args.noMOBIoptimization:
             config.noMOBIoptimization = args.noMOBIoptimization
         if args.sendtokindle is not None:
@@ -592,6 +594,10 @@ if __name__ == '__main__':
     tocplace_group = argparser.add_mutually_exclusive_group()
     tocplace_group.add_argument('--toc-before-body', dest='tocbeforebody', action='store_true', default=None, help='Put TOC at the book beginning')
     tocplace_group.add_argument('--toc-after-body', dest='tocbeforebody', action='store_false', default=None, help='Put TOC at the book end')
+
+    pngtransparency_group = argparser.add_mutually_exclusive_group()
+    pngtransparency_group.add_argument('--remove-png-transparency', dest='removepngtransparency', action='store_true', default=None, help='Remove transparency in PNG images')
+    pngtransparency_group.add_argument('--no-remove-png-transparency', dest='removepngtransparency', action='store_false', default=None, help='Do not remove transparency in PNG images')
 
     # Для совместимости с MyHomeLib добавляем аргументы, которые передает MHL в fb2mobi.exe
     argparser.add_argument('-nc', action='store_true', default=False, help='For MyHomeLib compatibility')

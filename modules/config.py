@@ -64,6 +64,7 @@ class ConverterConfig:
         self.profiles['default']['generateAnnotationPage'] = True
         self.profiles['default']['generateOPFGuide'] = True
         self.profiles['default']['kindleRemovePersonalLabel'] = True
+        self.profiles['default']['removePngTransparency'] = False
 
         self.current_profile = {}
         self.mhl = False
@@ -171,6 +172,7 @@ class ConverterConfig:
                     self.profiles[prof_name]['generateOPFGuide'] = True
                     self.profiles[prof_name]['flatTOC'] = True
                     self.profiles[prof_name]['kindleRemovePersonalLabel'] = True
+                    self.profiles[prof_name]['removePngTransparency'] = False
 
                     for p in prof:
                         if p.tag == 'hyphens':
@@ -208,6 +210,9 @@ class ConverterConfig:
 
                         elif p.tag == 'kindleRemovePersonalLabel':
                             self.profiles[prof_name]['kindleRemovePersonalLabel'] = p.text.lower() == 'true'
+
+                        elif p.tag == 'removePngTransparency':
+                            self.profiles[prof_name]['removePngTransparency'] = p.text.lower() == 'true'
 
                         elif p.tag == 'generateAnnotationPage':
                             self.profiles[prof_name]['generateAnnotationPage'] = p.text.lower() == 'true'
@@ -309,6 +314,7 @@ class ConverterConfig:
                             E('generateAnnotationPage', str(self.profiles[p]['generateAnnotationPage'])),
                             E('generateOPFGuide', str(self.profiles[p]['generateOPFGuide'])),
                             E('kindleRemovePersonalLabel', str(self.profiles[p]['kindleRemovePersonalLabel'])),
+                            E('removePngTransparency', str(self.profiles[p]['removePngTransparency'])),
                             E('vignettes',
                               *self._getVignettes(p)
                               ),
