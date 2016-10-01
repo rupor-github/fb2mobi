@@ -663,10 +663,12 @@ class mobi_read:
             thumb_index = 0xffffffff
 
         if cover_index != 0xffffffff:
+            width, height = 0, 0
             if thumb_index != 0xffffffff:
                 image = readsection(datain, thumb_index)
                 self.thumbnail = Image.open(BytesIO(image))
-            else:
+                width, height = self.thumbnail.size               
+            if width < 330 and height < 470:
                 image = readsection(datain, cover_index)
                 self.thumbnail = Image.open(BytesIO(image))
                 self.thumbnail.thumbnail((330, 470), Image.ANTIALIAS)
