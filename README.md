@@ -37,4 +37,6 @@ In order to build [Windows releases](https://github.com/rupor-github/fb2mobi/rel
 * Pillow-3.3.0
 * PyHyphen-2.0.5
 
+If you are not on Windows and/or not using "frozen" distribution you wiould need to download [Amazon's KindleGen](https://www.amazon.com/gp/feature.html?docId=1000765211).
+
 Enjoy!
