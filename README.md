@@ -35,7 +35,7 @@ In order to build [Windows releases](https://github.com/rupor-github/fb2mobi/rel
 * cssutils-1.0.1
 * lxml-3.6.0
 * Pillow-3.3.0
-* PyHyphen-2.0.5
+* PyHyphen-2.0.5 (Note: on Windows PyHyphen 2.0.5 does not handle Unicode path names, which prevents converter to work properly when installed in directories with localized names. Use https://github.com/rupor-github/pyhyphen 2.0.6 instead if necessary)
 
 If you are not on Windows and/or not using "frozen" distribution you would need to download [Amazon's KindleGen](https://www.amazon.com/gp/feature.html?docId=1000765211).
 
