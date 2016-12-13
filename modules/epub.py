@@ -45,7 +45,7 @@ class EpubProc:
     def insert_hyphenation(self, s):
         if not s:
             return ''
-        return html.unescape(s) if not self.hyphenator or not self.hyphenate or self.header or self.subheader else self.hyphenator.hyphenate_text(html.unescape(s), self.replaceNBSP)
+        return html.unescape(s) if not self.hyphenator or not self.hyphenate else self.hyphenator.hyphenate_text(html.unescape(s), self.replaceNBSP)
 
     def process(self):
 

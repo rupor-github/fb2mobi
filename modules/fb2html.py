@@ -88,7 +88,14 @@ class Fb2XHTML:
         self.no_paragraph = False  # Индикатор, что последующий парагаф находится в эпиграфе, аннотации и т.п.
         self.first_header_in_body = True  # Признак первого заголовка в секции body
 
-        self.book_title = ''  # Название книги
+        # Make sure book title is never empty
+        temp_book_name = os.path.basename(fb2file)
+        if not temp_book_name:
+            temp_book_name = fb2file
+        if os.path.splitext(temp_book_name)[1].lower() == '.fb2':
+            temp_book_name = os.path.splitext(temp_book_name)[0]
+
+        self.book_title = temp_book_name  # Название книги
         self.book_author = ''  # Автор
         self.book_lang = 'ru'  # Язык книги, по-умолчанию 'ru'
         self.book_series = ''  # Книжная серия
