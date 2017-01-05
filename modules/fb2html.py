@@ -351,20 +351,20 @@ class Fb2XHTML:
         if not os.path.exists(self.temp_content_dir):
             os.makedirs(self.temp_content_dir)
 
-        parser = etree.XMLParser(encoding='utf-8')
+        parser = etree.XMLParser(encoding='utf-8', remove_blank_text=True)
         xhtml = etree.parse(io.StringIO(self.get_buff()), parser)
         indent(xhtml.getroot())
-        xhtml.write(filename, encoding='utf-8', method='xml', xml_declaration=True)
+        xhtml.write(filename, encoding='utf-8', method='xml', xml_declaration=True, pretty_print=False)
 
     def write_buff_to_xml(self, filename):
         d = os.path.dirname(filename)
         if not os.path.exists(d):
             os.makedirs(d)
 
-        parser = etree.XMLParser(encoding='utf-8')
+        parser = etree.XMLParser(encoding='utf-8', remove_blank_text=True)
         xml = etree.parse(io.StringIO(self.get_buff()), parser)
         indent(xml.getroot())
-        xml.write(filename, encoding='utf-8', method='xml', xml_declaration=True)
+        xml.write(filename, encoding='utf-8', method='xml', xml_declaration=True, pretty_print=False)
 
     def parse_note_elem(self, elem, body_name):
         note_title = ''

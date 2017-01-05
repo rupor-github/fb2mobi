@@ -525,7 +525,7 @@ def process(args):
 if __name__ == '__main__':
 
     if WINDOWS:
-        wincon.enable()
+        wincon.enable(wincon.stdin_text, wincon.stdout_text, wincon.stderr_text)
 
     # Настройка парсера аргументов
     argparser = argparse.ArgumentParser(

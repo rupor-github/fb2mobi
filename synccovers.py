@@ -84,7 +84,7 @@ def process_folder(inputdir, verbose):
 if __name__ == '__main__':
 
     if WINDOWS:
-        wincon.enable()
+        wincon.enable(wincon.stdin_text, wincon.stdout_text, wincon.stderr_text)
 
     argparser = argparse.ArgumentParser(description='Synchronize covers for side-loaded books on Kindle. Version {0}'.format(version.VERSION))
     argparser.add_argument('inputdir', type=str, nargs='?', default=None,  help='Directory on mounted device to look for books.')
