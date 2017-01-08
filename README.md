@@ -32,12 +32,14 @@ Program uses source code (modified) from following projects released under GPL a
 * [KindleUnpack](https://github.com/kevinhendricks/KindleUnpack)
 * [win-unicode-console](https://github.com/Drekin/win-unicode-console)
 
-In order to build [Windows releases](https://github.com/rupor-github/fb2mobi/releases) I am using Python 3.5.2, [this fork](https://bitbucket.org/anthony_tuininga/cx_freeze/pull-requests/87/allow-proper-handling-of-unicode-command/diff) of cx_Freeze 5.0 and following libraries:
+In order to build [Windows releases](https://github.com/rupor-github/fb2mobi/releases) I am using Python 3.6.0, [cx_Freeze 5.0.1](https://bitbucket.org/anthony_tuininga/cx_freeze) and following libraries:
 
 * cssutils-1.0.1
-* lxml-3.6.0
-* Pillow-3.3.0
-* PyHyphen-2.0.5 (Note: on Windows PyHyphen 2.0.5 does not handle Unicode path names, which prevents converter to work properly when installed in directories with localized names. Use https://github.com/rupor-github/pyhyphen 2.0.6 instead if necessary)
+* lxml-3.7.1
+* Pillow-4.0.0
+* PyHyphen-2.0.5 
+  * on Windows PyHyphen 2.0.5 does not handle Unicode path names, which prevents converter to work properly when installed in directories with localized names (Use https://github.com/rupor-github/pyhyphen 2.0.6 instead if necessary)
+  * on Windows usage of Python 3.6 pymalloc interface in hjn corrupts Python heap and prevents program from working (Use https://github.com/rupor-github/pyhyphen 2.0.6 instead if necessary)
 
 If you are not on Windows and/or not using "frozen" distribution you would need to download [Amazon's KindleGen](https://www.amazon.com/gp/feature.html?docId=1000765211).
 

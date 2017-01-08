@@ -761,26 +761,33 @@ class Fb2XHTML:
                 self.inline_image_mode = True
 
         if elem.text:
-            self.page_length += len(elem.text)
-            if self.page_length >= self.characters_per_page:
+            if self.current_file in self.pages_list and self.page_length + len(elem.text) >= self.characters_per_page:
                 page = self.pages_list[self.current_file]
-                head, sep, tail = elem.text.rpartition(' ')
-                if sep == ' ':
-                    sep = ' <a class="pagemarker" id="page_{0:d}"/>'.format(page)
-                    self.page_length = len(tail)
-                    hs = self.insert_hyphenation(head)
+                text = ''
+                for w in elem.text.split(' '):
+                    text = ' '.join([text, w])
+                    if self.page_length + len(text) >= self.characters_per_page:
+                        hs = self.insert_hyphenation(text)
+                        if dodropcaps > 0:
+                            self.buff.append('<span class="dropcaps">{}</span>{}'.format(hs[0:dodropcaps], save_html(hs[dodropcaps:])))
+                            dodropcaps = 0
+                        else:
+                            self.buff.append(save_html(hs))
+                        self.buff.append('<a class="pagemarker" id="page_{0:d}"/>'.format(page))
+                        page += 1
+                        text = ''
+                        self.page_length = 0
+
+                self.page_length = len(text)
+                if len(text) > 0:
+                    hs = self.insert_hyphenation(text)
                     if dodropcaps > 0:
                         self.buff.append('<span class="dropcaps">{}</span>{}'.format(hs[0:dodropcaps], save_html(hs[dodropcaps:])))
                     else:
                         self.buff.append(save_html(hs))
-                    self.buff.append(sep)
-                    self.buff.append(save_html(self.insert_hyphenation(tail)))
-                else:
-                    self.page_length = 0
-                    self.buff.append(self.insert_hyphenation(elem.text))
-                    self.buff.append('<a class="pagemarker" id="page_{0:d}"/>'.format(page))
-                self.pages_list[self.current_file] = page + 1
+                self.pages_list[self.current_file] = page
             else:
+                self.page_length += len(elem.text)
                 hs = self.insert_hyphenation(elem.text)
                 if dodropcaps > 0:
                     self.buff.append('<span class="dropcaps">{}</span>{}'.format(hs[0:dodropcaps], save_html(hs[dodropcaps:])))
@@ -902,6 +909,7 @@ class Fb2XHTML:
             self.html_file_list.append(self.current_file)
 
         self.pages_list[self.current_file] = 0
+        self.page_length = 0
 
         if self.notes_mode in ('inline', 'block', 'float'):
             notes_bodies = self.notes_bodies.replace(' ', '').split(',')

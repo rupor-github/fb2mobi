@@ -19,11 +19,7 @@ except:
     pass
 
 includes = [
-    'lxml.etree',
     'lxml._elementpath',
-    'gzip',
-    'PIL',
-    'hyphen',
     'modules.default_css'
 ]
 
@@ -50,9 +46,11 @@ setup(
         'build_exe': {
 #            'silent': 1,
             'build_exe': 'dist',
+            'zip_exclude_packages': '',
+            'zip_include_packages': '*',
             'include_files': data_files,
             'includes': includes,
-            'excludes': excludes
+            'excludes': excludes,
         }
     },
     executables = [

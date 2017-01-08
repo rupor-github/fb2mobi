@@ -14,10 +14,6 @@ import shutil
 import uuid
 
 import version
-from version import WINDOWS
-
-if WINDOWS:
-    import wincon
 
 from modules.utils import transliterate
 from modules.fb2html import Fb2XHTML
@@ -562,9 +558,6 @@ def process(args):
 
 
 if __name__ == '__main__':
-
-    if WINDOWS:
-        wincon.enable(wincon.stdin_text, wincon.stdout_text, wincon.stderr_text)
 
     # Настройка парсера аргументов
     argparser = argparse.ArgumentParser(
