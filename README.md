@@ -27,10 +27,9 @@ Here is brief list of changes:
 
 More info can be found on [russian forum](http://www.the-ebook.org/forum/viewtopic.php?t=30380).
 
-Program uses source code (modified) from following projects released under GPL and MIT licenses:
+Program uses source code (modified) from following projects released under GPL:
 
 * [KindleUnpack](https://github.com/kevinhendricks/KindleUnpack)
-* [win-unicode-console](https://github.com/Drekin/win-unicode-console)
 
 In order to build [Windows releases](https://github.com/rupor-github/fb2mobi/releases) I am using Python 3.6.0, [cx_Freeze 5.0.1](https://bitbucket.org/anthony_tuininga/cx_freeze) and following libraries:
 
