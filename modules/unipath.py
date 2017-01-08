@@ -1,6 +1,4 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# vim:ts=4:sw=4:softtabstop=4:smarttab:expandtab
 # borrowed from https://github.com/kevinhendricks/KindleUnpack and modified
 
 from __future__ import unicode_literals, division, absolute_import, print_function

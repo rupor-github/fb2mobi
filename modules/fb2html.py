@@ -133,15 +133,13 @@ class Fb2XHTML:
 
         self.chaptersplit = config.current_profile['chapterOnNewPage']  # Разделять на отдельные файлы по главам
 
-        self.tocbeforebody = config.current_profile[
-            'tocBeforeBody']  # Положение содержания - в начале либо в конце книги
+        self.tocbeforebody = config.current_profile['tocBeforeBody']  # Положение содержания - в начале либо в конце книги
         self.transliterate_author_and_title = config.transliterate_author_and_title
 
         self.screen_width = config.screen_width
         self.screen_height = config.screen_height
 
-        self.flat_toc = config.current_profile[
-            'flatTOC']  # Признак плоского (одноуровнего оглавления), либо иерархического
+        self.flat_toc = config.current_profile['flatTOC']  # Признак плоского (одноуровнего оглавления), либо иерархического
 
         self.toc = {}  # Содрержание, формируется по мере парсинга
         self.toc_index = 1  # Текущий номер раздела содержания
@@ -162,6 +160,11 @@ class Fb2XHTML:
 
         self.html_file_list = []  # Массив для хранения списка сгенерированных xhtml файлов
         self.image_file_list = []  # Массив для хранения списка картинок
+
+        self.pages_list = {} # Additional pages per file
+        self.page_length = 0
+
+        self.characters_per_page = config.characters_per_page
 
         self.genres = []
 
@@ -250,6 +253,7 @@ class Fb2XHTML:
             except:
                 self.log.warning('File {} not found.'.format(v))
 
+        self.generate_pagemap()
         self.generate_opf()
         self.generate_container()
         self.generate_mimetype()
@@ -500,7 +504,7 @@ class Fb2XHTML:
                             self.html_file_list.append(self.current_file)
 
                             self.buff.append(HTMLHEAD)
-                            self.buff.append('<div class="annotation"><div class="h1">%s</div>' % self.annotation_title)
+                            self.buff.append('<div class="annotation"><div class="h1">{0}</div>'.format(self.annotation_title))
                             self.parse_format(t, 'div')
                             self.buff.append('</div>')
                             self.buff.append(HTMLFOOT)
@@ -536,7 +540,7 @@ class Fb2XHTML:
         self.buff.append('<div class="emptyline" />')
 
     def parse_title(self, elem):
-        toc_ref_id = 'tocref%s' % self.toc_index
+        toc_ref_id = 'tocref{0}'.format(self.toc_index)
         toc_title = etree.tostring(elem, method='text', encoding='utf-8').decode('utf-8').strip()
         p = re.compile('\[.*\]')  # Удалим остатки ссылок
         toc_title = p.sub('', toc_title)
@@ -545,7 +549,7 @@ class Fb2XHTML:
             self.header = True
             self.first_chapter_line = True
 
-            self.buff.append('<div class="titleblock" id="%s">' % toc_ref_id)
+            self.buff.append('<div class="titleblock" id="{0}">'.format(toc_ref_id))
 
             if not self.body_name and self.first_header_in_body:
                 vignette = self.get_vignette('h0', 'beforeTitle')
@@ -561,7 +565,7 @@ class Fb2XHTML:
                         '<div class="vignette_title_after"><img src="vignettes/{0}" /></div>'.format(vignette))
 
             else:
-                level = 'h%s' % (self.current_header_level if self.current_header_level <= 6 else 6)
+                level = 'h{0}'.format(self.current_header_level if self.current_header_level <= 6 else 6)
 
                 vignette = self.get_vignette(level, 'beforeTitle')
                 if vignette:
@@ -577,10 +581,9 @@ class Fb2XHTML:
 
             if self.first_header_in_body:
                 self.current_header_level = 0
-            self.toc[self.toc_index] = ['%s#%s' % (self.current_file, toc_ref_id), toc_title, self.current_header_level,
-                                        self.body_name]
+            self.toc[self.toc_index] = ['{0}#{1}'.format(self.current_file, toc_ref_id), toc_title, self.current_header_level, self.body_name]
         else:
-            self.buff.append('<div class="titlenotes" id="%s">' % toc_ref_id)
+            self.buff.append('<div class="titlenotes" id="{0}">'.format(toc_ref_id))
             self.parse_format(elem, 'div')
 
         self.buff.append('</div>')
@@ -606,15 +609,15 @@ class Fb2XHTML:
 
         if self.inline_image_mode:
             if img_id:
-                self.buff.append('<img id="%s" class="inlineimage" src="images/%s" alt="%s"/>' % (img_id, image, image))
+                self.buff.append('<img id="{0}" class="inlineimage" src="images/{1}" alt="{2}"/>'.format(img_id, image, image))
             else:
-                self.buff.append('<img class="inlineimage" src="images/%s" alt="%s"/>' % (image, image))
+                self.buff.append('<img class="inlineimage" src="images/{0}" alt="{1}"/>'.format(image, image))
         else:
             if img_id:
-                self.buff.append('<div id="%s" class="image">' % img_id)
+                self.buff.append('<div id="{0}" class="image">'.format(img_id))
             else:
                 self.buff.append('<div class="image">')
-            self.buff.append('<img src="images/%s" alt="%s"/>' % (image, image))
+            self.buff.append('<img src="images/{0}" alt="{1}"/>'.format(image, image))
             self.buff.append('</div>')
 
         self.parse_format(elem)
@@ -679,6 +682,7 @@ class Fb2XHTML:
 
         if not self.body_name:
             if self.chaptersplit:
+
                 self.buff.append(HTMLFOOT)
                 self.write_buff_to_xhtml()
 
@@ -688,10 +692,13 @@ class Fb2XHTML:
                 self.html_file_list.append(self.current_file)
                 self.buff.append(HTMLHEAD)
 
+                self.pages_list[self.current_file] = 0
+                self.page_length = 0
+
         self.parse_format(elem, tag='div', css='section')
 
         if not self.body_name:
-            level = 'h%s' % (self.current_header_level if self.current_header_level <= 6 else 6)
+            level = 'h{0}'.format(self.current_header_level if self.current_header_level <= 6 else 6)
             vignette = self.get_vignette(level, 'chapterEnd')
             if vignette:
                 self.buff.append('<p class="vignette_chapter_end"><img src="vignettes/{0}" /></p>'.format(vignette))
@@ -726,7 +733,7 @@ class Fb2XHTML:
                 note = self.notes_dict[note_id]
                 self.current_notes.append(note)
                 tag = 'span'
-                css = '%sanchor' % self.notes_mode
+                css = '{0}anchor'.format(self.notes_mode)
                 href = None
             except KeyError:
                 pass
@@ -734,17 +741,17 @@ class Fb2XHTML:
             elem.set('id', 'back_' + href[1:])
 
         if tag:
-            self.buff.append('<%s' % tag)
+            self.buff.append('<{0}'.format(tag))
             if css:
-                self.buff.append(' class="%s"' % css)
+                self.buff.append(' class="{0}"'.format(css))
             if 'id' in elem.attrib:
                 new_id = save_html(sanitize_id(elem.attrib['id']))
                 if new_id != elem.attrib['id']:
                     self.log.warning('id "{}" for tag "{}" was sanitized. This may create problems with links (TOC, notes) - it is better to fix original file.'.format(new_id, tag))
-                self.buff.append(' id="%s"' % new_id)
+                self.buff.append(' id="{}"'.format(new_id))
                 self.links_location[new_id] = self.current_file
             if href:
-                self.buff.append(' href="%s"' % save_html(href))
+                self.buff.append(' href="{}"'.format(save_html(href)))
             if css == 'section':
                 self.buff.append(' />')
             else:
@@ -754,11 +761,31 @@ class Fb2XHTML:
                 self.inline_image_mode = True
 
         if elem.text:
-            hs = self.insert_hyphenation(elem.text)
-            if dodropcaps > 0:
-                self.buff.append('<span class="dropcaps">%s</span>%s' % (hs[0:dodropcaps], save_html(hs[dodropcaps:])))
+            self.page_length += len(elem.text)
+            if self.page_length >= self.characters_per_page:
+                page = self.pages_list[self.current_file]
+                head, sep, tail = elem.text.rpartition(' ')
+                if sep == ' ':
+                    sep = ' <a class="pagemarker" id="page_{0:d}"/>'.format(page)
+                    self.page_length = len(tail)
+                    hs = self.insert_hyphenation(head)
+                    if dodropcaps > 0:
+                        self.buff.append('<span class="dropcaps">{}</span>{}'.format(hs[0:dodropcaps], save_html(hs[dodropcaps:])))
+                    else:
+                        self.buff.append(save_html(hs))
+                    self.buff.append(sep)
+                    self.buff.append(save_html(self.insert_hyphenation(tail)))
+                else:
+                    self.page_length = 0
+                    self.buff.append(self.insert_hyphenation(elem.text))
+                    self.buff.append('<a class="pagemarker" id="page_{0:d}"/>'.format(page))
+                self.pages_list[self.current_file] = page + 1
             else:
-                self.buff.append(save_html(hs))
+                hs = self.insert_hyphenation(elem.text)
+                if dodropcaps > 0:
+                    self.buff.append('<span class="dropcaps">{}</span>{}'.format(hs[0:dodropcaps], save_html(hs[dodropcaps:])))
+                else:
+                    self.buff.append(save_html(hs))
 
         for e in elem:
             if e.tag == etree.Comment:
@@ -818,25 +845,25 @@ class Fb2XHTML:
             if css == 'section':
                 pass
             else:
-                self.buff.append('</%s>' % tag)
+                self.buff.append('</{0}>'.format(tag))
             # Для inline-картинок
             if tag == 'p':
                 self.inline_image_mode = False
 
             if self.current_notes:
                 if self.notes_mode == 'inline' and tag == 'span':
-                    self.buff.append('<span class="inlinenote">[%s]</span>' % save_html(
-                        self.insert_hyphenation(''.join(self.current_notes[0][1]))))
+                    self.buff.append('<span class="inlinenote">[{0}]</span>'.format(save_html(self.insert_hyphenation(''.join(self.current_notes[0][1])))))
                     self.current_notes = []
                 elif self.notes_mode == 'block' and tag == 'p':
                     self.buff.append('<div class="blocknote">')
                     for note in self.current_notes:
                         if note[1]:
-                            self.buff.append('<p><span class="notenum">%s) </span>%s</p>' % (save_html(note[0]), save_html(self.insert_hyphenation(''.join(note[1])))))
+                            self.buff.append('<p><span class="notenum">{0}) </span>{1}</p>'.format(save_html(note[0]), save_html(self.insert_hyphenation(''.join(note[1])))))
                     self.buff.append('</div>')
                     self.current_notes = []
 
         if elem.tail:
+            self.page_length += len(elem.tail)
             self.buff.append(save_html(self.insert_hyphenation(elem.tail)))
 
     def parse_table_element(self, elem):
@@ -874,6 +901,8 @@ class Fb2XHTML:
             self.current_file = '{0}.xhtml'.format(hashlib.md5(bytes(self.body_name, 'utf-8')).hexdigest())
             self.html_file_list.append(self.current_file)
 
+        self.pages_list[self.current_file] = 0
+
         if self.notes_mode in ('inline', 'block', 'float'):
             notes_bodies = self.notes_bodies.replace(' ', '').split(',')
             if self.body_name not in notes_bodies:
@@ -881,23 +910,23 @@ class Fb2XHTML:
             elif self.notes_mode == 'float':
                 if len(self.notes_order) > 0:
                     toc_title = self.body_name[0].upper() + self.body_name[1:]
-                    toc_ref_id = 'tocref%s' % self.toc_index
+                    toc_ref_id = 'tocref{0}'.format(self.toc_index)
 
-                    self.buff.append('<div class="titleblock" id="%s">' % toc_ref_id)
+                    self.buff.append('<div class="titleblock" id="{0}">'.format(toc_ref_id))
 
                     vignette = self.get_vignette('h0', 'beforeTitle')
                     if vignette:
                         self.buff.append(
                             '<div class="vignette_title_before"><img src="vignettes/{0}" /></div>'.format(vignette))
 
-                    self.buff.append('<div class="h0"><p class="title">%s</p></div>' % toc_title)
+                    self.buff.append('<div class="h0"><p class="title">{0}</p></div>'.format(toc_title))
 
                     vignette = self.get_vignette('h0', 'afterTitle')
                     if vignette:
                         self.buff.append(
                             '<div class="vignette_title_after"><img src="vignettes/{0}" /></div>'.format(vignette))
 
-                    self.toc[self.toc_index] = ['%s#%s' % (self.current_file, toc_ref_id), toc_title, 0, self.body_name]
+                    self.toc[self.toc_index] = ['{0}#{1}'.format(self.current_file, toc_ref_id), toc_title, 0, self.body_name]
 
                     self.buff.append('</div>')
                     self.toc_index += 1
@@ -913,7 +942,7 @@ class Fb2XHTML:
                             back_ref = self.links_location[id_b]
                         except:
                             pass
-                        self.buff.append('<p class="floatnote"><a href="%s#%s" id="%s">%s).</a>&#160;%s</p>' % (back_ref, id_b, id, save_html(note[0]) if len(note[0]) > 0 else '***', save_html(note[1])))
+                        self.buff.append('<p class="floatnote"><a href="{0]#{1}" id="{2}">{3}).</a>&#160;{4}</p>'.format(back_ref, id_b, id, save_html(note[0]) if len(note[0]) > 0 else '***', save_html(note[1])))
                     else:
                         continue
         else:
@@ -928,7 +957,7 @@ class Fb2XHTML:
         self.current_file = 'toc.xhtml'
 
         self.buff.append('<div class="toc">')
-        self.buff.append('<div class="h1" id="toc">%s</div>' % self.toc_title)
+        self.buff.append('<div class="h1" id="toc">{0}</div>'.format(self.toc_title))
         for (idx, item) in self.toc.items():
 
             if item[2] <= self.toc_max_level:  # Ограничение уровня вложенности секций для TOC
@@ -936,15 +965,15 @@ class Fb2XHTML:
                     ind = item[2] if item[2] <= 6 else 6
                     if ind == 0:
                         lines = item[1].splitlines()
-                        self.buff.append('<div class="indent0"><a href="%s">' % item[0])
+                        self.buff.append('<div class="indent0"><a href="{0}">'.format(item[0]))
                         for line in lines:
                             if line.strip():
                                 self.buff.append(save_html(line.strip()) + '<br/>')
                         self.buff.append('</a></div>')
                     else:
-                        self.buff.append('<div class="indent%s"><a href="%s">%s</a></div>' % (ind, item[0], save_html(' '.join(item[1].split()))))
+                        self.buff.append('<div class="indent{0}"><a href="{1}">{2}</a></div>'.format(ind, item[0], save_html(' '.join(item[1].split()))))
                 else:
-                    self.buff.append('<div class="indent0"><a href="%s">%s</a></div>' % (item[0], save_html(' '.join(item[1].split()))))
+                    self.buff.append('<div class="indent0"><a href="{0}">{1}</a></div>'.format(item[0], save_html(' '.join(item[1].split()))))
 
         self.buff.append('</div>')
         self.buff.append(HTMLFOOT)
@@ -953,9 +982,9 @@ class Fb2XHTML:
         self.html_file_list.append(self.current_file)
 
     def ncx_navp_beg(self, index, title, link):
-        self.buff.append('<navPoint id="navpoint%s" playOrder="%s">' % (index, index))
-        self.buff.append('<navLabel><text>%s</text></navLabel>' % title)
-        self.buff.append('<content src="%s" />' % link)
+        self.buff.append('<navPoint id="navpoint{0}" playOrder="{1}">'.format(index, index))
+        self.buff.append('<navLabel><text>{0}</text></navLabel>'.format(title))
+        self.buff.append('<content src="{0}" />'.format(link))
 
     def ncx_navp_end(self):
         self.buff.append('</navPoint>')
@@ -1079,6 +1108,37 @@ class Fb2XHTML:
 
             self.write_buff_to_xhtml()
 
+
+    def generate_pagemap(self):
+        page = 1
+        self.buff = []
+        self.buff.append('<?xml version = "1.0" ?>'
+                         '<page-map xmlns = "http://www.idpf.org/2007/opf">')
+
+        if self.book_cover:
+            self.buff.append('<page name="{0}" href="cover.xhtml"/>'.format(page))
+            page += 1
+        if self.tocbeforebody and self.generate_toc_page:
+            self.buff.append('<page name="{0}" href="toc.xhtml"/>'.format(page))
+            page += 1
+
+        for item in self.html_file_list:
+            if item != 'toc.xhtml':
+                self.buff.append('<page name="{0}" href="{1}"/>'.format(page, item))
+                page += 1
+                if item in self.pages_list:
+                    for p in range(0, self.pages_list[item]):
+                        self.buff.append('<page name="{0:d}" href="{1:s}#page_{2:d}"/>'.format(page, item, p))
+                        page += 1
+
+        if not self.tocbeforebody and self.generate_toc_page:
+            self.buff.append('<page name="{0}" href="toc.xhtml"/>'.format(page))
+            page += 1
+
+        self.buff.append('</page-map>')
+        self.write_buff_to_xml(os.path.join(self.temp_content_dir, 'page-map.xml'))
+
+
     def generate_opf(self):
         self.buff = []
         self.buff.append('<?xml version="1.0" ?>'
@@ -1102,11 +1162,11 @@ class Fb2XHTML:
             title = transliterate(title)
             book_author = transliterate(book_author)
 
-        self.buff.append('<dc:title>%s</dc:title>' % save_html(title))
-        self.buff.append('<dc:language>%s</dc:language>' % self.book_lang)
+        self.buff.append('<dc:title>{0}</dc:title>'.format(save_html(title)))
+        self.buff.append('<dc:language>{0}</dc:language>'.format(self.book_lang))
         self.buff.append(
             '<dc:identifier id="BookId" opf:scheme="uuid">urn:uuid:{0}</dc:identifier>'.format(self.book_uuid))
-        self.buff.append('<dc:creator opf:role="aut">%s</dc:creator>' % save_html(book_author))
+        self.buff.append('<dc:creator opf:role="aut">{0}</dc:creator>'.format(save_html(book_author)))
         self.buff.append('<dc:publisher />')
 
         for genre in self.genres:
@@ -1120,7 +1180,9 @@ class Fb2XHTML:
 
         self.buff.append('</metadata>')
         self.buff.append('<manifest>'
-                         '<item id="ncx" media-type="application/x-dtbncx+xml" href="toc.ncx"/>')
+                         '<item id="ncx" media-type="application/x-dtbncx+xml" href="toc.ncx"/>'
+                         '<item id = "map" media-type="application/oebps-page-map+xml" href="page-map.xml"/>')
+
         for item in self.html_file_list:
             self.buff.append(
                 '<item id="{0}" media-type="application/xhtml+xml" href="{1}"/>'.format(item.split('.')[0], item))
@@ -1167,7 +1229,7 @@ class Fb2XHTML:
             font_id += 1
 
         self.buff.append('</manifest>'
-                         '<spine toc="ncx">')
+                         '<spine page-map="map" toc="ncx">')
 
         if self.book_cover:
             self.buff.append('<itemref idref="cover-page" linear="no"/>')

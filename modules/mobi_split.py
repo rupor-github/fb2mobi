@@ -1,12 +1,11 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# vim:ts=4:sw=4:softtabstop=4:smarttab:expandtab
 # borrowed from https://github.com/kevinhendricks/KindleUnpack and modified
 
 from __future__ import unicode_literals, division, absolute_import, print_function
 
 import struct
 import string
+import re
 from PIL import Image
 from io import BytesIO
 
@@ -624,11 +623,16 @@ class mobi_read:
     def __init__(self, infile):
 
         self.asin = ''
+        self.acr = ''
         self.thumbnail = None
+        self.pagedata = b''
 
         datain = b''
         with open(pathof(infile), 'rb') as f:
+            self.acr = re.sub('[^-A-Za-z0-9 ]+', '_', f.read(32).replace(b'\x00', b'').decode('latin-1'))
+            f.seek(0)
             datain = f.read()
+
         datain_rec0 = readsection(datain, 0)
 
         exth121 = read_exth(datain_rec0, 121)
@@ -641,6 +645,15 @@ class mobi_read:
             datain_kf8, = struct.unpack_from(b'>L', exth121[0], 0)
             if datain_kf8 == 0xffffffff:
                 self.combo = False
+
+        # Look for PageMap
+        srcs = getint(datain_rec0, first_non_text)
+        num_srcs = getint(datain, number_of_pdb_records, b'H')
+        if srcs != 0xffffffff and num_srcs > 0:
+            for i in range(srcs, srcs + num_srcs):
+                data = readsection(datain, i)
+                if data[0:4] == b"PAGE":
+                    self.pagedata = data
 
         exth = read_exth(datain_rec0, exth_asin)
         if len(exth) > 0:
@@ -682,6 +695,12 @@ class mobi_read:
 
     def getASIN(self):
         return self.asin
+
+    def getACR(self):
+        return self.acr
+
+    def getPageData(self):
+        return self.pagedata
 
     def getThumbnail(self):
         return self.thumbnail

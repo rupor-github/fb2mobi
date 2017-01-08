@@ -31,6 +31,9 @@ class ConverterConfig:
         self.save_structure = None
         self.delete_source_file = None
 
+        self.apnx = None
+        self.characters_per_page = 2300
+
         self.log = None
 
         self.profiles = {}
@@ -65,6 +68,8 @@ class ConverterConfig:
         self.profiles['default']['generateOPFGuide'] = True
         self.profiles['default']['kindleRemovePersonalLabel'] = True
         self.profiles['default']['removePngTransparency'] = False
+        self.profiles['default']['generateAPNX'] = None
+        self.profiles['default']['charactersPerPage'] = 2300
 
         self.current_profile = {}
         self.mhl = False
@@ -173,6 +178,8 @@ class ConverterConfig:
                     self.profiles[prof_name]['flatTOC'] = True
                     self.profiles[prof_name]['kindleRemovePersonalLabel'] = True
                     self.profiles[prof_name]['removePngTransparency'] = False
+                    self.profiles[prof_name]['generateAPNX'] = None
+                    self.profiles[prof_name]['charactersPerPage'] = 2300
 
                     for p in prof:
                         if p.tag == 'hyphens':
@@ -213,6 +220,13 @@ class ConverterConfig:
 
                         elif p.tag == 'removePngTransparency':
                             self.profiles[prof_name]['removePngTransparency'] = p.text.lower() == 'true'
+
+                        elif p.tag == 'generateAPNX':
+                            if p.text.lower() in ['eink', 'pc']:
+                                self.profiles[prof_name]['generateAPNX'] = p.text.lower()
+
+                        elif p.tag == 'charactersPerPage':
+                            self.profiles[prof_name]['charactersPerPage'] = int(p.text)
 
                         elif p.tag == 'generateAnnotationPage':
                             self.profiles[prof_name]['generateAnnotationPage'] = p.text.lower() == 'true'
@@ -315,6 +329,7 @@ class ConverterConfig:
                             E('generateOPFGuide', str(self.profiles[p]['generateOPFGuide'])),
                             E('kindleRemovePersonalLabel', str(self.profiles[p]['kindleRemovePersonalLabel'])),
                             E('removePngTransparency', str(self.profiles[p]['removePngTransparency'])),
+                            E('charactersPerPage', str(self.profiles[p]['charactersPerPage'])),
                             E('vignettes',
                               *self._getVignettes(p)
                               ),
@@ -343,6 +358,12 @@ class ConverterConfig:
 
         if 'transliterateAuthorAndTitle' in self.current_profile:
             self.transliterate_author_and_title = self.current_profile['transliterateAuthorAndTitle']
+
+        if 'generateAPNX' in self.current_profile:
+            self.apnx = self.current_profile['generateAPNX']
+
+        if 'charactersPerPage' in self.current_profile:
+            self.characters_per_page = self.current_profile['charactersPerPage']
 
     def write(self):
         config = E('settings',
