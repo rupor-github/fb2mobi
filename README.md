@@ -22,6 +22,8 @@ Here is brief list of changes:
 * Added simple tool to generate thumbnails on Kindle devices
 * Added synchronous logging to file and console (console logging level is set independently by `--console-level` key or `<consoleLevel>` config tag)
 * Added an option to make PNG images non-transparent to prevent "ghostly images" on Kindle (`--remove-png-transparency` key or `<removePngTransparency>` config tag)
+* Added support for auto-generation of PageMaps - now it is possible to have APNX files (`--apnx=eInk|PC` key or `<generateAPNX>` profile tag). Number of uncompessed 
+  text characters per page is (aproximatly) controlled by `charactersPerPage` profile tag and by default is equal to 2300 (as in Calibre)
 
 More info can be found on [russian forum](http://www.the-ebook.org/forum/viewtopic.php?t=30380).
 
