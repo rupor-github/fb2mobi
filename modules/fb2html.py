@@ -942,7 +942,7 @@ class Fb2XHTML:
                             back_ref = self.links_location[id_b]
                         except:
                             pass
-                        self.buff.append('<p class="floatnote"><a href="{0]#{1}" id="{2}">{3}).</a>&#160;{4}</p>'.format(back_ref, id_b, id, save_html(note[0]) if len(note[0]) > 0 else '***', save_html(note[1])))
+                        self.buff.append('<p class="floatnote"><a href="{0}#{1}" id="{2}">{3}).</a>&#160;{4}</p>'.format(back_ref, id_b, id, save_html(note[0]) if len(note[0]) > 0 else '***', save_html(note[1])))
                     else:
                         continue
         else:
