@@ -369,10 +369,12 @@ class mobi_split:
 
             if remove_personal_label:
                 datain_rec0 = add_exth(datain_rec0, exth_cdetype, b"EBOK");
+            else:
+                datain_rec0 = add_exth(datain_rec0, exth_cdetype, b"PDOC");
 
-                exth = read_exth(datain_rec0, exth_asin)
-                if len(exth) == 0:
-                    datain_rec0 = add_exth(datain_rec0, exth_asin, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
+            exth = read_exth(datain_rec0, exth_asin)
+            if len(exth) == 0:
+                datain_rec0 = add_exth(datain_rec0, exth_asin, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
 
             self.result_file = writesection(self.result_file, 0, datain_rec0)
 
@@ -421,10 +423,12 @@ class mobi_split:
 
             if remove_personal_label:
                 datain_kfrec0 = add_exth(datain_kfrec0, exth_cdetype, b"EBOK");
+            else:
+                datain_kfrec0 = add_exth(datain_kfrec0, exth_cdetype, b"PDOC");
 
-                exth = read_exth(datain_kfrec0, exth_asin)
-                if len(exth) == 0:
-                    datain_kfrec0 = add_exth(datain_kfrec0, exth_asin, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
+            exth = read_exth(datain_kfrec0, exth_asin)
+            if len(exth) == 0:
+                datain_kfrec0 = add_exth(datain_kfrec0, exth_asin, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
 
             self.result_file = writesection(self.result_file, datain_kf8, datain_kfrec0)
 
@@ -590,10 +594,12 @@ class mobi_split:
 
             if remove_personal_label:
                 datain_kfrec0 = add_exth(datain_kfrec0, exth_cdetype, b"EBOK");
+            else:
+                datain_kfrec0 = add_exth(datain_kfrec0, exth_cdetype, b"PDOC");
 
-                exth = read_exth(datain_kfrec0, exth_asin)
-                if len(exth) == 0:
-                    datain_kfrec0 = add_exth(datain_kfrec0, exth_asin, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
+            exth = read_exth(datain_kfrec0, exth_asin)
+            if len(exth) == 0:
+                datain_kfrec0 = add_exth(datain_kfrec0, exth_asin, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
 
             self.result_file8 = writesection(self.result_file8, 0, datain_kfrec0)
 

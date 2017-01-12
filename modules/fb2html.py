@@ -450,7 +450,7 @@ class Fb2XHTML:
                             self.book_title = t.text
                     elif ns_tag(t.tag) == 'lang':
                         if t.text:
-                            self.book_lang = t.text
+                            self.book_lang = t.text if len(t.text) > 2 else t.text.lower()
                         else:
                             self.book_lang = 'ru'
                         if self.hyphenate and self.hyphenator:

@@ -287,11 +287,9 @@ def process_file(config, infile, outfile=None):
                 config.log.critical('kindlegen error, conversion interrupted.')
                 critical_error = True
             else:
-                remove_personal = False
                 try:
-                    if ext not in 'mobi' or not config.send_to_kindle['send']:
-                        remove_personal = config.current_profile['kindleRemovePersonalLabel']
-                    if ext in ('mobi') and config.noMOBIoptimization:
+                    remove_personal = config.current_profile['kindleRemovePersonalLabel']
+                    if ext in 'mobi' and config.noMOBIoptimization:
                         config.log.info('Copying resulting file...')
                         shutil.copyfile(result_book, outfile)
                     else:
@@ -303,8 +301,7 @@ def process_file(config, infile, outfile=None):
                     config.log.debug('Getting details', exc_info=True, stack_info=True)
                     critical_error = True
 
-                if config.apnx and remove_personal:
-                    # only for non-personal books we will have ASIN and could associate PageMap with book file
+                if config.apnx:
                     try:
                         base = os.path.splitext(outfile)[0]
                         reader = mobi_read(base + '.' + ext)
