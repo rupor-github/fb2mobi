@@ -311,7 +311,7 @@ def process_file(config, infile, outfile=None):
                             pages = PageMapProcessor(pagedata, config.log)
                             apnx = pages.generateAPNX(
                                 {'contentGuid': str(uuid.uuid4()).replace('-', '')[:8],
-                                 'asin': reader.getASIN(),
+                                 'asin': reader.getCdeContentKey(),  # TODO - getASIN()
                                  'cdeType': 'EBOK',
                                  'format': 'MOBI_8' if ext in 'azw3' else 'MOBI_7',
                                  'pageMap': pages.getPageMap(),

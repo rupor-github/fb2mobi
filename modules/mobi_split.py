@@ -46,12 +46,12 @@ hufftbloff = 120
 
 # rupor
 
+exth_asin = 113
 exth_cover_offset = 201
 exth_thumb_offset = 202
 exth_thumbnail_uri = 129
 exth_cdetype = 501
-exth_asin = 504
-
+exth_cdecontentkey = 504
 
 def to_base(num, base=32, min_num_digits=None):
     digits = string.digits + string.ascii_uppercase
@@ -216,11 +216,6 @@ def insertsection(datain, secno, secdata):  # insert a new section
 
 
 def insertsectionrange(sectionsource, firstsec, lastsec, sectiontarget, targetsec):  # insert a range of sections
-    # print("inserting secno" , firstsec,  "to", lastsec, "into" ,targetsec, "sections")
-    # dataout = sectiontarget
-    # for idx in range(lastsec,firstsec-1,-1):
-    #    dataout = insertsection(dataout,targetsec,readsection(sectionsource,idx))
-    # return dataout
     datalst = []
     nsec = getint(sectiontarget, number_of_pdb_records, b'H')
     zerosecstart, zerosecend = getsecaddr(sectiontarget, 0)
@@ -372,9 +367,9 @@ class mobi_split:
             else:
                 datain_rec0 = add_exth(datain_rec0, exth_cdetype, b"PDOC");
 
-            exth = read_exth(datain_rec0, exth_asin)
+            exth = read_exth(datain_rec0, exth_cdecontentkey)
             if len(exth) == 0:
-                datain_rec0 = add_exth(datain_rec0, exth_asin, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
+                datain_rec0 = add_exth(datain_rec0, exth_cdecontentkey, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
 
             self.result_file = writesection(self.result_file, 0, datain_rec0)
 
@@ -426,9 +421,9 @@ class mobi_split:
             else:
                 datain_kfrec0 = add_exth(datain_kfrec0, exth_cdetype, b"PDOC");
 
-            exth = read_exth(datain_kfrec0, exth_asin)
+            exth = read_exth(datain_kfrec0, exth_cdecontentkey)
             if len(exth) == 0:
-                datain_kfrec0 = add_exth(datain_kfrec0, exth_asin, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
+                datain_kfrec0 = add_exth(datain_kfrec0, exth_cdecontentkey, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
 
             self.result_file = writesection(self.result_file, datain_kf8, datain_kfrec0)
 
@@ -489,16 +484,6 @@ class mobi_split:
             datain_rec0 = datain_rec0[:0x80] + struct.pack(b'>L', fval) + datain_rec0[0x84:]
 
             self.result_file7 = writesection(self.result_file7, 0, datain_rec0)
-
-            # no need to replace kf8 style fcis with mobi 7 one
-            # fcis_secnum, = struct.unpack_from(b'>L',datain_rec0, 0xc8)
-            # if fcis_secnum != 0xffffffff:
-            #     fcis_info = readsection(datain, fcis_secnum)
-            #     text_len,  = struct.unpack_from(b'>L', fcis_info, 0x14)
-            #     new_fcis = 'FCIS\x00\x00\x00\x14\x00\x00\x00\x10\x00\x00\x00\x01\x00\x00\x00\x00'
-            #     new_fcis += struct.pack(b'>L',text_len)
-            #     new_fcis += '\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00\x08\x00\x01\x00\x01\x00\x00\x00\x00'
-            #     self.result_file7 = writesection(self.result_file7, fcis_secnum, new_fcis)
 
             firstimage = getint(datain_rec0, first_resc_record)
             lastimage = getint(datain_rec0, last_content_index, b'H')
@@ -597,21 +582,11 @@ class mobi_split:
             else:
                 datain_kfrec0 = add_exth(datain_kfrec0, exth_cdetype, b"PDOC");
 
-            exth = read_exth(datain_kfrec0, exth_asin)
+            exth = read_exth(datain_kfrec0, exth_cdecontentkey)
             if len(exth) == 0:
-                datain_kfrec0 = add_exth(datain_kfrec0, exth_asin, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
+                datain_kfrec0 = add_exth(datain_kfrec0, exth_cdecontentkey, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
 
             self.result_file8 = writesection(self.result_file8, 0, datain_kfrec0)
-
-            # no need to replace kf8 style fcis with mobi 7 one
-            # fcis_secnum, = struct.unpack_from(b'>L',datain_kfrec0, 0xc8)
-            # if fcis_secnum != 0xffffffff:
-            #     fcis_info = readsection(self.result_file8, fcis_secnum)
-            #     text_len,  = struct.unpack_from(b'>L', fcis_info, 0x14)
-            #     new_fcis = 'FCIS\x00\x00\x00\x14\x00\x00\x00\x10\x00\x00\x00\x01\x00\x00\x00\x00'
-            #     new_fcis += struct.pack(b'>L',text_len)
-            #     new_fcis += '\x00\x00\x00\x00\x00\x00\x00\x20\x00\x00\x00\x08\x00\x01\x00\x01\x00\x00\x00\x00'
-            #     self.result_file8 = writesection(self.result_file8, fcis_secnum, new_fcis)
 
             # mobi8 finished
 
@@ -629,6 +604,7 @@ class mobi_read:
     def __init__(self, infile):
 
         self.asin = ''
+        self.cdecontentkey = ''
         self.acr = ''
         self.thumbnail = None
         self.pagedata = b''
@@ -664,6 +640,9 @@ class mobi_read:
         exth = read_exth(datain_rec0, exth_asin)
         if len(exth) > 0:
             self.asin = exth[0].decode("ascii")
+        exth = read_exth(datain_rec0, exth_cdecontentkey)
+        if len(exth) > 0:
+            self.cdecontentkey = exth[0].decode("ascii")
 
         firstimage = getint(datain_rec0, first_resc_record)
 
@@ -698,9 +677,16 @@ class mobi_read:
             # always try to use ASIN from KF8 part
             if len(exth) > 0:
                 self.asin = exth[0].decode("ascii")
+            exth = read_exth(datain_kfrec0, exth_cdecontentkey)
+            # always try to use Cde Content Key from KF8 part
+            if len(exth) > 0:
+                self.cdecontentkey = exth[0].decode("ascii")
 
     def getASIN(self):
         return self.asin
+
+    def getCdeContentKey(self):
+        return self.cdecontentkey
 
     def getACR(self):
         return self.acr
