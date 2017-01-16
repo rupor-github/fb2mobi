@@ -364,12 +364,12 @@ class mobi_split:
 
             if remove_personal_label:
                 datain_rec0 = add_exth(datain_rec0, exth_cdetype, b"EBOK");
-            else:
-                datain_rec0 = add_exth(datain_rec0, exth_cdetype, b"PDOC");
-
-            exth = read_exth(datain_rec0, exth_cdecontentkey)
-            if len(exth) == 0:
-                datain_rec0 = add_exth(datain_rec0, exth_cdecontentkey, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
+                exth = read_exth(datain_rec0, exth_asin)
+                if len(exth) == 0:
+                    datain_rec0 = add_exth(datain_rec0, exth_asin, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
+                # exth = read_exth(datain_rec0, exth_cdecontentkey)
+                # if len(exth) == 0:
+                #     datain_rec0 = add_exth(datain_rec0, exth_cdecontentkey, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
 
             self.result_file = writesection(self.result_file, 0, datain_rec0)
 
@@ -418,12 +418,12 @@ class mobi_split:
 
             if remove_personal_label:
                 datain_kfrec0 = add_exth(datain_kfrec0, exth_cdetype, b"EBOK");
-            else:
-                datain_kfrec0 = add_exth(datain_kfrec0, exth_cdetype, b"PDOC");
-
-            exth = read_exth(datain_kfrec0, exth_cdecontentkey)
-            if len(exth) == 0:
-                datain_kfrec0 = add_exth(datain_kfrec0, exth_cdecontentkey, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
+                # exth = read_exth(datain_kfrec0, exth_asin)
+                # if len(exth) == 0:
+                #     datain_kfrec0 = add_exth(datain_kfrec0, exth_asin, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
+                exth = read_exth(datain_kfrec0, exth_cdecontentkey)
+                if len(exth) == 0:
+                    datain_kfrec0 = add_exth(datain_kfrec0, exth_cdecontentkey, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
 
             self.result_file = writesection(self.result_file, datain_kf8, datain_kfrec0)
 
@@ -581,7 +581,9 @@ class mobi_split:
                 datain_kfrec0 = add_exth(datain_kfrec0, exth_cdetype, b"EBOK");
             else:
                 datain_kfrec0 = add_exth(datain_kfrec0, exth_cdetype, b"PDOC");
-
+            # exth = read_exth(datain_kfrec0, exth_asin)
+            # if len(exth) == 0:
+            #     datain_kfrec0 = add_exth(datain_kfrec0, exth_asin, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
             exth = read_exth(datain_kfrec0, exth_cdecontentkey)
             if len(exth) == 0:
                 datain_kfrec0 = add_exth(datain_kfrec0, exth_cdecontentkey, bytes(to_base(document_id.int, base=32, min_num_digits=10), 'ascii'))
@@ -604,6 +606,7 @@ class mobi_read:
     def __init__(self, infile):
 
         self.asin = ''
+        self.cdetype = 'PDOC'
         self.cdecontentkey = ''
         self.acr = ''
         self.thumbnail = None
@@ -640,6 +643,9 @@ class mobi_read:
         exth = read_exth(datain_rec0, exth_asin)
         if len(exth) > 0:
             self.asin = exth[0].decode("ascii")
+        exth = read_exth(datain_rec0, exth_cdetype)
+        if len(exth) > 0:
+            self.cdetype = exth[0].decode("ascii")
         exth = read_exth(datain_rec0, exth_cdecontentkey)
         if len(exth) > 0:
             self.cdecontentkey = exth[0].decode("ascii")
@@ -672,24 +678,29 @@ class mobi_read:
                 self.thumbnail.thumbnail((330, 470), Image.ANTIALIAS)
 
         if self.combo:
+            # always try to use information from KF8 part
             datain_kfrec0 = readsection(datain, datain_kf8)
             exth = read_exth(datain_kfrec0, exth_asin)
-            # always try to use ASIN from KF8 part
             if len(exth) > 0:
                 self.asin = exth[0].decode("ascii")
+            exth = read_exth(datain_kfrec0, exth_cdetype)
+            if len(exth) > 0:
+                self.cdetype = exth[0].decode("ascii")
             exth = read_exth(datain_kfrec0, exth_cdecontentkey)
-            # always try to use Cde Content Key from KF8 part
             if len(exth) > 0:
                 self.cdecontentkey = exth[0].decode("ascii")
+
+    def getACR(self):
+        return self.acr
 
     def getASIN(self):
         return self.asin
 
+    def getCdeType(self):
+        return self.cdetype
+
     def getCdeContentKey(self):
         return self.cdecontentkey
-
-    def getACR(self):
-        return self.acr
 
     def getPageData(self):
         return self.pagedata

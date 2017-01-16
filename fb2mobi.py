@@ -309,10 +309,13 @@ def process_file(config, infile, outfile=None):
                         if len(pagedata) > 0:
                             config.log.info('Generating page index (APNX)...')
                             pages = PageMapProcessor(pagedata, config.log)
+                            asin = reader.getCdeContentKey()
+                            if len(asin) == 0:
+                                asin = reader.getASIN()
                             apnx = pages.generateAPNX(
                                 {'contentGuid': str(uuid.uuid4()).replace('-', '')[:8],
-                                 'asin': reader.getCdeContentKey(),  # TODO - getASIN()
-                                 'cdeType': 'EBOK',
+                                 'asin': asin,
+                                 'cdeType': reader.getCdeType(),
                                  'format': 'MOBI_8' if ext in 'azw3' else 'MOBI_7',
                                  'pageMap': pages.getPageMap(),
                                  'acr': reader.getACR()})

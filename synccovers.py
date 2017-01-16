@@ -25,11 +25,13 @@ def process_file(infile, kindle_dir, verbose):
     if verbose: print('Processing file {}'.format(infile))
     try:
         reader = mobi_read(infile)
-        asin = reader.getASIN()
+        asin = reader.getCdeContentKey()
+        if len(asin) == 0:
+            asin = reader.getASIN()
         if len(asin) > 0:
             thumb = reader.getThumbnail()
             if thumb != None:
-                thumb.convert('RGB').save(os.path.join(kindle_dir, 'thumbnail_' + asin + '_EBOK_portrait.jpg'), 'JPEG')
+                thumb.convert('RGB').save(os.path.join(kindle_dir, 'thumbnail_' + asin + '_' + reader.getCdeType() + '_portrait.jpg'), 'JPEG')
                 count_processed += 1
                 if verbose: print('Written thumbnail for {}'.format(asin))
             else:
