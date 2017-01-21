@@ -24,6 +24,13 @@ Here is brief list of changes:
 * Added an option to make PNG images non-transparent to prevent "ghostly images" on Kindle (`--remove-png-transparency` key or `<removePngTransparency>` config tag)
 * Added support for auto-generation of PageMaps - now it is possible to have APNX files (`--apnx=eInk|PC` key or `<generateAPNX>` profile tag). Number of uncompessed 
   text characters per page is (aproximatly) controlled by `charactersPerPage` profile tag and by default is equal to 2300 (as in Calibre)
+* Removed `<flatTOC>` support. New config tag `<tocType>` and command line parameter `--toc-type` could be used instead with values `Flat|Kindle|Normal`.
+  This introduces special support for eInk Kindle devices with 2-level TOC views. Additional tag `<tocKindleLevel>` and parameter `--toc-kindle-level` allow for precise 
+  tuning of generated NCX for eInk devices.
+* Expanded book title generation: added `#padnumber` to generate number in series padded with zeros (use `<seriesPositions>` or `--series-positions` to specify how many
+  digits overall will be generated) and `#date` to add proper date from `<title-info>` if availabe.
+* Added new `<chapterLevel>` configuration tag and `---chapter-level` parameter along with new style `.titleblock_nobreak`. When parsing sections this style will be generated
+  if nesting level is greater or equal to specified value. This allows better control of page breaks on sections boundaries.
 
 More info can be found on [russian forum](http://www.the-ebook.org/forum/viewtopic.php?t=30380).
 

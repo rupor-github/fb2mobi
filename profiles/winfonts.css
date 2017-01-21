@@ -1,29 +1,9 @@
+
 @page {
     margin-left: 20px;
     margin-right:20px;
     margin-top:20px;
-    margin-bottom:5px
-}
-
-@font-face {
-    font-family: "paragraph";
-    src: url("c:/Windows/Fonts/georgia.ttf");
-}
-@font-face {
-    font-family: "paragraph";
-    src: url("c:/Windows/Fonts/georgiai.ttf");
-    font-style: italic;
-}
-@font-face {
-    font-family: "paragraph";
-    src: url("c:/Windows/Fonts/georgiab.ttf");
-    font-weight: bold;
-}
-@font-face {
-    font-family: "paragraph";
-    src: url("c:/Windows/Fonts/georgiaz.ttf");
-    font-style: italic;
-    font-weight: bold;
+    margin-bottom:5px;
 }
 
 .h0 {   
@@ -71,6 +51,26 @@
     margin-bottom: 1em;
 }
 
+@font-face {
+    font-family: "paragraph";
+    src: url("c:/Windows/Fonts/georgia.ttf");
+}
+@font-face {
+    font-family: "paragraph";
+    src: url("c:/Windows/Fonts/georgiai.ttf");
+    font-style: italic;
+}
+@font-face {
+    font-family: "paragraph";
+    src: url("c:/Windows/Fonts/georgiab.ttf");
+    font-weight: bold;
+}
+@font-face {
+    font-family: "paragraph";
+    src: url("c:/Windows/Fonts/georgiaz.ttf");
+    font-style: italic;
+    font-weight: bold;
+}
 
 .titleblock {
     text-indent: 0em;
@@ -79,14 +79,23 @@
     margin-bottom: 1em;
 }
 
+.titleblock_nobreak {
+    text-indent: 0em;
+    margin-top: 2em;
+    margin-bottom: 1em;
+}
+
 .titlenotes {
-    text-indent: 0;
-    text-align: center;
     font-size: 100%;
     font-weight: bold;
     margin-top: 1em;
     margin-bottom: 0.5em;
     page-break-after: avoid;
+}
+
+.titlenotes p {
+    text-indent: 0;
+    text-align: center;    
 }
 
 .indent0 { margin-left: 0pt; text-align: left; }
@@ -112,9 +121,12 @@
     font-size: 70%;
 }
 
-
 .emphasis {
     font-style: italic;
+}
+
+.emptyline {
+    margin-top: 2em;
 }
 
 .strong {
@@ -132,7 +144,6 @@
     font-style: italic;
 }
 .text-author {
-    font-family: "paragraph";
     page-break-before: avoid;
     text-align: right;
     font-weight: bold;
@@ -141,24 +152,26 @@
 .subtitle {
     page-break-after: avoid;
     text-align: center;
-    text-indent: 0em;
     font-weight: bold;
     margin-bottom: 0.5em;
     margin-top: 1em;
+}
+
+p.subtitle {
+    text-indent: 0em;
 }
 
 p {
     text-indent: 1em;
     margin-bottom: 0pt;
     margin-top: 0pt;
-    font-family: "paragraph";
     text-align: justify;
+    padding-bottom: 0.5em; 
 }
 
 p.title {
     text-indent: 0em;
     text-align: center;
-    font-family: "paragraph";
 }
 
 .cite {
@@ -166,7 +179,6 @@ p.title {
     text-indent: 1em;
     margin-bottom: 0.3em;
     margin-top: 0.3em;
-    font-family: "paragraph";
 }
 
 .image {
@@ -184,7 +196,6 @@ p.title {
     margin-bottom: 0em;
     margin-top: 0em;
     font-style: italic;
-    font-family: "paragraph";
 }
 
 .stanza {
@@ -203,13 +214,11 @@ p.title {
 }
 
 .table th {
-    font-family: "paragraph";
     border: 1px solid black;
     background: #ccc;
 }
 
 .table td {
-    font-family: "paragraph";
     border: 1px solid black;
 }
 
@@ -241,11 +250,10 @@ p.title {
 }
 
 .notenum {
- font-weight: bold;
+    font-weight: bold;
 }
 
 .annotation {
-    font-family: "paragraph";
     margin-right: 1em;
     margin-left: 1em;
     font-size: 80%;
@@ -266,4 +274,29 @@ span.dropcaps {
 
 p.dropcaps {
     text-indent: 0;
+}
+
+.vignette_title_before {
+    text-indent: 0;
+    text-align: center;
+    page-break-after: avoid;
+    margin-bottom: 0;
+}
+
+.vignette_title_after {
+    text-indent: 0;
+    text-align: center;
+    page-break-before: avoid;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.vignette_chapter_end {
+    text-indent: 0;
+    font-size: 200%;
+    text-align: center;
+    page-break-before: avoid;
+    page-break-inside: avoid;
+    margin-top: 2em;
+    margin-bottom: 0;
 }
