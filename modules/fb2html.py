@@ -101,13 +101,14 @@ class Fb2XHTML:
         self.book_series = ''  # Книжная серия
         self.book_series_num = ''  # Номер в книжной серии
         self.book_cover = ''  # Ссылка на файл изображения обложки книги
+        self.book_date = ''
 
         self.dropcaps = config.current_profile['dropcaps'].lower()  # Признак вставки стилей буквицы (dropcaps)
         self.nodropcaps = config.no_dropcaps_symbols  # Строка символов, для исключения буквицы
 
         # Максимальный уровень заголовка (секции) для помещения в содержание (toc.xhtml)
         # В toc.ncx помещаются все уровни
-        self.toc_max_level = config.current_profile['tocMaxLevel'] if config.current_profile['tocMaxLevel'] else 1000000
+        self.toc_max_level = config.current_profile['tocMaxLevel'] if config.current_profile['tocMaxLevel'] else 1000
 
         self.authorstring = config.current_profile['authorFormat']
         self.bookseriestitle = config.current_profile['bookTitleFormat']
@@ -132,6 +133,9 @@ class Fb2XHTML:
         self.toc_title = config.current_profile['tocTitle']  # Заголовок для раздела содержания
 
         self.chaptersplit = config.current_profile['chapterOnNewPage']  # Разделять на отдельные файлы по главам
+        self.chapterlevel = config.current_profile['chapterLevel']
+
+        self.seriespositions = config.current_profile['seriesPositions']
 
         self.tocbeforebody = config.current_profile['tocBeforeBody']  # Положение содержания - в начале либо в конце книги
         self.transliterate_author_and_title = config.transliterate_author_and_title
@@ -511,6 +515,9 @@ class Fb2XHTML:
 
                             self.write_buff_to_xhtml()
 
+                    elif ns_tag(t.tag) == 'date':
+                        self.book_date = etree.tostring(t, method='text', encoding='utf-8').decode('utf-8').strip()
+
     def parse_binary(self, elem):
         filename = None
         if elem.attrib['id']:
@@ -549,7 +556,10 @@ class Fb2XHTML:
             self.header = True
             self.first_chapter_line = True
 
-            self.buff.append('<div class="titleblock" id="{0}">'.format(toc_ref_id))
+            if self.current_header_level < self.chapterlevel:
+                self.buff.append('<div class="titleblock" id="{0}">'.format(toc_ref_id))
+            else:
+                self.buff.append('<div class="titleblock_nobreak" id="{0}">'.format(toc_ref_id))
 
             if not self.body_name and self.first_header_in_body:
                 vignette = self.get_vignette('h0', 'beforeTitle')
@@ -681,7 +691,7 @@ class Fb2XHTML:
         self.current_header_level = self.current_header_level + 1
 
         if not self.body_name:
-            if self.chaptersplit:
+            if self.chaptersplit and self.current_header_level < self.chapterlevel:
 
                 self.buff.append(HTMLFOOT)
                 self.write_buff_to_xhtml()
@@ -1159,10 +1169,11 @@ class Fb2XHTML:
             title = self.bookseriestitle
             title = title.replace('#series', '' if not self.book_series else self.book_series.strip())
             title = title.replace('#number', '' if not self.book_series_num else self.book_series_num.strip())
-            title = title.replace('#padnumber',
-                                  '' if not self.book_series_num else self.book_series_num.strip().zfill(2))
+            title = title.replace('#padnumber', '' if not self.book_series_num else self.book_series_num.strip().zfill(self.seriespositions))
             title = title.replace('#title', '' if not self.book_title else self.book_title.strip())
             title = title.replace('#abbrseries', '' if not abbr else abbr.lower())
+            title = title.replace('#date', '' if not self.book_date else self.book_date.strip())
+            title = title.strip()
 
         book_author = self.book_author
 

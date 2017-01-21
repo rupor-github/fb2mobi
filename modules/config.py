@@ -55,6 +55,7 @@ class ConverterConfig:
         self.profiles['default']['css'] = 'default.css'
         self.profiles['default']['parse_css'] = True
         self.profiles['default']['chapterOnNewPage'] = True
+        self.profiles['default']['chapterLevel'] = 100
         self.profiles['default']['authorFormat'] = '#l #f #m'
         self.profiles['default']['bookTitleFormat'] = '(#abbrseries #number) #title'
         self.profiles['default']['annotationTitle'] = 'Annotation'
@@ -70,6 +71,7 @@ class ConverterConfig:
         self.profiles['default']['removePngTransparency'] = False
         self.profiles['default']['generateAPNX'] = None
         self.profiles['default']['charactersPerPage'] = 2300
+        self.profiles['default']['seriesPositions'] = 2
 
         self.current_profile = {}
         self.mhl = False
@@ -180,6 +182,9 @@ class ConverterConfig:
                     self.profiles[prof_name]['removePngTransparency'] = False
                     self.profiles[prof_name]['generateAPNX'] = None
                     self.profiles[prof_name]['charactersPerPage'] = 2300
+                    self.profiles[prof_name]['tocMaxLevel'] = 1000
+                    self.profiles[prof_name]['seriesPositions'] = 2
+                    self.profiles[prof_name]['chapterLevel'] = 100
 
                     for p in prof:
                         if p.tag == 'hyphens':
@@ -228,6 +233,9 @@ class ConverterConfig:
                         elif p.tag == 'charactersPerPage':
                             self.profiles[prof_name]['charactersPerPage'] = int(p.text)
 
+                        elif p.tag == 'seriesPositions':
+                            self.profiles[prof_name]['seriesPositions'] = int(p.text)
+
                         elif p.tag == 'generateAnnotationPage':
                             self.profiles[prof_name]['generateAnnotationPage'] = p.text.lower() == 'true'
 
@@ -250,6 +258,9 @@ class ConverterConfig:
 
                         elif p.tag == 'chapterOnNewPage':
                             self.profiles[prof_name]['chapterOnNewPage'] = p.text.lower() == 'true'
+
+                        elif p.tag == 'chapterLevel':
+                            self.profiles[prof_name]['chapterLevel'] = int(p.text)
 
                         elif p.tag == 'authorFormat':
                             self.profiles[prof_name]['authorFormat'] = p.text
@@ -318,6 +329,7 @@ class ConverterConfig:
                             E('flatTOC', str(self.profiles[p]['flatTOC'])),
                             E('css', self.profiles[p]['originalcss'], parse=str(self.profiles[p]['parse_css'])),
                             E('chapterOnNewPage', str(self.profiles[p]['chapterOnNewPage'])),
+                            E('chapterLevel', str(self.profiles[p]['chapterLevel'])),
                             E('authorFormat', self.profiles[p]['authorFormat']),
                             E('bookTitleFormat', self.profiles[p]['bookTitleFormat']),
                             E('annotationTitle', self.profiles[p]['annotationTitle']),
@@ -330,6 +342,7 @@ class ConverterConfig:
                             E('kindleRemovePersonalLabel', str(self.profiles[p]['kindleRemovePersonalLabel'])),
                             E('removePngTransparency', str(self.profiles[p]['removePngTransparency'])),
                             E('charactersPerPage', str(self.profiles[p]['charactersPerPage'])),
+                            E('seriesPositions', str(self.profiles[p]['seriesPositions'])),
                             E('vignettes',
                               *self._getVignettes(p)
                               ),

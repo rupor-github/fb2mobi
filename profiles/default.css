@@ -51,10 +51,15 @@
     margin-bottom: 1em;
 }
 
-
 .titleblock {
     text-indent: 0em;
     page-break-before: always;
+    margin-top: 2em;
+    margin-bottom: 1em;
+}
+
+.titleblock_nobreak {
+    text-indent: 0em;
     margin-top: 2em;
     margin-bottom: 1em;
 }
