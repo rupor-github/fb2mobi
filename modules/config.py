@@ -49,8 +49,9 @@ class ConverterConfig:
         self.profiles['default']['hyphensReplaceNBSP'] = True
         self.profiles['default']['dropcaps'] = 'None'
         self.profiles['default']['tocMaxLevel'] = 1000
+        self.profiles['default']['tocKindleLevel'] = 2
         self.profiles['default']['tocBeforeBody'] = False
-        self.profiles['default']['flatTOC'] = True
+        self.profiles['default']['tocType'] = 'Normal'
         self.profiles['default']['originalcss'] = 'default.css'
         self.profiles['default']['css'] = 'default.css'
         self.profiles['default']['parse_css'] = True
@@ -177,12 +178,13 @@ class ConverterConfig:
                     self.profiles[prof_name]['generateTOCPage'] = True
                     self.profiles[prof_name]['generateAnnotationPage'] = True
                     self.profiles[prof_name]['generateOPFGuide'] = True
-                    self.profiles[prof_name]['flatTOC'] = True
+                    self.profiles[prof_name]['tocType'] = 'Normal'
                     self.profiles[prof_name]['kindleRemovePersonalLabel'] = True
                     self.profiles[prof_name]['removePngTransparency'] = False
                     self.profiles[prof_name]['generateAPNX'] = None
                     self.profiles[prof_name]['charactersPerPage'] = 2300
                     self.profiles[prof_name]['tocMaxLevel'] = 1000
+                    self.profiles[prof_name]['tocKindleLevel'] = 2
                     self.profiles[prof_name]['seriesPositions'] = 2
                     self.profiles[prof_name]['chapterLevel'] = 100
 
@@ -214,11 +216,18 @@ class ConverterConfig:
                         elif p.tag == 'tocMaxLevel':
                             self.profiles[prof_name]['tocMaxLevel'] = int(p.text)
 
+                        elif p.tag == 'tocKindleLevel':
+                            self.profiles[prof_name]['tocKindleLevel'] = int(p.text)
+
                         elif p.tag == 'generateTOCPage':
                             self.profiles[prof_name]['generateTOCPage'] = p.text.lower() == 'true'
 
                         elif p.tag == 'flatTOC':
-                            self.profiles[prof_name]['flatTOC'] = p.text.lower() == 'true'
+                            print("***WARNING: <flatTOC> is ignored, use <tocType> instead!")
+
+                        elif p.tag == 'tocType':
+                            if p.text.lower() in ['flat', 'kindle', 'normal']:
+                                self.profiles[prof_name]['tocType'] = p.text.lower()
 
                         elif p.tag == 'kindleRemovePersonalLabel':
                             self.profiles[prof_name]['kindleRemovePersonalLabel'] = p.text.lower() == 'true'
@@ -325,8 +334,9 @@ class ConverterConfig:
                             E('hyphensReplaceNBSP', str(self.profiles[p]['hyphensReplaceNBSP'])),
                             E('dropcaps', str(self.profiles[p]['dropcaps'])),
                             E('tocMaxLevel', str(self.profiles[p]['tocMaxLevel'])),
+                            E('tocKindleLevel', str(self.profiles[p]['tocKindleLevel'])),
                             E('tocBeforeBody', str(self.profiles[p]['tocBeforeBody'])),
-                            E('flatTOC', str(self.profiles[p]['flatTOC'])),
+                            E('tocType', str(self.profiles[p]['tocType'])),
                             E('css', self.profiles[p]['originalcss'], parse=str(self.profiles[p]['parse_css'])),
                             E('chapterOnNewPage', str(self.profiles[p]['chapterOnNewPage'])),
                             E('chapterLevel', str(self.profiles[p]['chapterLevel'])),
@@ -354,7 +364,7 @@ class ConverterConfig:
         try:
             self.current_profile = self.profiles[profile_name]
         except:
-            self.log.warning('Unable to locate profile "{0}". Using default one.'.format(profile_name))
+            print('***WARNING: Unable to locate profile "{0}". Using default one.'.format(profile_name))
             self.current_profile = self.profiles[self.default_profile]
 
         if 'outputFormat' in self.current_profile:

@@ -76,6 +76,26 @@ def copy_file(src, dest):
     shutil.copyfile(src, dest)
 
 
+class TOCStack:
+    def __init__(self):
+        self.items = []
+
+    def isempty(self):
+        return self.items == []
+
+    def push(self, item):
+        self.items.append(item)
+
+    def pop(self):
+        return self.items.pop()
+
+    def peek(self):
+        return self.items[len(self.items) - 1]
+
+    def size(self):
+        return len(self.items)
+
+
 class Fb2XHTML:
     def __init__(self, fb2file, mobifile, tempdir, config):
         self.buff = []
@@ -109,6 +129,8 @@ class Fb2XHTML:
         # Максимальный уровень заголовка (секции) для помещения в содержание (toc.xhtml)
         # В toc.ncx помещаются все уровни
         self.toc_max_level = config.current_profile['tocMaxLevel'] if config.current_profile['tocMaxLevel'] else 1000
+        # How to split toc.ncx for Kindle (eInk devices only show 2 levels)
+        self.toc_kindle_level = config.current_profile['tocKindleLevel'] if config.current_profile['tocKindleLevel'] else 2
 
         self.authorstring = config.current_profile['authorFormat']
         self.bookseriestitle = config.current_profile['bookTitleFormat']
@@ -143,7 +165,7 @@ class Fb2XHTML:
         self.screen_width = config.screen_width
         self.screen_height = config.screen_height
 
-        self.flat_toc = config.current_profile['flatTOC']  # Признак плоского (одноуровнего оглавления), либо иерархического
+        self.toc_type = config.current_profile['tocType']
 
         self.toc = {}  # Содрержание, формируется по мере парсинга
         self.toc_index = 1  # Текущий номер раздела содержания
@@ -1026,63 +1048,51 @@ class Fb2XHTML:
             self.ncx_navp_end()
             i += 1
 
-        if self.flat_toc:
-            for (idx, item) in self.toc.items():
+        ncx_level = -1
+        ncx_barrier = sys.maxsize
+        if self.toc_type in 'flat':
+            ncx_level = sys.maxsize
+            ncx_barrier = 1
+        if self.toc_type in 'kindle':
+            ncx_level = self.toc_kindle_level
+            ncx_barrier = 1
+
+        history = TOCStack()
+        prev_item = None
+        for (idx, item) in self.toc.items():
+            if prev_item is None:  # first time
                 self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
-                self.ncx_navp_end()
+                history.push(item[2])
                 i += 1
-        else:
-            class Stack:
-                def __init__(self):
-                    self.items = []
-
-                def isempty(self):
-                    return self.items == []
-
-                def push(self, item):
-                    self.items.append(item)
-
-                def pop(self):
-                    return self.items.pop()
-
-                def peek(self):
-                    return self.items[len(self.items) - 1]
-
-                def size(self):
-                    return len(self.items)
-
-            history = Stack()
-            prev_item = None
-            for (idx, item) in self.toc.items():
-                if prev_item is None:  # first time
-                    self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
-                    history.push(item[2])
-                    i += 1
-                    prev_item = item
-                elif prev_item[2] < item[2]:  # Going in
-                    self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
-                    history.push(item[2])
-                    i += 1
-                    prev_item = item
-                elif prev_item[2] == item[2]:  # Same level
+                prev_item = item
+            elif prev_item[2] < item[2]:
+                if item[2] <= ncx_level or history.size() > ncx_barrier:
                     self.ncx_navp_end()
-                    self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
-                    prev_item = item
-                elif prev_item[2] > item[2]:  # Going out
-                    while not history.isempty() and history.peek() >= item[2]:
-                        self.ncx_navp_end()
-                        history.pop()
-                    self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
-                    history.push(item[2])
-                    i += 1
-                    prev_item = item
-                else:
-                    assert False
-
-            # Close whats left
-            while not history.isempty():
+                    history.pop()
+                # Going in
+                self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
+                history.push(item[2])
+                i += 1
+                prev_item = item
+            elif prev_item[2] == item[2]:  # Same level
                 self.ncx_navp_end()
-                history.pop()
+                self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
+                prev_item = item
+            elif prev_item[2] > item[2]:  # Going out
+                while not history.isempty() and history.peek() >= item[2]:
+                    self.ncx_navp_end()
+                    history.pop()
+                self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
+                history.push(item[2])
+                i += 1
+                prev_item = item
+            else:
+                assert False
+
+        # Close whats left
+        while not history.isempty():
+            self.ncx_navp_end()
+            history.pop()
 
         # Включим содержание в навигацию, если содержание помещается в конце книги
         if not self.tocbeforebody and len(self.toc.items()) > 0 and self.generate_toc_page:

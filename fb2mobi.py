@@ -504,8 +504,12 @@ def process(args):
             config.current_profile['xslt'] = args.xslt
         if args.dropcaps is not None:
             config.current_profile['dropcaps'] = args.dropcaps
+        if args.toctype:
+            config.current_profile['tocType'] = args.toctype.lower()
         if args.tocmaxlevel:
             config.current_profile['tocMaxLevel'] = args.tocmaxlevel
+        if args.tockindlelevel:
+            config.current_profile['tocKindleLevel'] = args.tockindlelevel
         if args.tocbeforebody is not None:
             config.current_profile['tocBeforeBody'] = args.tocbeforebody
         if args.notesmode:
@@ -518,6 +522,10 @@ def process(args):
             config.current_profile['tocTitle'] = args.toctitle
         if args.chapteronnewpage is not None:
             config.current_profile['chapterOnNewPage'] = args.chapteronnewpage
+        if args.chapterlevel is not None:
+            config.current_profile['chapterLevel'] = args.chapterlevel
+        if args.seriespositions is not None:
+            config.current_profile['seriesPositions'] = args.seriespositions
         if args.removepngtransparency is not None:
             config.current_profile['removePngTransparency'] = args.removepngtransparency
         if args.noMOBIoptimization:
@@ -615,17 +623,16 @@ if __name__ == '__main__':
                            help='Control dropcaps processing (Simple, Smart, None)')
     argparser.add_argument('-l', '--profile-list', dest='profilelist', action='store_true', default=False, help='Show list of available profiles')
 
-    argparser.add_argument('--toc-max-level', dest='tocmaxlevel', type=int, default=None, help='Maximum level of titles in the TOC')
     argparser.add_argument('--notes-mode', dest='notesmode', type=str, default=None, choices=['default', 'inline', 'block', 'float'],
                            help='How to show footnotes: default, inline, block or float')
     argparser.add_argument('--notes-bodies', dest='notesbodies', type=str, default=None, help='List of fb2 part names (body) with footnotes (comma separated)')
     argparser.add_argument('--annotation-title', dest='annotationtitle', type=str, default=None, help='Annotations title')
-    argparser.add_argument('--toc-title', dest='toctitle', type=str, default=None, help='TOC title')
+
+    argparser.add_argument('--chapter-level', dest='chapterlevel', type=int, default=None, help='Sections above this level are not chapters')
 
     chapter_group = argparser.add_mutually_exclusive_group()
     chapter_group.add_argument('--chapter-on-new-page', dest='chapteronnewpage', action='store_true', default=None, help='Start chapter from the new page')
-    chapter_group.add_argument('--no-chapter-on-new-page', dest='chapteronnewpage', action='store_false', default=None,
-                               help='Do not start chapter from the new page')
+    chapter_group.add_argument('--no-chapter-on-new-page', dest='chapteronnewpage', action='store_false', default=None, help='Do not start chapter from the new page')
 
     sendtokindle_group = argparser.add_mutually_exclusive_group()
     sendtokindle_group.add_argument('--send-to-kindle', dest='sendtokindle', action='store_true', default=None,
@@ -633,15 +640,23 @@ if __name__ == '__main__':
     sendtokindle_group.add_argument('--no-send-to-kindle', dest='sendtokindle', action='store_false', default=None,
                                     help='Do not use Kindle Personal Documents Service to send book to device')
 
+    argparser.add_argument('--series-positions', dest='seriespositions', type=int, default=None, help='How much zero padding to use for #padnumber')
+
     tocplace_group = argparser.add_mutually_exclusive_group()
     tocplace_group.add_argument('--toc-before-body', dest='tocbeforebody', action='store_true', default=None, help='Put TOC at the book beginning')
     tocplace_group.add_argument('--toc-after-body', dest='tocbeforebody', action='store_false', default=None, help='Put TOC at the book end')
+
+    argparser.add_argument('--toc-title', dest='toctitle', type=str, default=None, help='TOC title')
+    argparser.add_argument('--toc-type', dest='toctype', type=str, default=None, choices=['Flat', 'Kindle', 'Normal'], help='TOC (NCX) type for target device')
+    argparser.add_argument('--toc-max-level', dest='tocmaxlevel', type=int, default=None, help='Maximum level of titles in the TOC')
+    argparser.add_argument('--toc-kindle-level', dest='tockindlelevel', type=int, default=None, help='Where to put second level of TOC (NCX) for Kindle')
 
     pngtransparency_group = argparser.add_mutually_exclusive_group()
     pngtransparency_group.add_argument('--remove-png-transparency', dest='removepngtransparency', action='store_true', default=None,
                                        help='Remove transparency in PNG images')
     pngtransparency_group.add_argument('--no-remove-png-transparency', dest='removepngtransparency', action='store_false', default=None,
                                        help='Do not remove transparency in PNG images')
+
 
     # Для совместимости с MyHomeLib добавляем аргументы, которые передает MHL в fb2mobi.exe
     argparser.add_argument('-nc', action='store_true', default=False, help='For MyHomeLib compatibility')
