@@ -482,7 +482,11 @@ class Fb2XHTML:
                         if self.book_lang in ('rus'):
                             self.book_lang = 'ru'
                         if self.hyphenate and self.hyphenator:
-                            self.hyphenator.set_language(self.book_lang)
+                            try:
+                                self.hyphenator.set_language(self.book_lang)
+                            except:
+                                self.log.warning('Unable to set hyphenation dictionary for language code "{}" - turning hyphenation off'.format(self.book_lang))
+                                self.hyphenate = False
 
                     elif ns_tag(t.tag) == 'coverpage':
                         for c in t:
