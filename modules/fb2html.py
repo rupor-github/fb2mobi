@@ -479,6 +479,8 @@ class Fb2XHTML:
                             self.book_lang = t.text if len(t.text) > 2 else t.text.lower()
                         else:
                             self.book_lang = 'ru'
+                        if self.book_lang in ('rus'):
+                            self.book_lang = 'ru'
                         if self.hyphenate and self.hyphenator:
                             self.hyphenator.set_language(self.book_lang)
 
