@@ -133,7 +133,7 @@ class Fb2XHTML:
         self.toc_kindle_level = config.current_profile['tocKindleLevel'] if config.current_profile['tocKindleLevel'] else 2
 
         self.authorstring = config.current_profile['authorFormat']
-        self.bookseriestitle = config.current_profile['bookTitleFormat']
+        self.booktitleformat = config.current_profile['bookTitleFormat']
 
         self.css_file = config.current_profile['css']
         self.parse_css = config.current_profile['parse_css']
@@ -1178,18 +1178,22 @@ class Fb2XHTML:
         self.buff.append('<?xml version="1.0" ?>'
                          '<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">'
                          '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">')
-        if self.book_series == '':
-            title = self.book_title
-        else:
-            abbr = ''.join(word[0] for word in self.book_series.split())
-            title = self.bookseriestitle
+
+        title = self.book_title
+
+        if self.booktitleformat:
+
+            abbr = ''.join(word[0] for word in self.book_series.split()).lower() if self.book_series else ''
+
+            title = self.booktitleformat
+            title = title.replace('#title', '' if not self.book_title else self.book_title.strip())
             title = title.replace('#series', '' if not self.book_series else self.book_series.strip())
+            title = title.replace('#abbrseries', abbr)
             title = title.replace('#number', '' if not self.book_series_num else self.book_series_num.strip())
             title = title.replace('#padnumber', '' if not self.book_series_num else self.book_series_num.strip().zfill(self.seriespositions))
-            title = title.replace('#title', '' if not self.book_title else self.book_title.strip())
-            title = title.replace('#abbrseries', '' if not abbr else abbr.lower())
             title = title.replace('#date', '' if not self.book_date else self.book_date.strip())
-            title = title.strip()
+
+        title = title.strip()
 
         book_author = self.book_author
 
