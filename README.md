@@ -31,6 +31,8 @@ Here is brief list of changes:
   digits overall will be generated) and `#date` to add proper date from `<title-info>` if availabe.
 * Added new `<chapterLevel>` configuration tag and `---chapter-level` parameter along with new style `.titleblock_nobreak`. When parsing sections this style will be generated
   if nesting level is greater or equal to specified value. This allows better control of page breaks on sections boundaries.
+* Supported `<openBookFromCover>` configuration tag and `---open-book-from-cover` parameter for compatibility with fb2conv
+* Changed how book title and book author are formatted - added processing of conditional blocks ex: `<bookTitleFormat>{(#abbrseries{ #padnumber}) }#title</bookTitleFormat>`
 
 More info can be found on [russian forum](http://www.the-ebook.org/forum/viewtopic.php?t=30380).
 
