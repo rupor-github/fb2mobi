@@ -129,6 +129,9 @@ class TOCStack:
 
 class Fb2XHTML:
     def __init__(self, fb2file, mobifile, tempdir, config):
+
+        self.log = config.log
+
         self.buff = []
         self.current_header_level = 0  # Уровень текущего заголовка
         self.header = False  # Признак формирования заголовка
@@ -169,7 +172,7 @@ class Fb2XHTML:
         self.css_file = config.current_profile['css']
         self.parse_css = config.current_profile['parse_css']
 
-        self.log = config.log
+        self.open_book_from_cover = config.current_profile['openBookFromCover']
 
         self.annotation = None
 
@@ -1261,8 +1264,7 @@ class Fb2XHTML:
             if item_type == 'jpg':
                 item_type = 'jpeg'
 
-            self.buff.append('<item id="image{0}" media-type="image/{1}" href="vignettes/{2}"/>'.format(item_id, item_type,
-                                                                                           item_file))
+            self.buff.append('<item id="image{0}" media-type="image/{1}" href="vignettes/{2}"/>'.format(item_id, item_type, item_file))
             item_id += 1
 
         self.buff.append('<item id="style" href="stylesheet.css" media-type="text/css"/>')
@@ -1297,10 +1299,13 @@ class Fb2XHTML:
             if self.book_cover:
                 self.buff.append('<reference type="cover-page" href="cover.xhtml"/>')
 
-            for item in self.html_file_list:
-                if item.split('.')[0].startswith('index'):
-                    self.buff.append('<reference type="text" title="Starts here" href="{0}"/>'.format(item))
-                    break
+            if self.open_book_from_cover and self.book_cover:
+                self.buff.append('<reference type="text" title="book" href="cover.xhtml"/>')
+            else:
+                for item in self.html_file_list:
+                    if item.split('.')[0].startswith('index'):
+                        self.buff.append('<reference type="text" title="Starts here" href="{0}"/>'.format(item))
+                        break
 
             self.buff.append('<reference type="toc" title="Table of Contents" href="toc.xhtml"/>')
             self.buff.append('</guide>')

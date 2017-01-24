@@ -532,7 +532,6 @@ def process(args):
             config.noMOBIoptimization = args.noMOBIoptimization
         if args.sendtokindle is not None:
             config.send_to_kindle['send'] = args.sendtokindle
-
         if args.inputdir:
             config.input_dir = args.inputdir
         if args.outputdir:
@@ -541,6 +540,8 @@ def process(args):
             config.delete_source_file = args.deletesourcefile
         if args.savestructure:
             config.save_structure = args.savestructure
+        if args.openbookfromcover is not None:
+            config.current_profile['openBookFromCover'] = args.openbookfromcover
 
         if args.transliterateauthorandtitle is not None:
             config.transliterate_author_and_title = args.transliterateauthorandtitle
@@ -629,6 +630,7 @@ if __name__ == '__main__':
     argparser.add_argument('--annotation-title', dest='annotationtitle', type=str, default=None, help='Annotations title')
 
     argparser.add_argument('--chapter-level', dest='chapterlevel', type=int, default=None, help='Sections above this level are not chapters')
+    argparser.add_argument('--open-book-from-cover', dest='openbookfromcover', action='store_true', default=None, help='Open book on cover page')
 
     chapter_group = argparser.add_mutually_exclusive_group()
     chapter_group.add_argument('--chapter-on-new-page', dest='chapteronnewpage', action='store_true', default=None, help='Start chapter from the new page')

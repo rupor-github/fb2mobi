@@ -73,6 +73,7 @@ class ConverterConfig:
         self.profiles['default']['generateAPNX'] = None
         self.profiles['default']['charactersPerPage'] = 2300
         self.profiles['default']['seriesPositions'] = 2
+        self.profiles['default']['openBookFromCover'] = False
 
         self.current_profile = {}
         self.mhl = False
@@ -174,7 +175,6 @@ class ConverterConfig:
                     self.profiles[prof_name]['name'] = prof.attrib['name']
                     self.profiles[prof_name]['description'] = prof.attrib['description']
                     self.profiles[prof_name]['vignettes'] = {}
-
                     self.profiles[prof_name]['generateTOCPage'] = True
                     self.profiles[prof_name]['generateAnnotationPage'] = True
                     self.profiles[prof_name]['generateOPFGuide'] = True
@@ -187,6 +187,7 @@ class ConverterConfig:
                     self.profiles[prof_name]['tocKindleLevel'] = 2
                     self.profiles[prof_name]['seriesPositions'] = 2
                     self.profiles[prof_name]['chapterLevel'] = 100
+                    self.profiles[prof_name]['openBookFromCover'] = False
 
                     for p in prof:
                         if p.tag == 'hyphens':
@@ -305,6 +306,9 @@ class ConverterConfig:
                                 self.profiles[prof_name]['vignettes'][vignettes_level] = vign_arr
                                 self.profiles[prof_name]['vignettes_save'][vignettes_level] = vign_arr_save
 
+                        elif p.tag == 'openBookFromCover':
+                            self.profiles[prof_name]['openBookFromCover'] = p.text.lower() == 'true'
+
     def _getVignette(self, vignette_arr):
         for v in vignette_arr:
             print(v)
@@ -353,10 +357,8 @@ class ConverterConfig:
                             E('removePngTransparency', str(self.profiles[p]['removePngTransparency'])),
                             E('charactersPerPage', str(self.profiles[p]['charactersPerPage'])),
                             E('seriesPositions', str(self.profiles[p]['seriesPositions'])),
-                            E('vignettes',
-                              *self._getVignettes(p)
-                              ),
-                            name=p, description=self.profiles[p]['description']))
+                            E('openBookFromCover', str(self.profiles[p]['openBookFromCover'])),
+                            E('vignettes', *self._getVignettes(p)), name=p, description=self.profiles[p]['description']))
 
         return result
 
