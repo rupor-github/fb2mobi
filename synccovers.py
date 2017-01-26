@@ -11,6 +11,8 @@ from modules.mobi_split import mobi_read
 count_files = 0
 count_located = 0
 count_processed = 0
+thumb_width = 330
+thumb_height = 470
 
 def process_file(infile, kindle_dir, verbose):
 
@@ -24,7 +26,7 @@ def process_file(infile, kindle_dir, verbose):
     count_located += 1
     if verbose: print('Processing file {}'.format(infile))
     try:
-        reader = mobi_read(infile)
+        reader = mobi_read(infile, thumb_width, thumb_height)
         asin = reader.getCdeContentKey()
         if len(asin) == 0:
             asin = reader.getASIN()
@@ -78,16 +80,46 @@ def process_folder(inputdir, verbose):
         print('ERROR: unable to find input directory "{0}"'.format(inputdir))
         sys.exit(-1)
 
+def read_thumbsize(s):
+    w, h = 0, 0
+    param = s.lower()
+    if param.find('x') == -1:
+        raise argparse.ArgumentTypeError('Wrong thumbsize format, should be one of WxH, Wx or xH')
+    a = s.split('x')
+    if a[0]:
+        try:
+            w = int(a[0])
+        except ValueError:
+            raise argparse.ArgumentTypeError('Wrong thumbsize format, width is not an integer')
+    if a[1]:
+        try:
+            h = int(a[1])
+        except ValueError:
+            raise argparse.ArgumentTypeError('Wrong thumbsize format, height is not an integer')
+
+    if w == 0 and h == 0:
+        w, h = 33, 470
+    elif w == 0:
+        w = int(h // 1.6)
+    elif h == 0:
+        h = int(w * 1.6)
+
+    return w, h
 
 if __name__ == '__main__':
 
     argparser = argparse.ArgumentParser(description='Synchronize covers for side-loaded books on Kindle. Version {0}'.format(version.VERSION))
     argparser.add_argument('inputdir', type=str, nargs='?', default=None,  help='Directory on mounted device to look for books.')
     argparser.add_argument('-v', '--verbose', dest='verbose', action='store_true', default=False, help='Produce verbose output')
+    argparser.add_argument('-s', '--thumbsize', dest='thumbsize', type=read_thumbsize, default='330x470',  help='Size of resulting thumbnail (330x470)')
 
     args = argparser.parse_args()
 
     if args.inputdir:
+
+        if args.thumbsize:
+            thumb_width, thumb_height = args.thumbsize
+
         process_folder(os.path.normpath(args.inputdir), args.verbose)
         print('\nTotal files {0}, located {1}, thumbnails written for {2}'.format(count_files, count_located, count_processed))
     else:

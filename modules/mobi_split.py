@@ -603,7 +603,7 @@ class mobi_split:
 
 
 class mobi_read:
-    def __init__(self, infile):
+    def __init__(self, infile, width=330, height=470):
 
         self.asin = ''
         self.cdetype = 'PDOC'
@@ -667,15 +667,15 @@ class mobi_read:
             thumb_index = 0xffffffff
 
         if cover_index != 0xffffffff:
-            width, height = 0, 0
+            w, h = 0, 0
             if thumb_index != 0xffffffff:
                 image = readsection(datain, thumb_index)
                 self.thumbnail = Image.open(BytesIO(image))
-                width, height = self.thumbnail.size               
-            if width < 330 and height < 470:
+                w, h = self.thumbnail.size
+            if w < width and h < height:
                 image = readsection(datain, cover_index)
                 self.thumbnail = Image.open(BytesIO(image))
-                self.thumbnail.thumbnail((330, 470), Image.ANTIALIAS)
+                self.thumbnail.thumbnail((width, height), Image.ANTIALIAS)
 
         if self.combo:
             # always try to use information from KF8 part
