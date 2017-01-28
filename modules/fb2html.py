@@ -1149,7 +1149,7 @@ class Fb2XHTML:
             # make sure kindlegen does not complain on cover size and make sure that epub cover takes whole screen
             im = Image.open(os.path.join(self.temp_content_dir, self.book_cover))
             if im.height < self.screen_height:
-                im.resize((int(self.screen_height * im.width / im.height), self.screen_height), Image.ANTIALIAS).save(os.path.join(self.temp_content_dir, self.book_cover))
+                im.resize((int(self.screen_height * im.width / im.height), self.screen_height), Image.LANCZOS).save(os.path.join(self.temp_content_dir, self.book_cover))
 
             self.buff = []
             self.buff.append(HTMLHEAD)

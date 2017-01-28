@@ -11,10 +11,9 @@ from modules.mobi_split import mobi_read
 count_files = 0
 count_located = 0
 count_processed = 0
-thumb_width = 330
-thumb_height = 470
 
-def process_file(infile, kindle_dir, verbose):
+
+def process_file(infile, kindle_dir, width, height, stretch, verbose):
 
     global count_files, count_located, count_processed
 
@@ -26,7 +25,7 @@ def process_file(infile, kindle_dir, verbose):
     count_located += 1
     if verbose: print('Processing file {}'.format(infile))
     try:
-        reader = mobi_read(infile, thumb_width, thumb_height)
+        reader = mobi_read(infile, width, height, stretch)
         asin = reader.getCdeContentKey()
         if len(asin) == 0:
             asin = reader.getASIN()
@@ -47,7 +46,7 @@ def process_file(infile, kindle_dir, verbose):
     return
 
 
-def process_folder(inputdir, verbose):
+def process_folder(inputdir, width, height, stretch, verbose):
 
     if os.path.isdir(inputdir):
         # let's see if we could locate kindle directory
@@ -68,7 +67,7 @@ def process_folder(inputdir, verbose):
                 try:
                     if file.lower().endswith(('.mobi', '.azw3')):
                         inputfile = os.path.join(root, file)
-                        process_file(inputfile, kindle_dir, verbose)
+                        process_file(inputfile, kindle_dir, width, height, stretch, verbose)
                 except KeyboardInterrupt as e:
                     print('User interrupt. Exiting...')
                     sys.exit(-1)
@@ -112,15 +111,12 @@ if __name__ == '__main__':
     argparser.add_argument('inputdir', type=str, nargs='?', default=None,  help='Directory on mounted device to look for books.')
     argparser.add_argument('-v', '--verbose', dest='verbose', action='store_true', default=False, help='Produce verbose output')
     argparser.add_argument('-s', '--thumbsize', dest='thumbsize', type=read_thumbsize, default='330x470',  help='Size of resulting thumbnail (330x470)')
+    argparser.add_argument('--stretch', dest='stretch', action='store_true', default=False, help='Do not preserve thumbnail aspect ratio')
 
     args = argparser.parse_args()
 
     if args.inputdir:
-
-        if args.thumbsize:
-            thumb_width, thumb_height = args.thumbsize
-
-        process_folder(os.path.normpath(args.inputdir), args.verbose)
+        process_folder(os.path.normpath(args.inputdir), args.thumbsize[0], args.thumbsize[1], args.stretch, args.verbose)
         print('\nTotal files {0}, located {1}, thumbnails written for {2}'.format(count_files, count_located, count_processed))
     else:
         print(argparser.description)
