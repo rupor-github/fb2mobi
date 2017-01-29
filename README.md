@@ -45,7 +45,7 @@ In order to build [Windows and Linux releases](https://github.com/rupor-github/f
 * cssutils-1.0.1
 * lxml-3.7.1
 * Pillow-4.0.0
-* PyHyphen [fork - 2.0.6](https://github.com/rupor-github/pyhyphen)
+* PyHyphen [fork with fixes (2.0.6):](https://github.com/rupor-github/pyhyphen)
   * on all platforms usage of Python 3.6 pymalloc interface in hjn module corrupts Python heap and prevents converter from working
   * on Windows PyHyphen 2.0.5 does not handle Unicode path names, which prevents converter from working when installed in directories with localized names
 
