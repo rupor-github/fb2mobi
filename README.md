@@ -40,7 +40,7 @@ Program uses source code (modified) from following projects released under GPL:
 
 * [KindleUnpack](https://github.com/kevinhendricks/KindleUnpack)
 
-In order to build [Windows releases](https://github.com/rupor-github/fb2mobi/releases) I am using Python 3.6.0, [cx_Freeze 5.0.1](https://bitbucket.org/anthony_tuininga/cx_freeze) and following libraries:
+In order to build [Windows and Linux releases](https://github.com/rupor-github/fb2mobi/releases) I am using Python 3.6.0, [cx_Freeze 5.0.1](https://bitbucket.org/anthony_tuininga/cx_freeze) and following libraries:
 
 * cssutils-1.0.1
 * lxml-3.7.1
@@ -49,6 +49,6 @@ In order to build [Windows releases](https://github.com/rupor-github/fb2mobi/rel
   * on all platforms usage of Python 3.6 pymalloc interface in hjn module corrupts Python heap and prevents converter from working
   * on Windows PyHyphen 2.0.5 does not handle Unicode path names, which prevents converter from working when installed in directories with localized names
 
-If you are not on Windows and/or not using "frozen" distribution you would need to download [Amazon's KindleGen](https://www.amazon.com/gp/feature.html?docId=1000765211).
+If you are not on Windows/Linux and/or not using "frozen" distribution you would need to download [Amazon's KindleGen](https://www.amazon.com/gp/feature.html?docId=1000765211).
 
 Enjoy!

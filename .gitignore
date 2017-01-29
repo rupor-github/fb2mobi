@@ -6,7 +6,10 @@
 
 # releases
 *.7z
+*.tar.gz
+
 kindlegen.exe
+kindlegen
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
