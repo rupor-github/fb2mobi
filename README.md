@@ -39,7 +39,7 @@ Program uses source code (modified) from following projects released under GPL:
 
 * [KindleUnpack](https://github.com/kevinhendricks/KindleUnpack)
 
-In order to build [Windows and Linux releases](https://github.com/rupor-github/fb2mobi/releases) I am using Python 3.6.0, [cx_Freeze 5.0.1](https://bitbucket.org/anthony_tuininga/cx_freeze) and following libraries:
+In order to build [releases](https://github.com/rupor-github/fb2mobi/releases) we are using Python 3.6.0, [cx_Freeze 5.0.1](https://bitbucket.org/anthony_tuininga/cx_freeze) and following libraries:
 
 * cssutils-1.0.1
 * lxml-3.7.1
