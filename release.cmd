@@ -1,8 +1,9 @@
 IF .%1. == .. GOTO ERR
+IF .%2. == .gui. set UI=_gui
 
-del fb2mobi_%1.7z >nul
+del fb2mobi%UI%_%1.7z >nul
 cd dist
-7z.exe a ..\fb2mobi_%1.7z 
+7z.exe a ..\fb2mobi%UI%_%1.7z
 cd ..
 
 goto FIN
