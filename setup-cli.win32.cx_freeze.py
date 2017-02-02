@@ -24,6 +24,7 @@ includes = [
 ]
 
 excludes = [
+    'PyQt5', 
     'pywin',
     'Tkconstants',
     'Tkinter',

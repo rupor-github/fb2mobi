@@ -1,4 +1,5 @@
 IF .%1. == .. GOTO ERR
+set UI=
 IF .%2. == .gui. set UI=_gui
 
 del fb2mobi%UI%_%1.7z >nul
