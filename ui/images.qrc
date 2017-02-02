@@ -1,0 +1,10 @@
+<RCC>
+  <qresource prefix="Images">
+    <file>bullet_green.png</file>
+    <file>bullet_red.png</file>
+    <file>bullet_white.png</file>
+    <file>bullet_go.png</file>
+    <file>icon32.png</file>
+    <file>128.png</file>
+  </qresource>
+</RCC>
