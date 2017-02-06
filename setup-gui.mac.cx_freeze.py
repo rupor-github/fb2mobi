@@ -44,18 +44,20 @@ data_files = [
 ]
 
 
-plist = { 
-    'CFBundleDocumentTypes': [{
-    'CFBundleTypeName': 'Folder',
-    'CFBundleTypeRole': 'Viewer',
-    'LSItemContentTypes': ['public.folder'],
-    'CFBundleTypeExtensions': ['fb2', 'zip'],
-    'CFBundleTypeName': 'FB2 Document',
-    'CFBundleTypeRole': 'Viewer',
-  }]
-}
+plist = {}
 
-q
+# plist = { 
+#     'CFBundleDocumentTypes': [{
+#     'CFBundleTypeName': 'Folder',
+#     'CFBundleTypeRole': 'Viewer',
+#     'LSItemContentTypes': ['public.folder'],
+#     'CFBundleTypeExtensions': ['fb2', 'zip'],
+#     'CFBundleTypeName': 'FB2 Document',
+#     'CFBundleTypeRole': 'Viewer',
+#   }]
+# }
+
+
 setup(
     name = "fb2mobi-gui",
     version = version.VERSION,

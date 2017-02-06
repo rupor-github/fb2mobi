@@ -10,10 +10,16 @@ class GuiConfig():
 	def __init__(self, config_file):
 		self.config_file = os.path.normpath(os.path.abspath(config_file))
 
-		self.lastUsedProfile = None
-		self.lastUsedFormat = None
+		self.converterConfig = {}
+		self.currentProfile = None
+		self.currentFormat = None
 		self.outputFolder = None
 		self.convertToSourceDirectory = False
+		self.hyphens = None
+		self.kindlePath = None
+		self.kindleCopyToDevice = False
+		self.kindleSyncCovers = False
+
 		self.geometry = {}
 		self.geometry['x'] = None
 		self.geometry['y'] = None
@@ -29,14 +35,26 @@ class GuiConfig():
 	def load(self):
 		config = etree.parse(self.config_file)
 		for e in config.getroot():
-			if e.tag == 'lastUsedProfile':
-				self.lastUsedProfile = e.text
+			if e.tag == 'currentProfile':
+				self.currentProfile = e.text
 
-			elif e.tag == 'lastUsedFormat':
-				self.lastUsedFormat = e.text
+			elif e.tag == 'currentFormat':
+				self.currentFormat = e.text
 
 			elif e.tag == 'outputFolder':
 				self.outputFolder = e.text
+
+			elif e.tag == 'hyphens':
+				self.hyphens = e.text
+
+			elif e.tag == 'kindlePath':
+				self.kindlePath = e.text
+
+			elif e.tag == 'kindleCopyToDevice':
+				self.kindleCopyToDevice = e.text.lower() == 'true'
+
+			elif e.tag == 'kindleSyncCovers':
+				self.kindleSyncCovers = e.text.lower() == 'true'
 
 			elif e.tag == 'convertToSourceDirectory':
 				self.convertToSourceDirectory = e.text.lower() == 'true'
@@ -48,10 +66,14 @@ class GuiConfig():
 
 	def write(self):
 		config = E('settings',
-					E('lastUsedProfile', self.lastUsedProfile) if self.lastUsedProfile else E('lastUsedProfile'),
-					E('lastUsedFormat', self.lastUsedFormat) if self.lastUsedFormat else E('lastUsedFormat'),
+					E('currentProfile', self.currentProfile) if self.currentProfile else E('currentProfile'),
+					E('currentFormat', self.currentFormat) if self.currentFormat else E('currentFormat'),
+					E('hyphens', self.hyphens) if self.hyphens else E('hyphens'),
 					E('outputFolder', self.outputFolder) if self.outputFolder else E('outputFolder'),
 					E('convertToSourceDirectory', str(self.convertToSourceDirectory)),
+					E('kindlePath', self.kindlePath) if self.kindlePath else E('kindlePath'),
+					E('kindleCopyToDevice', str(self.kindleCopyToDevice)),
+					E('kindleSyncCovers', str(self.kindleSyncCovers)),
 					E('geometry',
 						E('x', str(self.geometry['x'])) if self.geometry['x'] else E('x'),
 						E('y', str(self.geometry['y'])) if self.geometry['y'] else E('y'),

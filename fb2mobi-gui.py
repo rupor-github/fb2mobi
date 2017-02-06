@@ -7,47 +7,93 @@ import time
 import subprocess
 import webbrowser
 import logging
+import shutil
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTreeWidgetItem, QMessageBox, QDialog, QWidget
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTreeWidgetItem, QMessageBox, QDialog, QWidget, QLabel
+from PyQt5.QtGui import QIcon, QPixmap 
 from PyQt5.QtCore import QThread, pyqtSignal, QEvent, Qt
 
 from ui.MainWindow import Ui_MainWindow
 from ui.AboutDialog import Ui_AboutDialog
+from ui.SettingsDialog import Ui_SettingsDialog
+
 from ui.gui_config import GuiConfig
 import ui.images_rc
 import ui.ui_version
 
 from modules.config import ConverterConfig
 import fb2mobi
+import synccovers
 import version
 
 
 SUPPORT_URL = u'http://www.the-ebook.org/forum/viewtopic.php?t=30380'
 
 
-class ConvertThread(QThread):
-    convertBegin = pyqtSignal(object)
-    convertDone = pyqtSignal(object, bool)
-    convertAllDone = pyqtSignal()
+class CopyThread(QThread):
+    copyBegin = pyqtSignal(object)
+    copyDone = pyqtSignal()
+    copyAllDone = pyqtSignal()
 
-    def __init__(self, files, config):
-        super(ConvertThread, self).__init__()
+    def __init__(self, files, dest_path):
+        super(CopyThread, self).__init__()
         self.files = files
-        self.config = config    
-        self.cancel = False
-
+        self.dest_path = dest_path
 
     def run(self):
         for file in self.files:
+            self.copyBegin.emit(file)
+            try:
+                if os.path.exists(self.dest_path):                    
+                    shutil.copy2(file, self.dest_path)
+            except:
+                pass
+            self.copyDone.emit()
+
+        self.copyAllDone.emit()
+
+
+class ConvertThread(QThread):
+    convertBegin = pyqtSignal(object)
+    convertDone = pyqtSignal(object, bool, object)
+    convertAllDone = pyqtSignal()
+
+    def __init__(self, files, gui_config):
+        super(ConvertThread, self).__init__()
+        self.files = files
+        self.config = gui_config.converterConfig
+        self.cancel = False
+
+        self.config.setCurrentProfile(gui_config.currentProfile)
+        self.config.output_format = gui_config.currentFormat
+
+        if not gui_config.convertToSourceDirectory:
+            self.config.output_dir = gui_config.outputFolder
+        else:
+            self.config.output_dir = None
+
+        if gui_config.hyphens.lower() == 'yes':
+            self.config.current_profile['hyphens']= True
+        elif gui_config.hyphens.lower()  == 'no':
+            self.config.current_profile['hyphens'] = False
+
+
+    def run(self):
+        dest_file = None
+
+        for file in self.files:
             result = True
+            dest_file = None
             if not self.cancel:
                 self.convertBegin.emit(file)
+
                 fb2mobi.process_file(self.config, file, None)
                 if not os.path.exists(self.getDestFileName(file)):
                     result = False
+                else:
+                    dest_file = self.getDestFileName(file)
 
-                self.convertDone.emit(file, result)
+                self.convertDone.emit(file, result, dest_file)
             else:
                 break
 
@@ -59,6 +105,9 @@ class ConvertThread(QThread):
         else:
             output_dir = os.path.abspath(self.config.output_dir)
         file_name = os.path.join(output_dir, os.path.splitext(os.path.split(file)[1])[0])
+        if os.path.splitext(file_name)[1].lower() == '.fb2':
+        	file_name = os.path.splitext(file_name)[0]
+
         return '{0}.{1}'.format(file_name, self.config.output_format)
 
 
@@ -66,9 +115,97 @@ class ConvertThread(QThread):
         self.cancel = True
 
 
+class SettingsDialog(QDialog, Ui_SettingsDialog):
+    def __init__(self, parent, config):
+        super(SettingsDialog, self).__init__(parent)
+        self.setupUi(self)
+
+        self.config = config
+
+        for p in self.config.converterConfig.profiles:
+            self.comboProfile.addItem('{0} ({1})'.format(p, self.config.converterConfig.profiles[p]['description']), p)
+
+        for f in ['mobi', 'azw3', 'epub']:
+            self.comboFormat.addItem(f, f)
+
+        self.comboProfile.setCurrentIndex(self.comboProfile.findData(self.config.currentProfile))
+        self.comboFormat.setCurrentIndex(self.comboFormat.findData(self.config.currentFormat))
+        self.lineDestPath.setText(self.config.outputFolder)
+        self.checkConvertToSrc.setChecked(self.config.convertToSourceDirectory)
+
+        self.buttonBox.button(self.buttonBox.Cancel).setText('Отмена')
+
+        if self.config.hyphens.lower() == 'yes':
+            self.radioHypYes.setChecked(True)
+            self.radioHypNo.setChecked(False)
+            self.radioHypProfile.setChecked(False)
+
+        elif self.config.hyphens.lower() == 'no':
+            self.radioHypYes.setChecked(False)
+            self.radioHypNo.setChecked(True)
+            self.radioHypProfile.setChecked(False)
+
+        elif self.config.hyphens.lower() == 'profile':
+            self.radioHypYes.setChecked(False)
+            self.radioHypNo.setChecked(False)
+            self.radioHypProfile.setChecked(True)
+
+        self.lineKindlePath.setText(self.config.kindlePath)
+        self.checkCopyAfterConvert.setChecked(self.config.kindleCopyToDevice)
+        self.checkSyncCovers.setChecked(self.config.kindleSyncCovers)
+
+
+    def selectDestPath(self):
+        self.lineDestPath.setText(self.selectPath(self.lineDestPath.text()))
+
+    def selectKindlePath(self):
+        self.lineKindlePath.setText(self.selectPath(self.lineKindlePath.text()))
+
+    def selectPath(self, path):
+        if not path:
+            path = os.path.expanduser('~')
+
+        dlgPath = QFileDialog(self, 'Выберите папку', path)
+        dlgPath.setFileMode(QFileDialog.Directory)
+        dlgPath.setOption(QFileDialog.ShowDirsOnly, True)
+
+        if dlgPath.exec_():
+            for d in dlgPath.selectedFiles():
+                path = os.path.normpath(d)
+
+        return path
+
+
+    def checkConvertToSrcClicked(self, state):
+        enabled = False
+        if state == 0:
+            enabled = True
+
+        self.lineDestPath.setEnabled(enabled)
+        self.btnSelectDestPath.setEnabled(enabled)
+
+
+    def closeAccept(self):
+        self.config.currentProfile = self.comboProfile.currentData()
+        self.config.currentFormat = self.comboFormat.currentData()
+        self.config.outputFolder = os.path.normpath(self.lineDestPath.text())
+        self.config.convertToSourceDirectory = self.checkConvertToSrc.isChecked()
+        if self.radioHypYes.isChecked():
+           self.config.hyphens = 'Yes'
+        elif self.radioHypNo.isChecked():
+            self.config.hyphens = 'No'
+        else:
+            self.config.hyphens = 'Profile'
+
+        if self.lineKindlePath.text():
+            self.config.kindlePath = os.path.normpath(self.lineKindlePath.text())
+        self.config.kindleCopyToDevice = self.checkCopyAfterConvert.isChecked()
+        self.config.kindleSyncCovers = self.checkSyncCovers.isChecked()
+
+
 class AboutDialog(QDialog, Ui_AboutDialog):
-    def __init__(self):
-        super(AboutDialog, self).__init__()
+    def __init__(self, parent):
+        super(AboutDialog, self).__init__(parent)
         self.setupUi(self)
 
         image  = QPixmap(':/Images/128.png')
@@ -87,6 +224,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.savedPath = ''
         self.convertRun = False
         self.convertedCount = 0
+        self.copyCount = 0
+        self.convertedFiles = []
 
         self.setAcceptDrops(True)
 
@@ -94,6 +233,9 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.log_file = None
         self.log = None
         self.config = {}
+
+        self.convert_worker = None
+        self.copy_worker = None
 
         self.rootFileList = self.treeFileList.invisibleRootItem()
         self.iconWhite = QIcon(':/Images/bullet_white.png')
@@ -123,55 +265,52 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.log_file = os.path.normpath(os.path.join(config_path, log_file_name))
         self.gui_config_file = os.path.normpath(os.path.join(config_path, gui_config_file))
 
-        self.config = ConverterConfig(self.config_file)
+        
         self.gui_config = GuiConfig(self.gui_config_file)
-
+        self.gui_config.converterConfig = ConverterConfig(self.config_file)
 
         log = logging.getLogger('fb2mobi')
         log.setLevel("DEBUG")
 
         log_stream_handler = logging.StreamHandler()
-        log_stream_handler.setLevel(fb2mobi.get_log_level(self.config.console_level))
+        log_stream_handler.setLevel(fb2mobi.get_log_level(self.gui_config.converterConfig.console_level))
         log_stream_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
         log.addHandler(log_stream_handler)
 
         if self.log_file:
             log_file_handler = logging.FileHandler(filename=self.log_file, mode='a', encoding='utf-8')
-            log_file_handler.setLevel(fb2mobi.get_log_level(self.config.log_level))
+            log_file_handler.setLevel(fb2mobi.get_log_level(self.gui_config.converterConfig.log_level))
             log_file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
             log.addHandler(log_file_handler)
 
-        self.log = log
+
+        self.gui_config.converterConfig.log = log
 
 
-        for p in self.config.profiles:
-            self.comboProfiles.addItem('{0} ({1})'.format(p, self.config.profiles[p]['description']), p)
+        if not self.gui_config.outputFolder:
+            self.gui_config.outputFolder = os.path.abspath(os.path.expanduser("~/Desktop"))
 
-        for f in ['mobi', 'azw3', 'epub']:
-            self.comboOutputFormat.addItem(f, f)
+        if not self.gui_config.currentFormat:
+            self.gui_config.currentFormat = 'mobi'
 
-        if self.gui_config.lastUsedProfile:
-            self.comboProfiles.setCurrentIndex(self.comboProfiles.findData(self.gui_config.lastUsedProfile))
-        
-        if self.gui_config.lastUsedFormat:
-            self.comboOutputFormat.setCurrentIndex(self.comboOutputFormat.findData(self.gui_config.lastUsedFormat))
+        if not self.gui_config.currentProfile:
+            for p in self.gui_config.converterConfig.profiles:
+                self.gui_config.currentProfile = p
+                break
 
-        if self.gui_config.outputFolder:
-            self.editDestPath.setText(self.gui_config.outputFolder)
-        else:
-            self.editDestPath.setText(os.path.abspath(os.path.expanduser("~/Desktop")))
+        if not self.gui_config.convertToSourceDirectory:
+            self.gui_config.convertToSourceDirectory = False
+
+        if not self.gui_config.hyphens:
+            self.gui_config.hyphens = 'profile'
 
         if self.gui_config.geometry['x'] and self.gui_config.geometry['y']:
             self.move(self.gui_config.geometry['x'], self.gui_config.geometry['y'])
             self.resize(self.gui_config.geometry['width'], self.gui_config.geometry['height'])
 
-        self.checkConvertToSrcDir.setChecked(self.gui_config.convertToSourceDirectory)
-        self.checkConvertToDestDirClicked(self.gui_config.convertToSourceDirectory)
-
         self.progressBar.setRange(0, 100)
         self.progressBar.setValue(0)
-        self.progressBar.setVisible(False)
-        
+        self.progressBar.setVisible(False)        
 
         self.setWindowIcon(QIcon(':/Images/icon32.png'))
         self.treeFileList.installEventFilter(self)
@@ -208,53 +347,22 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.rootFileList.removeChild(item)
      
 
-    def checkConvertToDestDirClicked(self, state):
-        enabled = False
-        if state == 0:
-            enabled = True
-
-        self.editDestPath.setEnabled(enabled)
-        self.btnSelectDestDir.setEnabled(enabled)
-        self.btnOpenDestDir.setEnabled(enabled)
-
-
-    def openDestDir(self):
-        filename = os.path.normpath(self.editDestPath.text())
-        self.openFile(filename)
-
-
     def openLog(self):
         self.openFile(self.log_file)
 
+
     def checkDestDir(self):
-        filename = os.path.normpath(self.editDestPath.text())
+        filename = os.path.normpath(self.gui_config.outputFolder)
         if not os.path.exists(filename):
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
             msg.setText('Указанный каталог не существует')
             msg.setWindowTitle('Ошибка')
             msg.exec_()
-            self.editDestPath.selectAll()
-            self.editDestPath.setFocus()
 
             return False
         else:
             return True
-
-
-    def selectDestDir(self):
-        if self.editDestPath.text():
-            dest_dir = self.editDestPath.text()
-        else:
-            dest_dir = os.path.expanduser('~')
-
-        dirDialog = QFileDialog(self, 'Выберите каталог', dest_dir)
-        dirDialog.setFileMode(QFileDialog.Directory)
-        dirDialog.setOption(QFileDialog.ShowDirsOnly, True)
-
-        if dirDialog.exec_():
-            for d in dirDialog.selectedFiles():
-                self.editDestPath.setText(os.path.normpath(d))
 
 
     def startConvert(self):
@@ -266,6 +374,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 self.btnStart.setText('Стоп')
                 self.convertRun = True
                 self.allControlsEnabled(False)
+
                 files = []
                 for i in range(self.rootFileList.childCount()):
                     files.append(self.rootFileList.child(i).text(0))
@@ -274,34 +383,75 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 self.progressBar.setValue(0)
                 self.progressBar.setVisible(True)
                 self.convertedCount = 0
+                self.convertedFiles = []
+                
+                self.convert_worker = ConvertThread(files, self.gui_config)
+                self.convert_worker.convertBegin.connect(self.convertBegin)
+                self.convert_worker.convertDone.connect(self.convertDone)
+                self.convert_worker.convertAllDone.connect(self.convertAllDone)
 
-                self.config.setCurrentProfile(self.comboProfiles.currentData())
-                self.config.log = self.log
-                self.config.output_format = self.comboOutputFormat.currentData()
-                if not self.checkConvertToSrcDir.isChecked():
-                    self.config.output_dir = self.editDestPath.text()
-                else:
-                   self.config.output_dir = None 
-
-                self.worker = ConvertThread(files, self.config)
-                self.worker.convertBegin.connect(self.convertBegin)
-                self.worker.convertDone.connect(self.convertDone)
-                self.worker.convertAllDone.connect(self.convertAllDone)
-                self.worker.start()
+                self.convert_worker.start()
             else:
-                self.worker.stop()            
+                self.convert_worker.stop()            
 
 
     def convertAllDone(self):
         self.convertRun = False        
-        self.btnStart.setText('Пуск')
+        self.btnStart.setText('Старт')
         self.allControlsEnabled(True)
-        time.sleep(0.5)
+        self.statusBar().clearMessage()
+
+        time.sleep(0.5)    
         self.progressBar.setVisible(False)
+        
+        if self.gui_config.kindleCopyToDevice:
+            if self.gui_config.kindlePath and os.path.exists(self.gui_config.kindlePath):
+                self.copy_worker = CopyThread(self.convertedFiles, self.gui_config.kindlePath)
+                self.copy_worker.copyBegin.connect(self.copyBegin)
+                self.copy_worker.copyDone.connect(self.copyDone)
+                self.copy_worker.copyAllDone.connect(self.copyAllDone)
+
+                self.progressBar.setRange(0, len(self.convertedFiles))
+                self.progressBar.setValue(0)
+                self.copyCount = 0
+
+                self.progressBar.setVisible(True)
+                self.copy_worker.start()
+            else:
+                msg = QMessageBox(QMessageBox.Critical, 'Ошибка', 'Копирование невозможно - устройство недоступно.', QMessageBox.Ok, self)
+                msg.exec_()
+
+
+    def copyBegin(self, file):
+        self.statusBar().showMessage('Копируется на устройство: {0}'.format(os.path.split(file)[1]))
+
+
+    def copyDone(self):
+        self.copyCount += 1
+        self.progressBar.setValue(self.copyCount)
+
+
+    def copyAllDone(self):
+        if self.gui_config.kindleSyncCovers:
+            if self.gui_config.kindlePath and os.path.exists(self.gui_config.kindlePath):
+                self.statusBar().showMessage('Синхронизация обложек')
+                self.progressBar.setMinimum(0)
+                self.progressBar.setMaximum(0)
+                try:                    
+                    synccovers.process_folder(self.gui_config.kindlePath, 330, 470, False, False)
+                except:
+                    pass
+
+        time.sleep(0.5)    
+        self.progressBar.setVisible(False)
+        self.statusBar().clearMessage()
+
 
     def convertBegin(self, file):
         found = False
         item = None
+
+        self.statusBar().showMessage('Обработка файла: {0}'.format(os.path.split(file)[1]))
 
         for i in range(self.rootFileList.childCount()):
             if file == self.rootFileList.child(i).text(0):
@@ -313,9 +463,12 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             item.setIcon(0, self.iconGo)
 
 
-    def convertDone(self, file, result):
+    def convertDone(self, file, result, dest_file):
         found = False
         item = None
+
+        if result:
+            self.convertedFiles.append(dest_file)
 
         for i in range(self.rootFileList.childCount()):
             if file == self.rootFileList.child(i).text(0):
@@ -334,11 +487,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
 
     def allControlsEnabled(self, enable):
-        self.comboProfiles.setEnabled(enable)
-        self.comboOutputFormat.setEnabled(enable)
-        self.btnSelectDestDir.setEnabled(enable)
-        self.checkConvertToSrcDir.setEnabled(enable)
-        self.editDestPath.setEnabled(enable)
+        self.btnSettings.setEnabled(enable)
 
 
     def addFile(self, file):
@@ -383,19 +532,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
 
     def closeApp(self):
-        profile = self.comboProfiles.currentData()
-        output_format = self.comboOutputFormat.currentData()
-        output_dir = self.editDestPath.text()
-        convert_to_source_dir = self.checkConvertToSrcDir.isChecked()
-
-        if profile:
-            self.gui_config.lastUsedProfile = profile
-        if output_format:
-            self.gui_config.lastUsedFormat = output_format
-        if output_dir:
-            self.gui_config.outputFolder = os.path.normpath(output_dir)
-        self.gui_config.convertToSourceDirectory = str(convert_to_source_dir)
-    
         win_x = self.pos().x()
         win_y = self.pos().y()
         win_width = self.size().width()
@@ -427,8 +563,14 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 pass
 
 
+    def settings(self):
+        settingsDlg = SettingsDialog(self, self.gui_config)
+        if settingsDlg.exec_():
+            self.gui_config = settingsDlg.config
+
+
     def about(self):
-        aboutDlg = AboutDialog()
+        aboutDlg = AboutDialog(self)
         aboutDlg.exec_()
 
 
