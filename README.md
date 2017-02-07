@@ -1,8 +1,8 @@
 This program is based on fb2conv program published by [dnkorpushov](https://github.com/dnkorpushov) on [the-ebook.org](http://www.the-ebook.org/forum/viewtopic.php?t=28447) site.
 
 Original program (being Python 2) did not work well under Windows when non-russian system codepage was selected for non-Unicode programs. 
-In order to improve the situation I had to port it to Python 3. Later author of original converter re-joined the project and ported GUI UI here. 
-He also added binary GUI releases for MAC.
+In order to improve the situation I had to port it to Python 3. Later author of original converter re-joined the project and ported GUI UI here.
+He also added binary releases for MAC.
 
 Here is brief list of changes to the original project (in addition to bug fixes):
 
@@ -42,14 +42,13 @@ Program uses source code (modified) from following projects released under GPL:
 In order to build [releases](https://github.com/rupor-github/fb2mobi/releases) we are using Python 3.6.0, [cx_Freeze 5.0.1](https://bitbucket.org/anthony_tuininga/cx_freeze) and following libraries:
 
 * cssutils-1.0.1
-* lxml-3.7.1
+* lxml-3.7.2
 * Pillow-4.0.0
 * PyHyphen [fork with fixes (2.0.6):](https://github.com/rupor-github/pyhyphen)
   * on all platforms usage of Python 3.6 pymalloc interface in hjn module corrupts Python heap and prevents converter from working
   * on Windows PyHyphen 2.0.5 does not handle Unicode path names, which prevents converter from working when installed in directories with localized names
-* PyQt 5.71 (for GUI versions)
+* PyQt 5.71
 
 If you are not using "frozen" distribution you would need to download [Amazon's KindleGen](https://www.amazon.com/gp/feature.html?docId=1000765211).
-If you are using converter as a companion to [MyHomeLib](http://home-lib.net/) you only need command line (CLI) version(s).
 
 Enjoy!

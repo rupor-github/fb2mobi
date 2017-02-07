@@ -22,7 +22,7 @@ except:
 includes = [
     'lxml._elementpath',
     'modules.default_css',
-    'PyQt5.QtCore', 
+    'PyQt5.QtCore',
     'PyQt5.QtGui',
     'PyQt5.QtWidgets'
 ]
@@ -38,6 +38,7 @@ data_files = [
     (os.path.join(base_dir, 'modules', 'dictionaries'), 'dictionaries'),
     (os.path.join(base_dir, 'profiles'), 'profiles'),
     (os.path.join(base_dir, 'fb2mobi.config'), 'fb2mobi.config'),
+    (os.path.join(base_dir, 'fb2epub.config'), 'fb2epub.config'),
     (os.path.join(base_dir, 'spaces.xsl'), 'spaces.xsl'),
     (os.path.join(base_dir, 'kindlegen.exe'), 'kindlegen.exe'),
     (os.path.join(site.getsitepackages()[1], 'PyQt5/Qt/plugins/platforms/qwindows.dll'), "platforms/qwindows.dll")
@@ -58,6 +59,9 @@ setup(
         }
     },
     executables = [
+        Executable('fb2mobi.py'),
+        Executable('fb2mobi.py',targetName='fb2epub.exe'),
+        Executable('synccovers.py'),
         Executable('fb2mobi-gui.py', base='Win32GUI', icon='ui/fb2mobi.ico')
     ]
 )
