@@ -9,7 +9,8 @@ import webbrowser
 import logging
 import shutil
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTreeWidgetItem, QMessageBox, QDialog, QWidget, QLabel
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QTreeWidgetItem, QMessageBox, QDialog, QWidget, 
+                            QLabel, QAbstractItemView)
 from PyQt5.QtGui import QIcon, QPixmap 
 from PyQt5.QtCore import QThread, pyqtSignal, QEvent, Qt
 
@@ -372,6 +373,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
             if not self.convertRun:
                 self.btnStart.setText('Стоп')
+                self.actionConvert.setText('Прервать конвертацию')
                 self.convertRun = True
                 self.allControlsEnabled(False)
 
@@ -392,12 +394,15 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
                 self.convert_worker.start()
             else:
-                self.convert_worker.stop()            
+                self.convert_worker.stop() 
+                self.btnStart.setEnabled(False)
+                self.actionConvert.setEnabled(False)
 
 
     def convertAllDone(self):
         self.convertRun = False        
         self.btnStart.setText('Старт')
+        self.actionConvert.setText('Конвертировать')
         self.allControlsEnabled(True)
         self.statusBar().clearMessage()
 
@@ -416,6 +421,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 self.copyCount = 0
 
                 self.progressBar.setVisible(True)
+                self.allControlsEnabled(False, True)
                 self.copy_worker.start()
             else:
                 msg = QMessageBox(QMessageBox.Critical, 'Ошибка', 'Копирование невозможно - устройство недоступно.', QMessageBox.Ok, self)
@@ -444,6 +450,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         time.sleep(0.5)    
         self.progressBar.setVisible(False)
+        self.allControlsEnabled(True)
         self.statusBar().clearMessage()
 
 
@@ -457,6 +464,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             if file == self.rootFileList.child(i).text(0):
                 found = True
                 item = self.rootFileList.child(i)
+                self.treeFileList.scrollToItem(item, QAbstractItemView.EnsureVisible)
                 break
 
         if found:
@@ -486,11 +494,24 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.progressBar.setValue(self.convertedCount)
 
 
-    def allControlsEnabled(self, enable):
+    def allControlsEnabled(self, enable, disable_all=False):
         self.btnSettings.setEnabled(enable)
+        self.actionAddFile.setEnabled(enable)
+        self.actionSettings.setEnabled(enable)
+        self.actionViewLog.setEnabled(enable)
+        self.actionDelete.setEnabled(enable)
+        if disable_all and not enable:
+            self.actionConvert.setEnabled(enable)
+            self.btnStart.setEnabled(enable)
+        elif enable:
+            self.actionConvert.setEnabled(enable)
+            self.btnStart.setEnabled(enable)
 
 
     def addFile(self, file):
+        if not file.lower().endswith((".fb2", ".fb2.zip", ".zip")):
+            return
+
         found = False
 
         file = os.path.normpath(file)
@@ -567,6 +588,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         settingsDlg = SettingsDialog(self, self.gui_config)
         if settingsDlg.exec_():
             self.gui_config = settingsDlg.config
+            self.gui_config.write()
 
 
     def about(self):
