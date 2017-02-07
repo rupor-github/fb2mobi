@@ -45,7 +45,7 @@ print_msg1 "Building ${_os} ${_arch} release"
 	(
 
 		(
-			tar --directory ${_dist} --create --gzip --file fb2mobi_${_system}_${_arch}.tar.gz .
+			tar --directory ${_dist} --create --gzip --file fb2mobi_cli_${_system}_${_arch}.tar.gz .
 		)
 	)
 )
