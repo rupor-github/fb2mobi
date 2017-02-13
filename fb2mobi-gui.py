@@ -44,11 +44,19 @@ class CopyThread(QThread):
     def run(self):
         for file in self.files:
             self.copyBegin.emit(file)
-            try:
-                if os.path.exists(self.dest_path):                    
-                    shutil.copy2(file, self.dest_path)
-            except:
-                pass
+            # try:
+            if os.path.exists(self.dest_path):                    
+                shutil.copy2(file, self.dest_path)
+                src_sdr_dir = '{0}.{1}'.format(os.path.splitext(file)[0], 'sdr')
+                dest_sdr_dir = os.path.join(self.dest_path, os.path.split(src_sdr_dir)[1])
+
+                # Обработка apnx-файла, он находится в каталоге <имя файла книги>.sdr
+                if os.path.isdir(src_sdr_dir):
+                	if os.path.isdir(dest_sdr_dir):
+                		shutil.rmtree(dest_sdr_dir)
+                		shutil.copytree(src_sdr_dir, dest_sdr_dir)
+            # except:
+            #     pass
             self.copyDone.emit()
 
         self.copyAllDone.emit()
