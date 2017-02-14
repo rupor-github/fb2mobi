@@ -12,7 +12,7 @@ import shutil
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QTreeWidgetItem, QMessageBox, QDialog, QWidget, 
                             QLabel, QAbstractItemView)
 from PyQt5.QtGui import QIcon, QPixmap 
-from PyQt5.QtCore import QThread, pyqtSignal, QEvent, Qt
+from PyQt5.QtCore import QThread, pyqtSignal, QEvent, Qt, QTranslator, QLocale
 
 from ui.MainWindow import Ui_MainWindow
 from ui.AboutDialog import Ui_AboutDialog
@@ -142,7 +142,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.lineDestPath.setText(self.config.outputFolder)
         self.checkConvertToSrc.setChecked(self.config.convertToSourceDirectory)
 
-        self.buttonBox.button(self.buttonBox.Cancel).setText('Отмена')
+        # self.buttonBox.button(self.buttonBox.Cancel).setText('Отмена')
 
         if self.config.hyphens.lower() == 'yes':
             self.radioHypYes.setChecked(True)
@@ -609,6 +609,14 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+
+    app_path = os.path.normpath(fb2mobi.get_executable_path())
+    locale_path = os.path.join(app_path, 'ui/locale')
+    locale = QLocale.system().name()[:2]
+
+    qt_translator = QTranslator()
+    print(qt_translator.load(os.path.join(locale_path, 'qtbase_' + locale + '.qm')))
+    app.installTranslator(qt_translator)
 
     mainAppWindow = MainAppWindow()
     mainAppWindow.show()
