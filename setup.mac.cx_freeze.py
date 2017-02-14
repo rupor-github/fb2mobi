@@ -8,7 +8,7 @@ import site
 
 base_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
 sys.argv.append('bdist_mac')
-sys.argv.append('--qt-menu-nib=/opt/local/libexec/qt5/plugins/')
+# sys.argv.append('--qt-menu-nib=/opt/local/libexec/qt5/plugins/')
 
 try:
     shutil.rmtree(os.path.join(base_dir, 'build'))
@@ -63,7 +63,7 @@ setup(
     version = version.VERSION,
     options={
         'build_exe': {
-#            'silent': 1,
+           # 'silent': 1,
             #'build_exe': 'dist',
             'zip_exclude_packages': '',
             'zip_include_packages': '*',
@@ -74,10 +74,19 @@ setup(
         'bdist_mac': {
             'iconfile': 'ui/fb2mobi.icns',
             'custom_info_plist': plist,
+            'bundle_name': 'fb2mobi',
             'qt_menu_nib': '/opt/local/libexec/qt5/plugins/'
         }
     },
     executables = [
-        Executable('fb2mobi-gui.py')
+        Executable('fb2mobi-gui.py'),
+        Executable('fb2mobi.py'),
+        Executable('synccovers.py')
+
     ]
 )
+
+if os.path.isdir(os.path.join(base_dir, 'build/fb2mobi.app')):
+	if not os.path.isdir(os.path.join(base_dir, 'build/CLI')):
+		shutil.copytree(os.path.join(base_dir, 'mac_CLI'), os.path.join(base_dir, 'build/CLI'))
+
