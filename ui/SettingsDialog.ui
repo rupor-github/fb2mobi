@@ -11,13 +11,13 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Настройки</string>
+   <string>Settings</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Параметры конвертации</string>
+      <string>Converter settings</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
@@ -25,14 +25,14 @@
         <item row="0" column="0">
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>Профиль</string>
+           <string>Profile</string>
           </property>
          </widget>
         </item>
         <item row="0" column="1">
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>Формат</string>
+           <string>Output format</string>
           </property>
          </widget>
         </item>
@@ -60,7 +60,7 @@
          </sizepolicy>
         </property>
         <property name="title">
-         <string>Расставлять мягкие переносы</string>
+         <string>Insert soft hyphens</string>
         </property>
         <layout class="QGridLayout" name="gridLayout">
          <item row="0" column="0">
@@ -74,7 +74,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>Да</string>
+              <string>Yes</string>
              </property>
             </widget>
            </item>
@@ -87,7 +87,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>Нет</string>
+              <string>No</string>
              </property>
             </widget>
            </item>
@@ -100,7 +100,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>Как в профиле</string>
+              <string>Profile default</string>
              </property>
             </widget>
            </item>
@@ -112,7 +112,7 @@
       <item>
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Конвертировать в папку</string>
+         <string>Destination folder</string>
         </property>
        </widget>
       </item>
@@ -130,7 +130,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Выбрать</string>
+           <string>Select</string>
           </property>
          </widget>
         </item>
@@ -139,7 +139,7 @@
       <item>
        <widget class="QCheckBox" name="checkConvertToSrc">
         <property name="text">
-         <string>Конвертировать в исходную папку</string>
+         <string>Save target files in source folder</string>
         </property>
        </widget>
       </item>
@@ -155,7 +155,7 @@
       <item>
        <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>Папка &quot;documents&quot; устройства</string>
+         <string>&quot;documents&quot; device folder</string>
         </property>
        </widget>
       </item>
@@ -173,7 +173,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Выбрать</string>
+           <string>Select</string>
           </property>
          </widget>
         </item>
@@ -182,14 +182,14 @@
       <item>
        <widget class="QCheckBox" name="checkCopyAfterConvert">
         <property name="text">
-         <string>Копировать на устройство после конвертации</string>
+         <string>Copy to device after conversion</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QCheckBox" name="checkSyncCovers">
         <property name="text">
-         <string>Синхронизировать обложки</string>
+         <string>Sync covers</string>
         </property>
        </widget>
       </item>

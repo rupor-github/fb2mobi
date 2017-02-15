@@ -95,7 +95,7 @@
         <item>
          <widget class="QPushButton" name="btnStart">
           <property name="text">
-           <string>Старт</string>
+           <string>Start</string>
           </property>
           <property name="default">
            <bool>true</bool>
@@ -111,7 +111,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Настройки...</string>
+           <string>Settings...</string>
           </property>
          </widget>
         </item>
@@ -132,7 +132,7 @@
    </property>
    <widget class="QMenu" name="menu">
     <property name="title">
-     <string>Файл</string>
+     <string>File</string>
     </property>
     <addaction name="actionAddFile"/>
     <addaction name="actionConvert"/>
@@ -143,7 +143,7 @@
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
-     <string>Справка</string>
+     <string>Help</string>
     </property>
     <addaction name="actionOpenForumURL"/>
     <addaction name="separator"/>
@@ -151,7 +151,7 @@
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
-     <string>Правка</string>
+     <string>Edit</string>
     </property>
     <addaction name="actionDelete"/>
     <addaction name="separator"/>
@@ -164,10 +164,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionAddFile">
    <property name="text">
-    <string>Добавить...</string>
-   </property>
-   <property name="toolTip">
-    <string>Добавить файлы для конвертирования</string>
+    <string>Add...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -175,12 +172,12 @@
   </action>
   <action name="actionConvert">
    <property name="text">
-    <string>Конвертировать</string>
+    <string>Start conversion</string>
    </property>
   </action>
   <action name="actionExit">
    <property name="text">
-    <string>Выход</string>
+    <string>Exit</string>
    </property>
    <property name="menuRole">
     <enum>QAction::QuitRole</enum>
@@ -188,12 +185,12 @@
   </action>
   <action name="actionOpenForumURL">
    <property name="text">
-    <string>Форум поддержки</string>
+    <string>Support forum</string>
    </property>
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>О программе...</string>
+    <string>About...</string>
    </property>
    <property name="menuRole">
     <enum>QAction::AboutRole</enum>
@@ -201,17 +198,17 @@
   </action>
   <action name="actionViewLog">
    <property name="text">
-    <string>Посмотреть журнал</string>
+    <string>View log</string>
    </property>
   </action>
   <action name="actionDelete">
    <property name="text">
-    <string>Удалить</string>
+    <string>Delete</string>
    </property>
   </action>
   <action name="actionSettings">
    <property name="text">
-    <string>Настройки...</string>
+    <string>Settings...</string>
    </property>
    <property name="menuRole">
     <enum>QAction::PreferencesRole</enum>
