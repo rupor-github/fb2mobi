@@ -25,12 +25,12 @@
     </message>
     <message>
         <location filename="fb2mobi-gui.py" line="384"/>
-        <source>Stop</source>
+        <source>Cancel</source>
         <translation>Стоп</translation>
     </message>
     <message>
         <location filename="fb2mobi-gui.py" line="385"/>
-        <source>Stop conversion</source>
+        <source>Cancel conversion</source>
         <translation>Прервать конвертацию</translation>
     </message>
     <message>
@@ -55,7 +55,7 @@
     </message>
     <message>
         <location filename="fb2mobi-gui.py" line="452"/>
-        <source>Sync covers</source>
+        <source>Syncronizing covers</source>
         <translation>Синхронизация обложек</translation>
     </message>
     <message>
@@ -264,7 +264,7 @@
     </message>
     <message>
         <location filename="ui/SettingsDialog.py" line="162"/>
-        <source>Sync covers</source>
+        <source>Syncronize covers</source>
         <translation>Синхронизировать обложки</translation>
     </message>
 </context>

@@ -159,5 +159,5 @@ class Ui_SettingsDialog(object):
         self.label_4.setText(_translate("SettingsDialog", "\"documents\" device folder"))
         self.btnSelectKindlePath.setText(_translate("SettingsDialog", "Select"))
         self.checkCopyAfterConvert.setText(_translate("SettingsDialog", "Copy to device after conversion"))
-        self.checkSyncCovers.setText(_translate("SettingsDialog", "Sync covers"))
+        self.checkSyncCovers.setText(_translate("SettingsDialog", "Syncronize covers"))
 

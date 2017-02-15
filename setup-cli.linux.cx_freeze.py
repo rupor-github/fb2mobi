@@ -38,8 +38,8 @@ data_files = [
     (os.path.join(base_dir, 'fb2mobi.config'), 'fb2mobi.config'),
     (os.path.join(base_dir, 'spaces.xsl'), 'spaces.xsl'),
     (os.path.join(base_dir, 'kindlegen'), 'kindlegen'),
-    (os.path.join(base_dir, 'ui/locale/qtbase_ru.qm'), 'ui/locale/qtbase_ru.qm'),
-    (os.path.join(base_dir, 'ui/locale/fb2mobi_ru.qm'), 'ui/locale/fb2mobi_ru.qm')
+#    (os.path.join(base_dir, 'ui/locale/qtbase_ru.qm'), 'ui/locale/qtbase_ru.qm'),
+#    (os.path.join(base_dir, 'ui/locale/fb2mobi_ru.qm'), 'ui/locale/fb2mobi_ru.qm')
 ]
 
 pil_libs = glob.glob(os.path.join(PIL.__path__[0], '.libs/*'))

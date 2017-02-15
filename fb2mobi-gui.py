@@ -381,8 +381,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 return
 
             if not self.convertRun:
-                self.btnStart.setText(tr('Stop'))
-                self.actionConvert.setText(tr('Stop conversion'))
+                self.btnStart.setText(tr('Cancel'))
+                self.actionConvert.setText(tr('Cancel conversion'))
                 self.convertRun = True
                 self.allControlsEnabled(False)
 
@@ -449,7 +449,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
     def copyAllDone(self):
         if self.gui_config.kindleSyncCovers:
             if self.gui_config.kindlePath and os.path.exists(self.gui_config.kindlePath):
-                self.statusBar().showMessage(tr('Sync covers'))
+                self.statusBar().showMessage(tr('Syncronize covers'))
                 self.progressBar.setMinimum(0)
                 self.progressBar.setMaximum(0)
                 try:                    
