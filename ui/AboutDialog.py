@@ -119,12 +119,12 @@ class Ui_AboutDialog(object):
 
     def retranslateUi(self, AboutDialog):
         _translate = QtCore.QCoreApplication.translate
-        AboutDialog.setWindowTitle(_translate("AboutDialog", "О программе"))
+        AboutDialog.setWindowTitle(_translate("AboutDialog", "About"))
         self.label_2.setText(_translate("AboutDialog", "fb2mobi"))
-        self.label_3.setText(_translate("AboutDialog", "Версия:"))
+        self.label_3.setText(_translate("AboutDialog", "Version:"))
         self.labelVersion.setText(_translate("AboutDialog", "TextLabel"))
-        self.label_4.setText(_translate("AboutDialog", "Версия UI:"))
+        self.label_4.setText(_translate("AboutDialog", "UI version:"))
         self.labelUIVersion.setText(_translate("AboutDialog", "TextLabel"))
-        self.label_5.setText(_translate("AboutDialog", "Авторы:"))
-        self.label_8.setText(_translate("AboutDialog", "rupor, dnk_dz"))
+        self.label_5.setText(_translate("AboutDialog", "Authors:"))
+        self.label_8.setText(_translate("AboutDialog", "rupor, dnk_dz, gmk57"))
 

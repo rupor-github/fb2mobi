@@ -12,7 +12,7 @@ import shutil
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QTreeWidgetItem, QMessageBox, QDialog, QWidget, 
                             QLabel, QAbstractItemView)
 from PyQt5.QtGui import QIcon, QPixmap 
-from PyQt5.QtCore import QThread, pyqtSignal, QEvent, Qt
+from PyQt5.QtCore import QThread, pyqtSignal, QEvent, Qt, QTranslator, QLocale, QT_TR_NOOP as tr
 
 from ui.MainWindow import Ui_MainWindow
 from ui.AboutDialog import Ui_AboutDialog
@@ -44,19 +44,20 @@ class CopyThread(QThread):
     def run(self):
         for file in self.files:
             self.copyBegin.emit(file)
-            # try:
-            if os.path.exists(self.dest_path):                    
-                shutil.copy2(file, self.dest_path)
-                src_sdr_dir = '{0}.{1}'.format(os.path.splitext(file)[0], 'sdr')
-                dest_sdr_dir = os.path.join(self.dest_path, os.path.split(src_sdr_dir)[1])
+            try:
+                if os.path.exists(self.dest_path):                    
+                    shutil.copy2(file, self.dest_path)
+                    src_sdr_dir = '{0}.{1}'.format(os.path.splitext(file)[0], 'sdr')
+                    dest_sdr_dir = os.path.join(self.dest_path, os.path.split(src_sdr_dir)[1])
 
-                # Обработка apnx-файла, он находится в каталоге <имя файла книги>.sdr
-                if os.path.isdir(src_sdr_dir):
-                	if os.path.isdir(dest_sdr_dir):
-                		shutil.rmtree(dest_sdr_dir)
-                		shutil.copytree(src_sdr_dir, dest_sdr_dir)
-            # except:
-            #     pass
+                    # Обработка apnx-файла, он находится в каталоге <имя файла книги>.sdr
+                    if os.path.isdir(src_sdr_dir):
+                        if os.path.isdir(dest_sdr_dir):
+                           shutil.rmtree(dest_sdr_dir)
+
+                        shutil.copytree(src_sdr_dir, dest_sdr_dir)
+            except:
+                pass
             self.copyDone.emit()
 
         self.copyAllDone.emit()
@@ -115,7 +116,7 @@ class ConvertThread(QThread):
             output_dir = os.path.abspath(self.config.output_dir)
         file_name = os.path.join(output_dir, os.path.splitext(os.path.split(file)[1])[0])
         if os.path.splitext(file_name)[1].lower() == '.fb2':
-        	file_name = os.path.splitext(file_name)[0]
+            file_name = os.path.splitext(file_name)[0]
 
         return '{0}.{1}'.format(file_name, self.config.output_format)
 
@@ -142,7 +143,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.lineDestPath.setText(self.config.outputFolder)
         self.checkConvertToSrc.setChecked(self.config.convertToSourceDirectory)
 
-        self.buttonBox.button(self.buttonBox.Cancel).setText('Отмена')
+        # self.buttonBox.button(self.buttonBox.Cancel).setText('Отмена')
 
         if self.config.hyphens.lower() == 'yes':
             self.radioHypYes.setChecked(True)
@@ -174,7 +175,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         if not path:
             path = os.path.expanduser('~')
 
-        dlgPath = QFileDialog(self, 'Выберите папку', path)
+        dlgPath = QFileDialog(self, tr('Select folder'), path)
         dlgPath.setFileMode(QFileDialog.Directory)
         dlgPath.setOption(QFileDialog.ShowDirsOnly, True)
 
@@ -217,7 +218,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         super(AboutDialog, self).__init__(parent)
         self.setupUi(self)
 
-        image  = QPixmap(':/Images/128.png')
+        image  = QPixmap(':/Images/icon128.png')
         self.labelImage.setPixmap(image)
         self.labelVersion.setText(version.VERSION)
         self.labelUIVersion.setText(ui.ui_version.VERSION)
@@ -365,8 +366,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         if not os.path.exists(filename):
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
-            msg.setText('Указанный каталог не существует')
-            msg.setWindowTitle('Ошибка')
+            msg.setText(tr('Folder does not exist.'))
+            msg.setWindowTitle(tr('Error'))
             msg.exec_()
 
             return False
@@ -380,8 +381,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 return
 
             if not self.convertRun:
-                self.btnStart.setText('Стоп')
-                self.actionConvert.setText('Прервать конвертацию')
+                self.btnStart.setText(tr('Stop'))
+                self.actionConvert.setText(tr('Stop conversion'))
                 self.convertRun = True
                 self.allControlsEnabled(False)
 
@@ -409,8 +410,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
     def convertAllDone(self):
         self.convertRun = False        
-        self.btnStart.setText('Старт')
-        self.actionConvert.setText('Конвертировать')
+        self.btnStart.setText(tr('Start'))
+        self.actionConvert.setText(tr('Start conversion'))
         self.allControlsEnabled(True)
         self.statusBar().clearMessage()
 
@@ -432,12 +433,12 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 self.allControlsEnabled(False, True)
                 self.copy_worker.start()
             else:
-                msg = QMessageBox(QMessageBox.Critical, 'Ошибка', 'Копирование невозможно - устройство недоступно.', QMessageBox.Ok, self)
+                msg = QMessageBox(QMessageBox.Critical, tr('Error'), tr('Error when copying files - device not found.'), QMessageBox.Ok, self)
                 msg.exec_()
 
 
     def copyBegin(self, file):
-        self.statusBar().showMessage('Копируется на устройство: {0}'.format(os.path.split(file)[1]))
+        self.statusBar().showMessage(tr('Copying file to device: {0}').format(os.path.split(file)[1]))
 
 
     def copyDone(self):
@@ -448,7 +449,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
     def copyAllDone(self):
         if self.gui_config.kindleSyncCovers:
             if self.gui_config.kindlePath and os.path.exists(self.gui_config.kindlePath):
-                self.statusBar().showMessage('Синхронизация обложек')
+                self.statusBar().showMessage(tr('Sync covers'))
                 self.progressBar.setMinimum(0)
                 self.progressBar.setMaximum(0)
                 try:                    
@@ -466,7 +467,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         found = False
         item = None
 
-        self.statusBar().showMessage('Обработка файла: {0}'.format(os.path.split(file)[1]))
+        self.statusBar().showMessage(tr('Converting file: {0}').format(os.path.split(file)[1]))
 
         for i in range(self.rootFileList.childCount()):
             if file == self.rootFileList.child(i).text(0):
@@ -550,9 +551,9 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         if not self.savedPath:
             self.savedPath = os.path.expanduser('~')
 
-        fileDialog = QFileDialog(self, "Выберите файлы", self.savedPath)
+        fileDialog = QFileDialog(self, tr('Select files'), self.savedPath)
         fileDialog.setFileMode(QFileDialog.ExistingFiles)
-        fileDialog.setNameFilters(['Файлы fb2 (*.fb2 *.fb2.zip *.zip)', 'Все файлы (*.*)'])
+        fileDialog.setNameFilters([tr('Fb2 files (*.fb2 *.fb2.zip *.zip)'), tr('All files (*.*)')])
 
         if fileDialog.exec_():
             self.savedPath = fileDialog.directory().absolutePath()
@@ -609,6 +610,18 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+
+    app_path = os.path.normpath(fb2mobi.get_executable_path())
+    locale_path = os.path.join(app_path, 'ui/locale')
+    locale = QLocale.system().name()[:2]
+
+    qt_translator = QTranslator()
+    qt_translator.load(os.path.join(locale_path, 'qtbase_' + locale + '.qm'))
+    app.installTranslator(qt_translator)
+
+    app_translator = QTranslator()
+    app_translator.load(os.path.join(locale_path, 'fb2mobi_' + locale + '.qm'))
+    app.installTranslator(app_translator)
 
     mainAppWindow = MainAppWindow()
     mainAppWindow.show()

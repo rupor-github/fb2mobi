@@ -1,0 +1,11 @@
+#!/bin/sh
+
+#Edit this line to define a path to fb2mobi.app
+FB2MOBI_APP="/Applications/fb2mobi.app"
+
+if [ ! -d "${FB2MOBI_APP}" ] ; then
+	echo "fb2mobi.app not found"
+	exit;
+fi
+
+"${FB2MOBI_APP}/Contents/MacOS/fb2mobi" "$@"

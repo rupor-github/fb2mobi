@@ -20,7 +20,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>О программе</string>
+   <string>About</string>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
@@ -101,7 +101,7 @@
             </font>
            </property>
            <property name="text">
-            <string>Версия:</string>
+            <string>Version:</string>
            </property>
           </widget>
          </item>
@@ -133,7 +133,7 @@
             </font>
            </property>
            <property name="text">
-            <string>Версия UI:</string>
+            <string>UI version:</string>
            </property>
           </widget>
          </item>
@@ -159,7 +159,7 @@
             </font>
            </property>
            <property name="text">
-            <string>Авторы:</string>
+            <string>Authors:</string>
            </property>
           </widget>
          </item>
@@ -172,7 +172,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>rupor, dnk_dz</string>
+            <string>rupor, dnk_dz, gmk57</string>
            </property>
           </widget>
          </item>
