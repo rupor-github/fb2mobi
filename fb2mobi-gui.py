@@ -261,6 +261,17 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.iconGreen = QIcon(':/Images/bullet_green.png')
         self.iconGo = QIcon(':/Images/bullet_go.png')
 
+        self.pixmapConnected = QPixmap(':/Images/bullet_green.png')
+
+        self.labelKindleStatus = QLabel('Status')
+        self.labelKindleStatusIcon = QLabel('Icon')
+        self.labelKindleStatusIcon.setPixmap(self.pixmapConnected)
+        self.labelStatus = QLabel()
+
+        self.statusBar().addWidget(self.labelStatus, 1) 
+        self.statusBar().addWidget(self.labelKindleStatusIcon)        
+        self.statusBar().addWidget(self.labelKindleStatus)
+
         config_file_name = "fb2mobi.config"
         log_file_name = "fb2mobi.log"
         gui_config_file = 'fb2mobi-gui.config'
