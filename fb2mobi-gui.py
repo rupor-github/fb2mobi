@@ -12,7 +12,7 @@ import shutil
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QTreeWidgetItem, QMessageBox, QDialog, QWidget, 
                             QLabel, QAbstractItemView)
 from PyQt5.QtGui import QIcon, QPixmap 
-from PyQt5.QtCore import QThread, pyqtSignal, QEvent, Qt, QTranslator, QLocale, QT_TR_NOOP as tr
+from PyQt5.QtCore import QThread, pyqtSignal, QEvent, Qt, QTranslator, QLocale, QCoreApplication
 
 from ui.MainWindow import Ui_MainWindow
 from ui.AboutDialog import Ui_AboutDialog
@@ -29,6 +29,8 @@ import version
 
 
 SUPPORT_URL = u'http://www.the-ebook.org/forum/viewtopic.php?t=30380'
+
+_translate = QCoreApplication.translate
 
 
 class CopyThread(QThread):
@@ -96,9 +98,15 @@ class ConvertThread(QThread):
             dest_file = None
             if not self.cancel:
                 self.convertBegin.emit(file)
+                dest_file = self.getDestFileName(file)
+                # Перед конвертацией удалим старый файл
+                if os.path.exists(dest_file):
+                    os.remove(dest_file)
 
                 fb2mobi.process_file(self.config, file, None)
-                if not os.path.exists(self.getDestFileName(file)):
+
+                if not os.path.exists(dest_file):
+                    dest_file = None
                     result = False
                 else:
                     dest_file = self.getDestFileName(file)
@@ -108,6 +116,7 @@ class ConvertThread(QThread):
                 break
 
         self.convertAllDone.emit()
+
 
     def getDestFileName(self, file):
         if self.config.output_dir is None:
@@ -143,8 +152,6 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.lineDestPath.setText(self.config.outputFolder)
         self.checkConvertToSrc.setChecked(self.config.convertToSourceDirectory)
 
-        # self.buttonBox.button(self.buttonBox.Cancel).setText('Отмена')
-
         if self.config.hyphens.lower() == 'yes':
             self.radioHypYes.setChecked(True)
             self.radioHypNo.setChecked(False)
@@ -175,7 +182,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         if not path:
             path = os.path.expanduser('~')
 
-        dlgPath = QFileDialog(self, tr('Select folder'), path)
+        dlgPath = QFileDialog(self, _translate('fb2mobi-gui', 'Select folder'), path)
         dlgPath.setFileMode(QFileDialog.Directory)
         dlgPath.setOption(QFileDialog.ShowDirsOnly, True)
 
@@ -246,6 +253,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         self.convert_worker = None
         self.copy_worker = None
+        self.is_convert_cancel = False
 
         self.rootFileList = self.treeFileList.invisibleRootItem()
         self.iconWhite = QIcon(':/Images/bullet_white.png')
@@ -366,8 +374,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         if not os.path.exists(filename):
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
-            msg.setText(tr('Folder does not exist.'))
-            msg.setWindowTitle(tr('Error'))
+            msg.setText(_translate('fb2mobi-gui', 'Folder does not exist.'))
+            msg.setWindowTitle(_translate('fb2mobi-gui', 'Error'))
             msg.exec_()
 
             return False
@@ -381,9 +389,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 return
 
             if not self.convertRun:
-                self.btnStart.setText(tr('Cancel'))
-                self.actionConvert.setText(tr('Cancel conversion'))
+                self.btnStart.setText(_translate('fb2mobi-gui', 'Cancel'))
+                self.actionConvert.setText(_translate('fb2mobi-gui', 'Cancel conversion'))
                 self.convertRun = True
+                self.is_convert_cancel = False
                 self.allControlsEnabled(False)
 
                 files = []
@@ -403,6 +412,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
                 self.convert_worker.start()
             else:
+                self.is_convert_cancel = True
                 self.convert_worker.stop() 
                 self.btnStart.setEnabled(False)
                 self.actionConvert.setEnabled(False)
@@ -410,15 +420,15 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
     def convertAllDone(self):
         self.convertRun = False        
-        self.btnStart.setText(tr('Start'))
-        self.actionConvert.setText(tr('Start conversion'))
+        self.btnStart.setText(_translate('fb2mobi-gui', 'Start'))
+        self.actionConvert.setText(_translate('fb2mobi-gui', 'Start conversion'))
         self.allControlsEnabled(True)
         self.statusBar().clearMessage()
 
         time.sleep(0.5)    
         self.progressBar.setVisible(False)
         
-        if self.gui_config.kindleCopyToDevice:
+        if self.gui_config.kindleCopyToDevice and not self.is_convert_cancel:
             if self.gui_config.kindlePath and os.path.exists(self.gui_config.kindlePath):
                 self.copy_worker = CopyThread(self.convertedFiles, self.gui_config.kindlePath)
                 self.copy_worker.copyBegin.connect(self.copyBegin)
@@ -433,12 +443,12 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 self.allControlsEnabled(False, True)
                 self.copy_worker.start()
             else:
-                msg = QMessageBox(QMessageBox.Critical, tr('Error'), tr('Error when copying files - device not found.'), QMessageBox.Ok, self)
+                msg = QMessageBox(QMessageBox.Critical, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui', 'Error when copying files - device not found.'), QMessageBox.Ok, self)
                 msg.exec_()
 
 
     def copyBegin(self, file):
-        self.statusBar().showMessage(tr('Copying file to device: {0}').format(os.path.split(file)[1]))
+        self.statusBar().showMessage(_translate('fb2mobi-gui', 'Copying file to device: {0}').format(os.path.split(file)[1]))
 
 
     def copyDone(self):
@@ -449,7 +459,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
     def copyAllDone(self):
         if self.gui_config.kindleSyncCovers:
             if self.gui_config.kindlePath and os.path.exists(self.gui_config.kindlePath):
-                self.statusBar().showMessage(tr('Syncronize covers'))
+                self.statusBar().showMessage(_translate('fb2mobi-gui', 'Syncronizing covers'))
                 self.progressBar.setMinimum(0)
                 self.progressBar.setMaximum(0)
                 try:                    
@@ -467,7 +477,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         found = False
         item = None
 
-        self.statusBar().showMessage(tr('Converting file: {0}').format(os.path.split(file)[1]))
+        self.statusBar().showMessage(_translate('fb2mobi-gui', 'Converting file: {0}').format(os.path.split(file)[1]))
 
         for i in range(self.rootFileList.childCount()):
             if file == self.rootFileList.child(i).text(0):
@@ -551,9 +561,9 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         if not self.savedPath:
             self.savedPath = os.path.expanduser('~')
 
-        fileDialog = QFileDialog(self, tr('Select files'), self.savedPath)
+        fileDialog = QFileDialog(self, _translate('fb2mobi-gui', 'Select files'), self.savedPath)
         fileDialog.setFileMode(QFileDialog.ExistingFiles)
-        fileDialog.setNameFilters([tr('Fb2 files (*.fb2 *.fb2.zip *.zip)'), tr('All files (*.*)')])
+        fileDialog.setNameFilters([_translate('fb2mobi-gui', 'Fb2 files (*.fb2 *.fb2.zip *.zip)'), _translate('fb2mobi-gui', 'All files (*.*)')])
 
         if fileDialog.exec_():
             self.savedPath = fileDialog.directory().absolutePath()

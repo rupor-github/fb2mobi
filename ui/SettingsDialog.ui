@@ -189,7 +189,7 @@
       <item>
        <widget class="QCheckBox" name="checkSyncCovers">
         <property name="text">
-         <string>Sync covers</string>
+         <string>Syncronize covers</string>
         </property>
        </widget>
       </item>

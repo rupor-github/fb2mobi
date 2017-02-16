@@ -1,79 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="ru_RU">
-<context>
-    <name>@default</name>
-    <message>
-        <location filename="fb2mobi-gui.py" line="554"/>
-        <source>Select files</source>
-        <translation>Выберите файлы</translation>
-    </message>
-    <message>
-        <location filename="fb2mobi-gui.py" line="177"/>
-        <source>Select folder</source>
-        <translation>Выберите папку</translation>
-    </message>
-    <message>
-        <location filename="fb2mobi-gui.py" line="369"/>
-        <source>Folder does not exist.</source>
-        <translation>Указанная папка не существует.</translation>
-    </message>
-    <message>
-        <location filename="fb2mobi-gui.py" line="436"/>
-        <source>Error</source>
-        <translation>Ошибка</translation>
-    </message>
-    <message>
-        <location filename="fb2mobi-gui.py" line="384"/>
-        <source>Cancel</source>
-        <translation>Стоп</translation>
-    </message>
-    <message>
-        <location filename="fb2mobi-gui.py" line="385"/>
-        <source>Cancel conversion</source>
-        <translation>Прервать конвертацию</translation>
-    </message>
-    <message>
-        <location filename="fb2mobi-gui.py" line="413"/>
-        <source>Start</source>
-        <translation>Пуск</translation>
-    </message>
-    <message>
-        <location filename="fb2mobi-gui.py" line="414"/>
-        <source>Start conversion</source>
-        <translation>Конвертировать</translation>
-    </message>
-    <message>
-        <location filename="fb2mobi-gui.py" line="436"/>
-        <source>Error when copying files - device not found.</source>
-        <translation>Ошибка копирования файлов - устройство не найдено.</translation>
-    </message>
-    <message>
-        <location filename="fb2mobi-gui.py" line="441"/>
-        <source>Copying file to device: {0}</source>
-        <translation>Копирование файла: {0}</translation>
-    </message>
-    <message>
-        <location filename="fb2mobi-gui.py" line="452"/>
-        <source>Syncronizing covers</source>
-        <translation>Синхронизация обложек</translation>
-    </message>
-    <message>
-        <location filename="fb2mobi-gui.py" line="470"/>
-        <source>Converting file: {0}</source>
-        <translation>Обработка файла: {0}</translation>
-    </message>
-    <message>
-        <location filename="fb2mobi-gui.py" line="556"/>
-        <source>Fb2 files (*.fb2 *.fb2.zip *.zip)</source>
-        <translation>Файлы fb2 (*.fb2 *.fb2.zip *.zip)</translation>
-    </message>
-    <message>
-        <location filename="fb2mobi-gui.py" line="556"/>
-        <source>All files (*.*)</source>
-        <translation>Все файлы (*.*)</translation>
-    </message>
-</context>
+<!DOCTYPE TS><TS version="2.0" language="ru_RU" sourcelanguage="">
 <context>
     <name>AboutDialog</name>
     <message>
@@ -184,7 +110,7 @@
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
-    <message>
+    <message encoding="UTF-8">
         <location filename="ui/MainWindow.py" line="132"/>
         <source>Файл</source>
         <translation type="unfinished"></translation>
@@ -266,6 +192,79 @@
         <location filename="ui/SettingsDialog.py" line="162"/>
         <source>Syncronize covers</source>
         <translation>Синхронизировать обложки</translation>
+    </message>
+</context>
+<context>
+    <name>fb2mobi-gui</name>
+    <message>
+        <location filename="fb2mobi-gui.py" line="185"/>
+        <source>Select folder</source>
+        <translation>Выберите папку</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="378"/>
+        <source>Folder does not exist.</source>
+        <translation>Указанная папка не существует.</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="447"/>
+        <source>Error</source>
+        <translation>Ошибка</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="393"/>
+        <source>Cancel</source>
+        <translation>Стоп</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="394"/>
+        <source>Cancel conversion</source>
+        <translation>Прервать конвертацию</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="424"/>
+        <source>Start</source>
+        <translation>Пуск</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="425"/>
+        <source>Start conversion</source>
+        <translation>Конвертировать</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="447"/>
+        <source>Error when copying files - device not found.</source>
+        <translation>Ошибка копирования файлов - устройство не найдено.</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="452"/>
+        <source>Copying file to device: {0}</source>
+        <translation>Копирование файла: {0}</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="481"/>
+        <source>Converting file: {0}</source>
+        <translation>Обработка файла: {0}</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="565"/>
+        <source>Select files</source>
+        <translation>Выберите файлы</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="567"/>
+        <source>Fb2 files (*.fb2 *.fb2.zip *.zip)</source>
+        <translation>Файлы fb2 (*.fb2 *.fb2.zip *.zip)</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="567"/>
+        <source>All files (*.*)</source>
+        <translation>Все файлы (*.*)</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="463"/>
+        <source>Syncronizing covers</source>
+        <translation>Синхронизация обложек</translation>
     </message>
 </context>
 </TS>
