@@ -10,9 +10,9 @@ import logging
 import shutil
 
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QTreeWidgetItem, QMessageBox, QDialog, QWidget, 
-                            QLabel, QAbstractItemView)
+                            QLabel, QAbstractItemView, QSizePolicy)
 from PyQt5.QtGui import QIcon, QPixmap 
-from PyQt5.QtCore import QThread, pyqtSignal, QEvent, Qt, QTranslator, QLocale, QT_TR_NOOP as tr
+from PyQt5.QtCore import QObject, QThread, pyqtSignal, QEvent, Qt, QTranslator, QLocale, QCoreApplication, QTimer
 
 from ui.MainWindow import Ui_MainWindow
 from ui.AboutDialog import Ui_AboutDialog
@@ -21,6 +21,7 @@ from ui.SettingsDialog import Ui_SettingsDialog
 from ui.gui_config import GuiConfig
 import ui.images_rc
 import ui.ui_version
+from ui.fb2meta import Fb2Meta
 
 from modules.config import ConverterConfig
 import fb2mobi
@@ -28,7 +29,12 @@ import synccovers
 import version
 
 
+TREE_LIST_CSS_ACTIVE = "selection-color: white; selection-background-color: #386CDA; alternate-background-color: #F3F6FA;"
+TREE_LIST_CSS_UNACTIVE = "selection-color: black; selection-background-color: #D4D4D4; alternate-background-color: #F3F6FA;"
+
 SUPPORT_URL = u'http://www.the-ebook.org/forum/viewtopic.php?t=30380'
+
+_translate = QCoreApplication.translate
 
 
 class CopyThread(QThread):
@@ -96,9 +102,15 @@ class ConvertThread(QThread):
             dest_file = None
             if not self.cancel:
                 self.convertBegin.emit(file)
+                dest_file = self.getDestFileName(file)
+                # Перед конвертацией удалим старый файл
+                if os.path.exists(dest_file):
+                    os.remove(dest_file)
 
                 fb2mobi.process_file(self.config, file, None)
-                if not os.path.exists(self.getDestFileName(file)):
+
+                if not os.path.exists(dest_file):
+                    dest_file = None
                     result = False
                 else:
                     dest_file = self.getDestFileName(file)
@@ -108,6 +120,7 @@ class ConvertThread(QThread):
                 break
 
         self.convertAllDone.emit()
+
 
     def getDestFileName(self, file):
         if self.config.output_dir is None:
@@ -143,8 +156,6 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.lineDestPath.setText(self.config.outputFolder)
         self.checkConvertToSrc.setChecked(self.config.convertToSourceDirectory)
 
-        # self.buttonBox.button(self.buttonBox.Cancel).setText('Отмена')
-
         if self.config.hyphens.lower() == 'yes':
             self.radioHypYes.setChecked(True)
             self.radioHypNo.setChecked(False)
@@ -175,7 +186,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         if not path:
             path = os.path.expanduser('~')
 
-        dlgPath = QFileDialog(self, tr('Select folder'), path)
+        dlgPath = QFileDialog(self, _translate('fb2mobi-gui', 'Select folder'), path)
         dlgPath.setFileMode(QFileDialog.Directory)
         dlgPath.setOption(QFileDialog.ShowDirsOnly, True)
 
@@ -246,12 +257,16 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         self.convert_worker = None
         self.copy_worker = None
+        self.is_convert_cancel = False
 
         self.rootFileList = self.treeFileList.invisibleRootItem()
         self.iconWhite = QIcon(':/Images/bullet_white.png')
         self.iconRed = QIcon(':/Images/bullet_red.png')
         self.iconGreen = QIcon(':/Images/bullet_green.png')
         self.iconGo = QIcon(':/Images/bullet_go.png')
+
+        self.pixmapConnected = QPixmap(':/Images/bullet_green.png')
+        self.pixmapNotConnected = QPixmap(':/Images/bullet_red.png')
 
         config_file_name = "fb2mobi.config"
         log_file_name = "fb2mobi.log"
@@ -325,10 +340,66 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.setWindowIcon(QIcon(':/Images/icon32.png'))
         self.treeFileList.installEventFilter(self)
 
+        self.labelKindleStatus = QLabel()
+        self.labelKindleStatusIcon = QLabel()
+        self.labelStatus = QLabel()
+
+        # Для Mac OS небольшой хак UI
+        if sys.platform == 'darwin':
+            font = self.labelKindleStatus.font()
+            font.setPointSize(11)
+            self.labelKindleStatus.setFont(font)
+            self.labelStatus.setFont(font)
+            self.treeFileList.setFont(font)
+            self.treeFileList.setAttribute(Qt.WA_MacShowFocusRect, 0)
+            self.treeFileList.setStyleSheet(TREE_LIST_CSS_ACTIVE)
+            self.labelStatus.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+            
+
+        self.statusBar().addWidget(self.labelStatus, 1) 
+        self.statusBar().addWidget(self.labelKindleStatusIcon)        
+        self.statusBar().addWidget(self.labelKindleStatus)
+
+        if self.gui_config.columns['0']:
+            self.treeFileList.setColumnWidth(0, self.gui_config.columns['0']) 
+            self.treeFileList.setColumnWidth(1, self.gui_config.columns['1']) 
+            self.treeFileList.setColumnWidth(2, self.gui_config.columns['2']) 
+
+
+        self.timerKindleStatus = QTimer()
+        self.timerKindleStatus.timeout.connect(self.checkKindleStatus)
+        self.timerKindleStatus.start(1500)
+
+
+    def event(self, event):
+        if event.type() == QEvent.WindowActivate:
+            if sys.platform == 'darwin':
+               self.treeFileList.setStyleSheet(TREE_LIST_CSS_ACTIVE) 
+        elif event.type() == QEvent.WindowDeactivate:
+            if sys.platform == 'darwin':
+               self.treeFileList.setStyleSheet(TREE_LIST_CSS_UNACTIVE) 
+
+        return super(MainAppWindow, self).event(event)
+
+
+    def checkKindleStatus(self):
+        if self.gui_config.kindleCopyToDevice:
+            if os.path.isdir(self.gui_config.kindlePath):
+                self.labelKindleStatusIcon.setPixmap(self.pixmapConnected)
+                self.labelKindleStatus.setText(_translate('fb2mobi-gui', 'Device connected'))
+            else:
+                self.labelKindleStatusIcon.setPixmap(self.pixmapNotConnected)
+                self.labelKindleStatus.setText(_translate('fb2mobi-gui', 'Device not connected'))
+
+        else:
+            self.labelKindleStatus.setText('')
+            self.labelKindleStatusIcon.clear()
+
 
     def eventFilter(self, source, event):
         if event.type() == QEvent.KeyPress:
-            if (event.key() == Qt.Key_Delete or (event.key() == Qt.Key_Backspace and event.modifiers() == Qt.ControlModifier)):
+            if (event.key() == Qt.Key_Delete or (event.key() == Qt.Key_Backspace 
+                and event.modifiers() == Qt.ControlModifier)):
                 self.deleteRecAction()
                 return True
                 
@@ -366,13 +437,21 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         if not os.path.exists(filename):
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
-            msg.setText(tr('Folder does not exist.'))
-            msg.setWindowTitle(tr('Error'))
+            msg.setText(_translate('fb2mobi-gui', 'Folder does not exist.'))
+            msg.setWindowTitle(_translate('fb2mobi-gui', 'Error'))
             msg.exec_()
 
             return False
         else:
             return True
+
+
+    def showMessage(self, message):
+        self.labelStatus.setText(message)
+
+
+    def clearMessage(self):
+        self.labelStatus.setText('')
 
 
     def startConvert(self):
@@ -381,14 +460,15 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 return
 
             if not self.convertRun:
-                self.btnStart.setText(tr('Cancel'))
-                self.actionConvert.setText(tr('Cancel conversion'))
+                self.btnStart.setText(_translate('fb2mobi-gui', 'Cancel'))
+                self.actionConvert.setText(_translate('fb2mobi-gui', 'Cancel conversion'))
                 self.convertRun = True
+                self.is_convert_cancel = False
                 self.allControlsEnabled(False)
 
                 files = []
                 for i in range(self.rootFileList.childCount()):
-                    files.append(self.rootFileList.child(i).text(0))
+                    files.append(self.rootFileList.child(i).text(2))
 
                 self.progressBar.setRange(0, len(files))
                 self.progressBar.setValue(0)
@@ -403,6 +483,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
                 self.convert_worker.start()
             else:
+                self.is_convert_cancel = True
                 self.convert_worker.stop() 
                 self.btnStart.setEnabled(False)
                 self.actionConvert.setEnabled(False)
@@ -410,15 +491,15 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
     def convertAllDone(self):
         self.convertRun = False        
-        self.btnStart.setText(tr('Start'))
-        self.actionConvert.setText(tr('Start conversion'))
+        self.btnStart.setText(_translate('fb2mobi-gui', 'Start'))
+        self.actionConvert.setText(_translate('fb2mobi-gui', 'Start conversion'))
         self.allControlsEnabled(True)
-        self.statusBar().clearMessage()
+        self.clearMessage()
 
         time.sleep(0.5)    
         self.progressBar.setVisible(False)
         
-        if self.gui_config.kindleCopyToDevice:
+        if self.gui_config.kindleCopyToDevice and not self.is_convert_cancel:
             if self.gui_config.kindlePath and os.path.exists(self.gui_config.kindlePath):
                 self.copy_worker = CopyThread(self.convertedFiles, self.gui_config.kindlePath)
                 self.copy_worker.copyBegin.connect(self.copyBegin)
@@ -433,12 +514,13 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 self.allControlsEnabled(False, True)
                 self.copy_worker.start()
             else:
-                msg = QMessageBox(QMessageBox.Critical, tr('Error'), tr('Error when copying files - device not found.'), QMessageBox.Ok, self)
+                msg = QMessageBox(QMessageBox.Critical, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui', 
+                                  'Error when copying files - device not found.'), QMessageBox.Ok, self)
                 msg.exec_()
 
 
     def copyBegin(self, file):
-        self.statusBar().showMessage(tr('Copying file to device: {0}').format(os.path.split(file)[1]))
+        self.showMessage(_translate('fb2mobi-gui', 'Copying file to device: {0}').format(os.path.split(file)[1]))
 
 
     def copyDone(self):
@@ -449,7 +531,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
     def copyAllDone(self):
         if self.gui_config.kindleSyncCovers:
             if self.gui_config.kindlePath and os.path.exists(self.gui_config.kindlePath):
-                self.statusBar().showMessage(tr('Syncronize covers'))
+                self.showMessage(_translate('fb2mobi-gui', 'Syncronizing covers'))
                 self.progressBar.setMinimum(0)
                 self.progressBar.setMaximum(0)
                 try:                    
@@ -460,17 +542,17 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         time.sleep(0.5)    
         self.progressBar.setVisible(False)
         self.allControlsEnabled(True)
-        self.statusBar().clearMessage()
+        self.clearMessage()
 
 
     def convertBegin(self, file):
         found = False
         item = None
 
-        self.statusBar().showMessage(tr('Converting file: {0}').format(os.path.split(file)[1]))
+        self.showMessage(_translate('fb2mobi-gui', 'Converting file: {0}').format(os.path.split(file)[1]))
 
         for i in range(self.rootFileList.childCount()):
-            if file == self.rootFileList.child(i).text(0):
+            if file == self.rootFileList.child(i).text(2):
                 found = True
                 item = self.rootFileList.child(i)
                 self.treeFileList.scrollToItem(item, QAbstractItemView.EnsureVisible)
@@ -488,7 +570,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.convertedFiles.append(dest_file)
 
         for i in range(self.rootFileList.childCount()):
-            if file == self.rootFileList.child(i).text(0):
+            if file == self.rootFileList.child(i).text(2):
                 found = True
                 item = self.rootFileList.child(i)
                 break
@@ -526,14 +608,24 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         file = os.path.normpath(file)
         
         for i in range(self.rootFileList.childCount()):
-            if file == self.rootFileList.child(i).text(0):
+            if file == self.rootFileList.child(i).text(2):
                 found = True
                 break
 
         if not found:
+            meta = Fb2Meta(file)
+            meta.get()
+
             item = QTreeWidgetItem(0)
-            item.setText(0, file)
             item.setIcon(0, self.iconWhite)
+            item.setText(0, meta.book_title)
+            item.setText(1, meta.get_autors())
+            item.setText(2, file)
+            # Установим подсказки
+            item.setToolTip(0, meta.book_title)
+            item.setToolTip(1, meta.get_autors())
+            item.setToolTip(2, file)
+            
             self.treeFileList.addTopLevelItem(item)
 
 
@@ -551,9 +643,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         if not self.savedPath:
             self.savedPath = os.path.expanduser('~')
 
-        fileDialog = QFileDialog(self, tr('Select files'), self.savedPath)
+        fileDialog = QFileDialog(self, _translate('fb2mobi-gui', 'Select files'), self.savedPath)
         fileDialog.setFileMode(QFileDialog.ExistingFiles)
-        fileDialog.setNameFilters([tr('Fb2 files (*.fb2 *.fb2.zip *.zip)'), tr('All files (*.*)')])
+        fileDialog.setNameFilters([_translate('fb2mobi-gui', 'Fb2 files (*.fb2 *.fb2.zip *.zip)'), 
+                                  _translate('fb2mobi-gui', 'All files (*.*)')])
 
         if fileDialog.exec_():
             self.savedPath = fileDialog.directory().absolutePath()
@@ -570,7 +663,11 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.gui_config.geometry['x'] = win_x
         self.gui_config.geometry['y'] = win_y
         self.gui_config.geometry['width'] = win_width
-        self.gui_config.geometry['height'] = win_height    
+        self.gui_config.geometry['height'] = win_height 
+
+        self.gui_config.columns['0'] = self.treeFileList.columnWidth(0)   
+        self.gui_config.columns['1'] = self.treeFileList.columnWidth(1)   
+        self.gui_config.columns['2'] = self.treeFileList.columnWidth(2)   
 
         self.gui_config.write()
 
@@ -608,6 +705,20 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
     def closeEvent(self, event):
         self.closeApp()
 
+
+class AppEventFilter(QObject):
+    def __init__(self, app_win):
+        super(AppEventFilter, self).__init__()
+        self.app_win = app_win
+
+    def eventFilter(self, receiver, event):
+        if event.type() == QEvent.FileOpen:
+            self.app_win.addFiles([event.file()])
+            return True
+        else:
+            return super(AppEventFilter, self).eventFilter(receiver, event)
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
@@ -625,5 +736,8 @@ if __name__ == '__main__':
 
     mainAppWindow = MainAppWindow()
     mainAppWindow.show()
+
+    appEventFilter = AppEventFilter(mainAppWindow)
+    app.installEventFilter(appEventFilter)
 
     sys.exit(app.exec_())

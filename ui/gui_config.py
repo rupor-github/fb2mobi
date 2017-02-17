@@ -20,6 +20,11 @@ class GuiConfig():
 		self.kindleCopyToDevice = False
 		self.kindleSyncCovers = False
 
+		self.columns = {}
+		self.columns['0'] = None
+		self.columns['1'] = None
+		self.columns['2'] = None
+
 		self.geometry = {}
 		self.geometry['x'] = None
 		self.geometry['y'] = None
@@ -58,6 +63,9 @@ class GuiConfig():
 
 			elif e.tag == 'convertToSourceDirectory':
 				self.convertToSourceDirectory = e.text.lower() == 'true'
+			elif e.tag == 'columns':
+				for c in e:
+					self.columns[c.tag[1:]] = int(c.text) if c.text else None
 			elif e.tag == 'geometry':
 				for g in e:
 					self.geometry[g.tag] = int(g.text) if g.text else None
@@ -74,6 +82,11 @@ class GuiConfig():
 					E('kindlePath', self.kindlePath) if self.kindlePath else E('kindlePath'),
 					E('kindleCopyToDevice', str(self.kindleCopyToDevice)),
 					E('kindleSyncCovers', str(self.kindleSyncCovers)),
+					E('columns',
+						E('c0', str(self.columns['0'])) if self.columns['0'] else E('c0'),
+						E('c1', str(self.columns['1'])) if self.columns['1'] else E('c1'),
+						E('c2', str(self.columns['2'])) if self.columns['2'] else E('c2')
+						),
 					E('geometry',
 						E('x', str(self.geometry['x'])) if self.geometry['x'] else E('x'),
 						E('y', str(self.geometry['y'])) if self.geometry['y'] else E('y'),

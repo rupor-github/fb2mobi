@@ -45,20 +45,7 @@ data_files = [
     (os.path.join(base_dir, 'ui/locale/fb2mobi_ru.qm'), 'ui/locale/fb2mobi_ru.qm'),
 ]
 
-
-plist = {}
-
-# plist = { 
-#     'CFBundleDocumentTypes': [{
-#     'CFBundleTypeName': 'Folder',
-#     'CFBundleTypeRole': 'Viewer',
-#     'LSItemContentTypes': ['public.folder'],
-#     'CFBundleTypeExtensions': ['fb2', 'zip'],
-#     'CFBundleTypeName': 'FB2 Document',
-#     'CFBundleTypeRole': 'Viewer',
-#   }]
-# }
-
+plist = os.path.join(base_dir, 'ui/Info.plist')
 
 setup(
     name = "fb2mobi-gui",
