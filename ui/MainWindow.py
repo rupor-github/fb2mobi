@@ -33,7 +33,7 @@ class Ui_MainWindow(object):
         self.treeFileList.setAlternatingRowColors(True)
         self.treeFileList.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.treeFileList.setObjectName("treeFileList")
-        self.treeFileList.header().setVisible(False)
+        self.treeFileList.header().setVisible(True)
         self.verticalLayout.addWidget(self.splitter)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -66,7 +66,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addLayout(self.verticalLayout, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 763, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 763, 22))
         self.menubar.setObjectName("menubar")
         self.menu = QtWidgets.QMenu(self.menubar)
         self.menu.setObjectName("menu")
@@ -129,7 +129,9 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "fb2mobi"))
-        self.treeFileList.headerItem().setText(0, _translate("MainWindow", "Файл"))
+        self.treeFileList.headerItem().setText(0, _translate("MainWindow", "Title"))
+        self.treeFileList.headerItem().setText(1, _translate("MainWindow", "Author"))
+        self.treeFileList.headerItem().setText(2, _translate("MainWindow", "File"))
         self.btnStart.setText(_translate("MainWindow", "Start"))
         self.btnSettings.setText(_translate("MainWindow", "Settings..."))
         self.menu.setTitle(_translate("MainWindow", "File"))
