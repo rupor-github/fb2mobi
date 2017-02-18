@@ -90,14 +90,14 @@ class Fb2Meta():
             if len(author_str) > 0:
                 author_str += ', '
 
-            author_str += author.first_name 
+            if author.first_name:
+            	author_str += author.first_name 
             if author.middle_name:
                 author_str += ' ' + author.middle_name
-
             if author.last_name:
                 author_str += ' ' + author.last_name
 
-        return author_str
+        return author_str.replace('  ', ' ').strip()
 
 
     def get(self):
@@ -222,7 +222,8 @@ class Fb2Meta():
 
         if self.is_zip:
             zip_file = zipfile.ZipFile(self.file, 'w', zipfile.ZIP_DEFLATED)
-            zip_file.writestr(os.path.splitext(self.file)[0], etree.tostring(self.tree, encoding='utf-8', method='xml', xml_declaration=True))
+            zip_file.writestr(os.path.splitext(self.file)[0], etree.tostring(self.tree, encoding='utf-8', 
+            																 method='xml', xml_declaration=True))
             zip_file.close()
         else:
             self.tree.write(self.file, encoding='utf-8', method='xml', xml_declaration=True, pretty_print=False)
