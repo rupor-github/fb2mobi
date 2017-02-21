@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>570</width>
-    <height>412</height>
+    <height>468</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -322,11 +322,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>checkCopyAfterConvert</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>SettingsDialog</receiver>
+   <slot>checkCopyAfterConvertClicked(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>288</x>
+     <y>357</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>284</x>
+     <y>233</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>checkConvertToSrcClicked(int)</slot>
   <slot>closeAccept()</slot>
   <slot>selectDestPath()</slot>
   <slot>selectKindlePath()</slot>
+  <slot>checkCopyAfterConvertClicked(int)</slot>
  </slots>
 </ui>

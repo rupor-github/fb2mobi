@@ -19,6 +19,7 @@ class GuiConfig():
 		self.kindlePath = None
 		self.kindleCopyToDevice = False
 		self.kindleSyncCovers = False
+		self.lastUsedPath = None
 
 		self.columns = {}
 		self.columns['0'] = None
@@ -52,6 +53,9 @@ class GuiConfig():
 			elif e.tag == 'hyphens':
 				self.hyphens = e.text
 
+			elif e.tag == 'lastUsedPath':
+				self.lastUsedPath = e.text
+
 			elif e.tag == 'kindlePath':
 				self.kindlePath = e.text
 
@@ -78,6 +82,7 @@ class GuiConfig():
 					E('currentFormat', self.currentFormat) if self.currentFormat else E('currentFormat'),
 					E('hyphens', self.hyphens) if self.hyphens else E('hyphens'),
 					E('outputFolder', self.outputFolder) if self.outputFolder else E('outputFolder'),
+					E('lastUsedPath', self.lastUsedPath) if self.lastUsedPath else E('lastUsedPath'),
 					E('convertToSourceDirectory', str(self.convertToSourceDirectory)),
 					E('kindlePath', self.kindlePath) if self.kindlePath else E('kindlePath'),
 					E('kindleCopyToDevice', str(self.kindleCopyToDevice)),

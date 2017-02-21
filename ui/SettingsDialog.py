@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_SettingsDialog(object):
     def setupUi(self, SettingsDialog):
         SettingsDialog.setObjectName("SettingsDialog")
-        SettingsDialog.resize(570, 412)
+        SettingsDialog.resize(570, 468)
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(SettingsDialog)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.groupBox = QtWidgets.QGroupBox(SettingsDialog)
@@ -140,6 +140,7 @@ class Ui_SettingsDialog(object):
         SettingsDialog.accepted.connect(SettingsDialog.closeAccept)
         self.btnSelectDestPath.clicked.connect(SettingsDialog.selectDestPath)
         self.btnSelectKindlePath.clicked.connect(SettingsDialog.selectKindlePath)
+        self.checkCopyAfterConvert.stateChanged['int'].connect(SettingsDialog.checkCopyAfterConvertClicked)
         QtCore.QMetaObject.connectSlotsByName(SettingsDialog)
 
     def retranslateUi(self, SettingsDialog):
