@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_SettingsDialog(object):
     def setupUi(self, SettingsDialog):
         SettingsDialog.setObjectName("SettingsDialog")
-        SettingsDialog.resize(570, 468)
+        SettingsDialog.resize(570, 444)
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(SettingsDialog)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.groupBox = QtWidgets.QGroupBox(SettingsDialog)
@@ -95,6 +95,9 @@ class Ui_SettingsDialog(object):
         self.checkConvertToSrc = QtWidgets.QCheckBox(self.groupBox)
         self.checkConvertToSrc.setObjectName("checkConvertToSrc")
         self.verticalLayout.addWidget(self.checkConvertToSrc)
+        self.checkWriteLog = QtWidgets.QCheckBox(self.groupBox)
+        self.checkWriteLog.setObjectName("checkWriteLog")
+        self.verticalLayout.addWidget(self.checkWriteLog)
         self.verticalLayout_3.addWidget(self.groupBox)
         self.groupBox_2 = QtWidgets.QGroupBox(SettingsDialog)
         self.groupBox_2.setObjectName("groupBox_2")
@@ -156,6 +159,7 @@ class Ui_SettingsDialog(object):
         self.label_3.setText(_translate("SettingsDialog", "Destination folder"))
         self.btnSelectDestPath.setText(_translate("SettingsDialog", "Select"))
         self.checkConvertToSrc.setText(_translate("SettingsDialog", "Save target files in source folder"))
+        self.checkWriteLog.setText(_translate("SettingsDialog", "Write log"))
         self.groupBox_2.setTitle(_translate("SettingsDialog", "Kindle"))
         self.label_4.setText(_translate("SettingsDialog", "\"documents\" device folder"))
         self.btnSelectKindlePath.setText(_translate("SettingsDialog", "Select"))

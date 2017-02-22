@@ -170,6 +170,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.comboFormat.setCurrentIndex(self.comboFormat.findData(self.config.currentFormat))
         self.lineDestPath.setText(self.config.outputFolder)
         self.checkConvertToSrc.setChecked(self.config.convertToSourceDirectory)
+        self.checkWriteLog.setChecked(self.config.writeLog)
 
         if self.config.hyphens.lower() == 'yes':
             self.radioHypYes.setChecked(True)
@@ -252,6 +253,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
             self.config.kindlePath = os.path.normpath(self.lineKindlePath.text())
         self.config.kindleCopyToDevice = self.checkCopyAfterConvert.isChecked()
         self.config.kindleSyncCovers = self.checkSyncCovers.isChecked()
+        self.config.writeLog = self.checkWriteLog.isChecked()
 
 
 class AboutDialog(QDialog, Ui_AboutDialog):
@@ -332,7 +334,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         log_stream_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
         log.addHandler(log_stream_handler)
 
-        if self.log_file:
+        if self.gui_config.writeLog:
             log_file_handler = logging.FileHandler(filename=self.log_file, mode='a', encoding='utf-8')
             log_file_handler.setLevel(fb2mobi.get_log_level(self.gui_config.converterConfig.log_level))
             log_file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))

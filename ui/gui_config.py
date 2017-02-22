@@ -20,6 +20,7 @@ class GuiConfig():
 		self.kindleCopyToDevice = False
 		self.kindleSyncCovers = False
 		self.lastUsedPath = None
+		self.writeLog = True
 
 		self.columns = {}
 		self.columns['0'] = None
@@ -59,6 +60,9 @@ class GuiConfig():
 			elif e.tag == 'kindlePath':
 				self.kindlePath = e.text
 
+			elif e.tag == 'writeLog':
+				self.writeLog = e.text.lower() == 'true'
+
 			elif e.tag == 'kindleCopyToDevice':
 				self.kindleCopyToDevice = e.text.lower() == 'true'
 
@@ -84,6 +88,7 @@ class GuiConfig():
 					E('outputFolder', self.outputFolder) if self.outputFolder else E('outputFolder'),
 					E('lastUsedPath', self.lastUsedPath) if self.lastUsedPath else E('lastUsedPath'),
 					E('convertToSourceDirectory', str(self.convertToSourceDirectory)),
+					E('writeLog', str(self.writeLog)),
 					E('kindlePath', self.kindlePath) if self.kindlePath else E('kindlePath'),
 					E('kindleCopyToDevice', str(self.kindleCopyToDevice)),
 					E('kindleSyncCovers', str(self.kindleSyncCovers)),

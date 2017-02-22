@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>570</width>
-    <height>468</height>
+    <height>444</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -140,6 +140,13 @@
        <widget class="QCheckBox" name="checkConvertToSrc">
         <property name="text">
          <string>Save target files in source folder</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkWriteLog">
+        <property name="text">
+         <string>Write log</string>
         </property>
        </widget>
       </item>
