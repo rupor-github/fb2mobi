@@ -758,6 +758,8 @@ if __name__ == '__main__':
     app_translator.load(os.path.join(locale_path, 'fb2mobi_' + locale + '.qm'))
     app.installTranslator(app_translator)
 
+    app.setStyleSheet('QStatusBar::item { border: 0px }');
+
     mainAppWindow = MainAppWindow()
     mainAppWindow.show()
 
