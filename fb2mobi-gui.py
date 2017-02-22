@@ -42,10 +42,19 @@ class CopyThread(QThread):
     copyDone = pyqtSignal()
     copyAllDone = pyqtSignal()
 
-    def __init__(self, files, dest_path):
+    def __init__(self, files, dest_path, synccovers):
         super(CopyThread, self).__init__()
         self.files = files
         self.dest_path = dest_path
+        self.thumbnail_path = ''
+        self.synccovers = synccovers
+
+        # Определим и проверим путь до иниатюр обложек на Kindle
+        if self.dest_path:
+            self.thumbnail_path = os.path.join(os.path.dirname(os.path.abspath(dest_path)), 'system', 'thumbnails')
+            if not os.path.isdir(self.thumbnail_path):
+                self.thumbnail_path = ''
+
 
     def run(self):
         for file in self.files:
@@ -62,6 +71,12 @@ class CopyThread(QThread):
                            shutil.rmtree(dest_sdr_dir)
 
                         shutil.copytree(src_sdr_dir, dest_sdr_dir)
+
+                    # Создадим миниатюру обложки, если оперделили путь и установлен признак
+                    if self.thumbnail_path and self.synccovers:
+                        dest_file = os.path.join(self.dest_path, os.path.split(file)[1])
+                        if os.path.exists(dest_file):
+                            synccovers.process_file(dest_file, self.thumbnail_path, 330, 470, False, False)
             except:
                 pass
             self.copyDone.emit()
@@ -155,6 +170,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.comboFormat.setCurrentIndex(self.comboFormat.findData(self.config.currentFormat))
         self.lineDestPath.setText(self.config.outputFolder)
         self.checkConvertToSrc.setChecked(self.config.convertToSourceDirectory)
+        self.checkWriteLog.setChecked(self.config.writeLog)
 
         if self.config.hyphens.lower() == 'yes':
             self.radioHypYes.setChecked(True)
@@ -174,6 +190,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.lineKindlePath.setText(self.config.kindlePath)
         self.checkCopyAfterConvert.setChecked(self.config.kindleCopyToDevice)
         self.checkSyncCovers.setChecked(self.config.kindleSyncCovers)
+        self.enableCheckSyncCovers(self.config.kindleCopyToDevice)
 
 
     def selectDestPath(self):
@@ -205,6 +222,20 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.lineDestPath.setEnabled(enabled)
         self.btnSelectDestPath.setEnabled(enabled)
 
+    def checkCopyAfterConvertClicked(self, state):
+        checked = False
+        if state == 2:
+            checked = True
+
+        self.enableCheckSyncCovers(checked)
+
+    def enableCheckSyncCovers(self, enabled):
+        if enabled:
+            self.checkSyncCovers.setEnabled(True)
+        else:
+            self.checkSyncCovers.setEnabled(False)
+            self.checkSyncCovers.setChecked(False)
+
 
     def closeAccept(self):
         self.config.currentProfile = self.comboProfile.currentData()
@@ -222,6 +253,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
             self.config.kindlePath = os.path.normpath(self.lineKindlePath.text())
         self.config.kindleCopyToDevice = self.checkCopyAfterConvert.isChecked()
         self.config.kindleSyncCovers = self.checkSyncCovers.isChecked()
+        self.config.writeLog = self.checkWriteLog.isChecked()
 
 
 class AboutDialog(QDialog, Ui_AboutDialog):
@@ -302,7 +334,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         log_stream_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
         log.addHandler(log_stream_handler)
 
-        if self.log_file:
+        if self.gui_config.writeLog:
             log_file_handler = logging.FileHandler(filename=self.log_file, mode='a', encoding='utf-8')
             log_file_handler.setLevel(fb2mobi.get_log_level(self.gui_config.converterConfig.log_level))
             log_file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
@@ -501,7 +533,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         
         if self.gui_config.kindleCopyToDevice and not self.is_convert_cancel:
             if self.gui_config.kindlePath and os.path.exists(self.gui_config.kindlePath):
-                self.copy_worker = CopyThread(self.convertedFiles, self.gui_config.kindlePath)
+                self.copy_worker = CopyThread(self.convertedFiles, self.gui_config.kindlePath, 
+                                              self.gui_config.kindleSyncCovers)
                 self.copy_worker.copyBegin.connect(self.copyBegin)
                 self.copy_worker.copyDone.connect(self.copyDone)
                 self.copy_worker.copyAllDone.connect(self.copyAllDone)
@@ -514,8 +547,9 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 self.allControlsEnabled(False, True)
                 self.copy_worker.start()
             else:
-                msg = QMessageBox(QMessageBox.Critical, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui', 
-                                  'Error when copying files - device not found.'), QMessageBox.Ok, self)
+                msg = QMessageBox(QMessageBox.Critical, _translate('fb2mobi-gui', 'Error'), 
+                                  _translate('fb2mobi-gui', 'Error when copying files - device not found.'), 
+                                  QMessageBox.Ok, self)
                 msg.exec_()
 
 
@@ -529,16 +563,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
 
     def copyAllDone(self):
-        if self.gui_config.kindleSyncCovers:
-            if self.gui_config.kindlePath and os.path.exists(self.gui_config.kindlePath):
-                self.showMessage(_translate('fb2mobi-gui', 'Syncronizing covers'))
-                self.progressBar.setMinimum(0)
-                self.progressBar.setMaximum(0)
-                try:                    
-                    synccovers.process_folder(self.gui_config.kindlePath, 330, 470, False, False)
-                except:
-                    pass
-
         time.sleep(0.5)    
         self.progressBar.setVisible(False)
         self.allControlsEnabled(True)
@@ -640,16 +664,16 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
 
     def addFilesAction(self):
-        if not self.savedPath:
-            self.savedPath = os.path.expanduser('~')
+        if not self.gui_config.lastUsedPath:
+            self.gui_config.lastUsedPath = os.path.expanduser('~')
 
-        fileDialog = QFileDialog(self, _translate('fb2mobi-gui', 'Select files'), self.savedPath)
+        fileDialog = QFileDialog(self, _translate('fb2mobi-gui', 'Select files'), self.gui_config.lastUsedPath)
         fileDialog.setFileMode(QFileDialog.ExistingFiles)
         fileDialog.setNameFilters([_translate('fb2mobi-gui', 'Fb2 files (*.fb2 *.fb2.zip *.zip)'), 
                                   _translate('fb2mobi-gui', 'All files (*.*)')])
 
         if fileDialog.exec_():
-            self.savedPath = fileDialog.directory().absolutePath()
+            self.gui_config.lastUsedPath = fileDialog.directory().absolutePath()
             file_list = fileDialog.selectedFiles()
             self.addFiles(file_list)
 
@@ -733,6 +757,8 @@ if __name__ == '__main__':
     app_translator = QTranslator()
     app_translator.load(os.path.join(locale_path, 'fb2mobi_' + locale + '.qm'))
     app.installTranslator(app_translator)
+
+    app.setStyleSheet('QStatusBar::item { border: 0px }');
 
     mainAppWindow = MainAppWindow()
     mainAppWindow.show()

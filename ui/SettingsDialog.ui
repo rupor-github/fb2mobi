@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>570</width>
-    <height>412</height>
+    <height>444</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -140,6 +140,13 @@
        <widget class="QCheckBox" name="checkConvertToSrc">
         <property name="text">
          <string>Save target files in source folder</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkWriteLog">
+        <property name="text">
+         <string>Write log</string>
         </property>
        </widget>
       </item>
@@ -322,11 +329,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>checkCopyAfterConvert</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>SettingsDialog</receiver>
+   <slot>checkCopyAfterConvertClicked(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>288</x>
+     <y>357</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>284</x>
+     <y>233</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>checkConvertToSrcClicked(int)</slot>
   <slot>closeAccept()</slot>
   <slot>selectDestPath()</slot>
   <slot>selectKindlePath()</slot>
+  <slot>checkCopyAfterConvertClicked(int)</slot>
  </slots>
 </ui>
