@@ -125,160 +125,165 @@
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="ui/SettingsDialog.py" line="147"/>
+        <location filename="ui/SettingsDialog.py" line="151"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="ui/SettingsDialog.py" line="148"/>
+        <location filename="ui/SettingsDialog.py" line="152"/>
         <source>Converter settings</source>
         <translation>Параметры конвертации</translation>
     </message>
     <message>
-        <location filename="ui/SettingsDialog.py" line="149"/>
+        <location filename="ui/SettingsDialog.py" line="153"/>
         <source>Profile</source>
         <translation>Профиль</translation>
     </message>
     <message>
-        <location filename="ui/SettingsDialog.py" line="150"/>
+        <location filename="ui/SettingsDialog.py" line="154"/>
         <source>Output format</source>
         <translation>Формат</translation>
     </message>
     <message>
-        <location filename="ui/SettingsDialog.py" line="151"/>
+        <location filename="ui/SettingsDialog.py" line="155"/>
         <source>Insert soft hyphens</source>
         <translation>Расставлять мягкие переносы</translation>
     </message>
     <message>
-        <location filename="ui/SettingsDialog.py" line="152"/>
+        <location filename="ui/SettingsDialog.py" line="156"/>
         <source>Yes</source>
         <translation>Да</translation>
     </message>
     <message>
-        <location filename="ui/SettingsDialog.py" line="153"/>
+        <location filename="ui/SettingsDialog.py" line="157"/>
         <source>No</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="ui/SettingsDialog.py" line="154"/>
+        <location filename="ui/SettingsDialog.py" line="158"/>
         <source>Profile default</source>
         <translation>Как в профиле</translation>
     </message>
     <message>
-        <location filename="ui/SettingsDialog.py" line="155"/>
+        <location filename="ui/SettingsDialog.py" line="159"/>
         <source>Destination folder</source>
         <translation>Конвертировать в папку</translation>
     </message>
     <message>
-        <location filename="ui/SettingsDialog.py" line="160"/>
+        <location filename="ui/SettingsDialog.py" line="165"/>
         <source>Select</source>
         <translation>Выбрать</translation>
     </message>
     <message>
-        <location filename="ui/SettingsDialog.py" line="157"/>
+        <location filename="ui/SettingsDialog.py" line="161"/>
         <source>Save target files in source folder</source>
         <translation>Конвертировать в исходную папку</translation>
     </message>
     <message>
-        <location filename="ui/SettingsDialog.py" line="158"/>
+        <location filename="ui/SettingsDialog.py" line="163"/>
         <source>Kindle</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="ui/SettingsDialog.py" line="159"/>
+        <location filename="ui/SettingsDialog.py" line="164"/>
         <source>&quot;documents&quot; device folder</source>
         <translation>Папка &quot;documents&quot; устройства</translation>
     </message>
     <message>
-        <location filename="ui/SettingsDialog.py" line="161"/>
+        <location filename="ui/SettingsDialog.py" line="166"/>
         <source>Copy to device after conversion</source>
         <translation>Копировать на устройство после конвертации</translation>
     </message>
     <message>
-        <location filename="ui/SettingsDialog.py" line="162"/>
+        <location filename="ui/SettingsDialog.py" line="167"/>
         <source>Syncronize covers</source>
         <translation>Синхронизировать обложки</translation>
+    </message>
+    <message>
+        <location filename="ui/SettingsDialog.py" line="162"/>
+        <source>Write log</source>
+        <translation>Записывать сообщения в лог-файл</translation>
     </message>
 </context>
 <context>
     <name>fb2mobi-gui</name>
     <message>
-        <location filename="fb2mobi-gui.py" line="186"/>
+        <location filename="fb2mobi-gui.py" line="208"/>
         <source>Select folder</source>
         <translation>Выберите папку</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="422"/>
+        <location filename="fb2mobi-gui.py" line="475"/>
         <source>Folder does not exist.</source>
         <translation>Указанная папка не существует.</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="499"/>
+        <location filename="fb2mobi-gui.py" line="553"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="445"/>
+        <location filename="fb2mobi-gui.py" line="498"/>
         <source>Cancel</source>
         <translation>Стоп</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="446"/>
+        <location filename="fb2mobi-gui.py" line="499"/>
         <source>Cancel conversion</source>
         <translation>Прервать конвертацию</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="476"/>
+        <location filename="fb2mobi-gui.py" line="529"/>
         <source>Start</source>
         <translation>Пуск</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="477"/>
+        <location filename="fb2mobi-gui.py" line="530"/>
         <source>Start conversion</source>
         <translation>Конвертировать</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="499"/>
+        <location filename="fb2mobi-gui.py" line="553"/>
         <source>Error when copying files - device not found.</source>
         <translation>Ошибка копирования файлов - устройство не найдено.</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="505"/>
+        <location filename="fb2mobi-gui.py" line="560"/>
         <source>Copying file to device: {0}</source>
         <translation>Копирование файла: {0}</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="534"/>
+        <location filename="fb2mobi-gui.py" line="579"/>
         <source>Converting file: {0}</source>
         <translation>Обработка файла: {0}</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="624"/>
+        <location filename="fb2mobi-gui.py" line="673"/>
         <source>Select files</source>
         <translation>Выберите файлы</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="626"/>
+        <location filename="fb2mobi-gui.py" line="675"/>
         <source>Fb2 files (*.fb2 *.fb2.zip *.zip)</source>
         <translation>Файлы fb2 (*.fb2 *.fb2.zip *.zip)</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="626"/>
+        <location filename="fb2mobi-gui.py" line="675"/>
         <source>All files (*.*)</source>
         <translation>Все файлы (*.*)</translation>
     </message>
     <message>
         <location filename="fb2mobi-gui.py" line="516"/>
         <source>Syncronizing covers</source>
-        <translation>Синхронизация обложек</translation>
+        <translation type="obsolete">Синхронизация обложек</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="371"/>
+        <location filename="fb2mobi-gui.py" line="424"/>
         <source>Device connected</source>
         <translation>Устройство обнаружено</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="374"/>
+        <location filename="fb2mobi-gui.py" line="427"/>
         <source>Device not connected</source>
         <translation>Устройство не обнаружено</translation>
     </message>
