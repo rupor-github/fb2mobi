@@ -20,6 +20,8 @@ class GuiConfig():
 		self.kindleCopyToDevice = False
 		self.kindleSyncCovers = False
 		self.lastUsedPath = None
+		self.embeededFontFamily = None
+		self.fontDb = None
 		self.writeLog = True
 
 		self.columns = {}

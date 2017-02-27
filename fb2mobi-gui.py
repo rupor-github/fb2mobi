@@ -22,6 +22,7 @@ from ui.gui_config import GuiConfig
 import ui.images_rc
 import ui.ui_version
 from ui.fb2meta import Fb2Meta
+from ui.fontdb import FontDb
 
 from modules.config import ConverterConfig
 import fb2mobi
@@ -187,6 +188,13 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
             self.radioHypNo.setChecked(False)
             self.radioHypProfile.setChecked(True)
 
+        # Строим выбор шрифта
+        # для начала обновим список доступных шрифтов
+        self.config.fontDb.update_db()
+        self.comboFont.addItem('None', _translate('fb2mobi-gui', 'None'))
+        for font in self.config.fontDb.families:
+            self.comboFont.addItem(font, font)
+
         self.lineKindlePath.setText(self.config.kindlePath)
         self.checkCopyAfterConvert.setChecked(self.config.kindleCopyToDevice)
         self.checkSyncCovers.setChecked(self.config.kindleSyncCovers)
@@ -321,7 +329,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.config_file = os.path.normpath(os.path.join(config_path, config_file_name))
         self.log_file = os.path.normpath(os.path.join(config_path, log_file_name))
         self.gui_config_file = os.path.normpath(os.path.join(config_path, gui_config_file))
-
         
         self.gui_config = GuiConfig(self.gui_config_file)
         self.gui_config.converterConfig = ConverterConfig(self.config_file)
@@ -340,9 +347,11 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             log_file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
             log.addHandler(log_file_handler)
 
-
         self.gui_config.converterConfig.log = log
-
+        # Строим базу доступных шрифтов
+        self.font_path = os.path.normpath(os.path.join(config_path, 'profiles/fonts'))
+        if os.path.exists(self.font_path):
+            self.gui_config.fontDb = FontDb(self.font_path)
 
         if not self.gui_config.outputFolder:
             self.gui_config.outputFolder = os.path.abspath(os.path.expanduser("~/Desktop"))
