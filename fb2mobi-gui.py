@@ -3,6 +3,8 @@
 
 import sys
 import os
+import cssutils
+import codecs
 import time
 import subprocess
 import webbrowser
@@ -25,6 +27,7 @@ from ui.fb2meta import Fb2Meta
 from ui.fontdb import FontDb
 
 from modules.config import ConverterConfig
+import modules.default_css
 import fb2mobi
 import synccovers
 import version
@@ -98,6 +101,10 @@ class ConvertThread(QThread):
 
         self.config.setCurrentProfile(gui_config.currentProfile)
         self.config.output_format = gui_config.currentFormat
+        if gui_config.embedFontFamily:
+            css_file = os.path.join(os.path.dirname(gui_config.config_file), 'profiles', '_font.css')
+            if os.path.exists(css_file):
+                self.config.current_profile['css'] = css_file
 
         if not gui_config.convertToSourceDirectory:
             self.config.output_dir = gui_config.outputFolder
@@ -168,7 +175,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
             self.comboFormat.addItem(f, f)
 
         self.comboProfile.setCurrentIndex(self.comboProfile.findData(self.config.currentProfile))
-        self.comboFormat.setCurrentIndex(self.comboFormat.findData(self.config.currentFormat))
+        self.comboFormat.setCurrentIndex(self.comboFormat.findData(self.config.currentFormat))        
         self.lineDestPath.setText(self.config.outputFolder)
         self.checkConvertToSrc.setChecked(self.config.convertToSourceDirectory)
         self.checkWriteLog.setChecked(self.config.writeLog)
@@ -194,6 +201,11 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.comboFont.addItem('None', _translate('fb2mobi-gui', 'None'))
         for font in self.config.fontDb.families:
             self.comboFont.addItem(font, font)
+
+        if self.config.embedFontFamily is None:
+            self.comboFont.setCurrentIndex(self.comboFont.findData('None'))
+        else:
+            self.comboFont.setCurrentIndex(self.comboFont.findData(self.config.embedFontFamily))
 
         self.lineKindlePath.setText(self.config.kindlePath)
         self.checkCopyAfterConvert.setChecked(self.config.kindleCopyToDevice)
@@ -262,6 +274,10 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.config.kindleCopyToDevice = self.checkCopyAfterConvert.isChecked()
         self.config.kindleSyncCovers = self.checkSyncCovers.isChecked()
         self.config.writeLog = self.checkWriteLog.isChecked()
+        if self.comboFont.currentData() == 'None':
+            self.config.embedFontFamily = None
+        else:
+            self.config.embedFontFamily = self.comboFont.currentData()
 
 
 class AboutDialog(QDialog, Ui_AboutDialog):
@@ -298,6 +314,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.convert_worker = None
         self.copy_worker = None
         self.is_convert_cancel = False
+
+        # Список стилей для встраивания шрифтов
+        self.style_rules = ['.titleblock', '.text-author', 'p', 'p.title', '.cite', '.poem', 
+               '.table th', '.table td', '.annotation']
 
         self.rootFileList = self.treeFileList.invisibleRootItem()
         self.iconWhite = QIcon(':/Images/bullet_white.png')
@@ -522,12 +542,63 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 self.convert_worker.convertDone.connect(self.convertDone)
                 self.convert_worker.convertAllDone.connect(self.convertAllDone)
 
+                if self.gui_config.embedFontFamily:
+                    self.generateFontCSS()
+
                 self.convert_worker.start()
             else:
                 self.is_convert_cancel = True
                 self.convert_worker.stop() 
                 self.btnStart.setEnabled(False)
                 self.actionConvert.setEnabled(False)
+
+
+    def generateFontCSS(self):
+        css_string = modules.default_css.default_css
+        css = cssutils.parseString(css_string)
+
+        font_regular = ''
+        font_italic = ''
+        font_bold = ''
+        font_bolditalic = ''
+
+        print(self.gui_config.embedFontFamily)
+        print(self.gui_config.fontDb.families[self.gui_config.embedFontFamily])
+
+        if 'Regular' in self.gui_config.fontDb.families[self.gui_config.embedFontFamily]:
+            font_regular = self.gui_config.fontDb.families[self.gui_config.embedFontFamily]['Regular']
+
+        if 'Italic' in self.gui_config.fontDb.families[self.gui_config.embedFontFamily]:
+            font_italic = self.gui_config.fontDb.families[self.gui_config.embedFontFamily]['Italic']
+        else:
+            font_italic = font_regular
+
+        if 'Bold' in self.gui_config.fontDb.families[self.gui_config.embedFontFamily]:
+            font_bold = self.gui_config.fontDb.families[self.gui_config.embedFontFamily]['Bold']
+        else:
+            font_bold = font_regular
+
+        if 'Bold Italic' in self.gui_config.fontDb.families[self.gui_config.embedFontFamily]:
+            font_bolditalic = self.gui_config.fontDb.families[self.gui_config.embedFontFamily]['Bold Italic']
+        else:
+            font_bolditalic = font_italic
+
+        css.add('@font-face {{ font-family: "para"; src: url("fonts/{0}"); }}'.format(font_regular))
+        css.add('@font-face {{ font-family: "para"; src: url("fonts/{0}"); font-style: italic; }}'.format(font_italic))
+        css.add('@font-face {{ font-family: "para"; src: url("fonts/{0}"); font-weight: bold; }}'.format(font_bold))
+        css.add('@font-face {{ font-family: "para"; src: url("fonts/{0}"); font-style: italic; font-weight: bold; }}'.format(font_bolditalic))
+
+        for rule in css:
+            if rule.type == rule.STYLE_RULE:
+                if rule.selectorText in self.style_rules:
+                    rule.style['font-family'] = '"para"'
+
+        css_path = os.path.join(os.path.dirname(self.config_file), 'profiles')
+        if not os.path.exists(css_path):
+            os.makedirs(css_path)
+
+        with codecs.open(os.path.join(css_path, '_font.css'), 'w', 'utf-8') as f:
+            f.write(str(css.cssText, 'utf-8'))
 
 
     def convertAllDone(self):
@@ -682,7 +753,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                                   _translate('fb2mobi-gui', 'All files (*.*)')])
 
         if fileDialog.exec_():
-            self.gui_config.lastUsedPath = fileDialog.directory().absolutePath()
+            self.gui_config.lastUsedPath = os.path.normpath(fileDialog.directory().absolutePath())
             file_list = fileDialog.selectedFiles()
             self.addFiles(file_list)
 

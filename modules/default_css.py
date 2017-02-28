@@ -100,6 +100,10 @@ default_css = '''
     font-style: italic;
 }
 
+.emptyline {
+    margin-top: 2em;
+}
+
 .strong {
     font-weight: bold;
 }

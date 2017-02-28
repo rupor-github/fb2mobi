@@ -21,9 +21,10 @@ class FontDb(object):
 						font = ImageFont.truetype(font_file, 10)
 						if font.font.family not in self.families:
 							self.families[font.font.family] = {}
-						self.families[font.font.family][font.font.style] = font_file
+						self.families[font.font.family][font.font.style] = file
 					except:
 						# Not a font file
 						pass
+
 
 		
