@@ -20,6 +20,8 @@ class GuiConfig():
 		self.kindleCopyToDevice = False
 		self.kindleSyncCovers = False
 		self.lastUsedPath = None
+		self.embedFontFamily = None
+		self.fontDb = None
 		self.writeLog = True
 
 		self.columns = {}
@@ -50,6 +52,9 @@ class GuiConfig():
 
 			elif e.tag == 'outputFolder':
 				self.outputFolder = e.text
+
+			elif e.tag == 'embedFontFamily':
+				self.embedFontFamily = e.text
 
 			elif e.tag == 'hyphens':
 				self.hyphens = e.text
@@ -84,6 +89,7 @@ class GuiConfig():
 		config = E('settings',
 					E('currentProfile', self.currentProfile) if self.currentProfile else E('currentProfile'),
 					E('currentFormat', self.currentFormat) if self.currentFormat else E('currentFormat'),
+					E('embedFontFamily', self.embedFontFamily) if self.embedFontFamily else E('embedFontFamily'),
 					E('hyphens', self.hyphens) if self.hyphens else E('hyphens'),
 					E('outputFolder', self.outputFolder) if self.outputFolder else E('outputFolder'),
 					E('lastUsedPath', self.lastUsedPath) if self.lastUsedPath else E('lastUsedPath'),
