@@ -130,6 +130,7 @@ class ConvertThread(QThread):
                 if os.path.exists(dest_file):
                     os.remove(dest_file)
 
+                self.config.log.info(' ')
                 fb2mobi.process_file(self.config, file, None)
 
                 if not os.path.exists(dest_file):
@@ -198,7 +199,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         # Строим выбор шрифта
         # для начала обновим список доступных шрифтов
         self.config.fontDb.update_db()
-        self.comboFont.addItem('None', _translate('fb2mobi-gui', 'None'))
+        self.comboFont.addItem(_translate('fb2mobi-gui', 'None'), 'None')
         for font in self.config.fontDb.families:
             self.comboFont.addItem(font, font)
 
@@ -356,16 +357,16 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         log = logging.getLogger('fb2mobi')
         log.setLevel("DEBUG")
 
-        log_stream_handler = logging.StreamHandler()
-        log_stream_handler.setLevel(fb2mobi.get_log_level(self.gui_config.converterConfig.console_level))
-        log_stream_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
-        log.addHandler(log_stream_handler)
+        self.log_stream_handler = logging.StreamHandler()
+        self.log_stream_handler.setLevel(fb2mobi.get_log_level(self.gui_config.converterConfig.console_level))
+        self.log_stream_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
+        log.addHandler(self.log_stream_handler)
 
-        if self.gui_config.writeLog:
-            log_file_handler = logging.FileHandler(filename=self.log_file, mode='a', encoding='utf-8')
-            log_file_handler.setLevel(fb2mobi.get_log_level(self.gui_config.converterConfig.log_level))
-            log_file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
-            log.addHandler(log_file_handler)
+        self.log_file_handler = logging.FileHandler(filename=self.log_file, mode='a', encoding='utf-8')
+        self.log_file_handler.setLevel(fb2mobi.get_log_level(self.gui_config.converterConfig.log_level))
+        self.log_file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))        
+        if self.gui_config.writeLog:            
+            log.addHandler(self.log_file_handler)
 
         self.gui_config.converterConfig.log = log
         # Строим базу доступных шрифтов
@@ -795,10 +796,18 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
 
     def settings(self):
+        prev_writeLog = self.gui_config.writeLog
+
         settingsDlg = SettingsDialog(self, self.gui_config)
         if settingsDlg.exec_():
             self.gui_config = settingsDlg.config
             self.gui_config.write()
+
+            if prev_writeLog != self.gui_config.writeLog:
+                if self.gui_config.writeLog:
+                    self.gui_config.converterConfig.log.addHandler(self.log_file_handler)
+                else:
+                    self.gui_config.converterConfig.log.removeHandler(self.log_file_handler)
 
 
     def about(self):
