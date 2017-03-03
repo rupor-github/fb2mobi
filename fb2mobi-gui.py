@@ -316,10 +316,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.copy_worker = None
         self.is_convert_cancel = False
 
-        # Список стилей для встраивания шрифтов
-        self.style_rules = ['.titleblock', '.text-author', 'p', 'p.title', '.cite', '.poem', 
-               '.table th', '.table td', '.annotation']
-
         self.rootFileList = self.treeFileList.invisibleRootItem()
         self.iconWhite = QIcon(':/Images/bullet_white.png')
         self.iconRed = QIcon(':/Images/bullet_red.png')
@@ -555,6 +551,11 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
 
     def generateFontCSS(self):
+        # Список стилей для встраивания шрифтов
+        style_rules = ['.titleblock', '.text-author', 'p', 'p.title', '.cite', '.poem', 
+               '.table th', '.table td', '.annotation', 'body']
+
+
         css_string = modules.default_css.default_css
         css = cssutils.parseString(css_string)
 
@@ -589,10 +590,18 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         css.add('@font-face {{ font-family: "para"; src: url("fonts/{0}"); font-weight: bold; }}'.format(font_bold))
         css.add('@font-face {{ font-family: "para"; src: url("fonts/{0}"); font-style: italic; font-weight: bold; }}'.format(font_bolditalic))
 
+        found_body = False
+
         for rule in css:
             if rule.type == rule.STYLE_RULE:
-                if rule.selectorText in self.style_rules:
+                if rule.selectorText in style_rules:
                     rule.style['font-family'] = '"para"'
+                if rule.selectorText == 'body':
+                    found_body = True
+
+        # Добавим стиль для 
+        if not found_body:
+            css.add('body {font-family: "para"; line-height: 100%; }')
 
         css_path = os.path.join(os.path.dirname(self.config_file), 'profiles')
         if not os.path.exists(css_path):
