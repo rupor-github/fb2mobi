@@ -85,10 +85,13 @@
 .indent5 { margin-left: 40pt; text-align: left; }
 .indent6 { margin-left: 40pt; text-align: left; }
 
-
 .anchor {
     vertical-align: super;
     font-size: 70%;
+}
+
+.linkanchor {
+    font-size: 80%;
 }
 
 .inlineanchor {
