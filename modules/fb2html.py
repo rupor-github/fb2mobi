@@ -799,7 +799,6 @@ class Fb2XHTML:
         elif self.notes_mode in ('default', 'float') and tag == 'a':
             if href[1:] in self.notes_dict:
                 elem.set('id', 'back_' + href[1:])
-            else:
                 css = 'linkanchor'
 
         if tag:
