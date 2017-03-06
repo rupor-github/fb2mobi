@@ -280,8 +280,7 @@ class Fb2XHTML:
 
         self.links_location = {}
 
-        if self.notes_mode in ('inline', 'block', 'float'):
-            self.get_notes_dict()
+        self.get_notes_dict()
 
     def generate(self):
 
@@ -797,8 +796,11 @@ class Fb2XHTML:
                 href = None
             except KeyError:
                 pass
-        elif self.notes_mode in ('float') and tag == 'a':
-            elem.set('id', 'back_' + href[1:])
+        elif self.notes_mode in ('default', 'float') and tag == 'a':
+            if href[1:] in self.notes_dict:
+                elem.set('id', 'back_' + href[1:])
+            else:
+                css = 'linkanchor'
 
         if tag:
             self.buff.append('<{0}'.format(tag))
