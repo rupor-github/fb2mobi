@@ -64,7 +64,7 @@ setup(
             'iconfile': 'ui/fb2mobi.icns',
             'custom_info_plist': plist,
             'bundle_name': 'fb2mobi',
-            'qt_menu_nib': '/usr/local/opt/qt@5.7/plugins/'
+            'qt_menu_nib': '/opt/local/libexec/qt5/plugins/'
         }
     },
     executables = [

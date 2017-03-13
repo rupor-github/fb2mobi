@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'SettingsDialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.7.1
+# Created by: PyQt5 UI code generator 5.8
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_SettingsDialog(object):
     def setupUi(self, SettingsDialog):
         SettingsDialog.setObjectName("SettingsDialog")
-        SettingsDialog.resize(463, 382)
+        SettingsDialog.resize(463, 390)
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(SettingsDialog)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.tabWidget = QtWidgets.QTabWidget(SettingsDialog)
@@ -109,12 +109,6 @@ class Ui_SettingsDialog(object):
         self.checkConvertToSrc = QtWidgets.QCheckBox(self.tab)
         self.checkConvertToSrc.setObjectName("checkConvertToSrc")
         self.verticalLayout.addWidget(self.checkConvertToSrc)
-        self.checkWriteLog = QtWidgets.QCheckBox(self.tab)
-        self.checkWriteLog.setObjectName("checkWriteLog")
-        self.verticalLayout.addWidget(self.checkWriteLog)
-        self.checkClearLogAfterExit = QtWidgets.QCheckBox(self.tab)
-        self.checkClearLogAfterExit.setObjectName("checkClearLogAfterExit")
-        self.verticalLayout.addWidget(self.checkClearLogAfterExit)
         spacerItem = QtWidgets.QSpacerItem(20, 19, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
         self.tabWidget.addTab(self.tab, "")
@@ -152,6 +146,35 @@ class Ui_SettingsDialog(object):
         self.verticalLayout_2.addItem(spacerItem1)
         self.gridLayout_3.addLayout(self.verticalLayout_2, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tab_2, "")
+        self.tab_3 = QtWidgets.QWidget()
+        self.tab_3.setObjectName("tab_3")
+        self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.tab_3)
+        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_4.setObjectName("verticalLayout_4")
+        self.checkWriteLog = QtWidgets.QCheckBox(self.tab_3)
+        self.checkWriteLog.setObjectName("checkWriteLog")
+        self.verticalLayout_4.addWidget(self.checkWriteLog)
+        self.checkClearLogAfterExit = QtWidgets.QCheckBox(self.tab_3)
+        self.checkClearLogAfterExit.setObjectName("checkClearLogAfterExit")
+        self.verticalLayout_4.addWidget(self.checkClearLogAfterExit)
+        self.label_6 = QtWidgets.QLabel(self.tab_3)
+        self.label_6.setObjectName("label_6")
+        self.verticalLayout_4.addWidget(self.label_6)
+        self.comboLogLevel = QtWidgets.QComboBox(self.tab_3)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.comboLogLevel.sizePolicy().hasHeightForWidth())
+        self.comboLogLevel.setSizePolicy(sizePolicy)
+        self.comboLogLevel.setObjectName("comboLogLevel")
+        self.comboLogLevel.addItem("")
+        self.comboLogLevel.addItem("")
+        self.comboLogLevel.addItem("")
+        self.comboLogLevel.addItem("")
+        self.verticalLayout_4.addWidget(self.comboLogLevel)
+        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_4.addItem(spacerItem2)
+        self.tabWidget.addTab(self.tab_3, "")
         self.verticalLayout_3.addWidget(self.tabWidget)
         self.buttonBox = QtWidgets.QDialogButtonBox(SettingsDialog)
         self.buttonBox.setLocale(QtCore.QLocale(QtCore.QLocale.Russian, QtCore.QLocale.Russia))
@@ -165,6 +188,10 @@ class Ui_SettingsDialog(object):
         self.buttonBox.accepted.connect(SettingsDialog.accept)
         self.buttonBox.rejected.connect(SettingsDialog.reject)
         SettingsDialog.accepted.connect(SettingsDialog.closeAccept)
+        self.checkCopyAfterConvert.stateChanged['int'].connect(SettingsDialog.checkCopyAfterConvertClicked)
+        self.checkConvertToSrc.stateChanged['int'].connect(SettingsDialog.checkConvertToSrcClicked)
+        self.btnSelectKindlePath.clicked.connect(SettingsDialog.selectKindlePath)
+        self.btnSelectDestPath.clicked.connect(SettingsDialog.selectDestPath)
         QtCore.QMetaObject.connectSlotsByName(SettingsDialog)
 
     def retranslateUi(self, SettingsDialog):
@@ -180,12 +207,18 @@ class Ui_SettingsDialog(object):
         self.label_3.setText(_translate("SettingsDialog", "Destination folder"))
         self.btnSelectDestPath.setText(_translate("SettingsDialog", "Select"))
         self.checkConvertToSrc.setText(_translate("SettingsDialog", "Save target files in source folder"))
-        self.checkWriteLog.setText(_translate("SettingsDialog", "Write log"))
-        self.checkClearLogAfterExit.setText(_translate("SettingsDialog", "Clear log after exit"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("SettingsDialog", "Converter"))
         self.label_4.setText(_translate("SettingsDialog", "\"documents\" device folder"))
         self.btnSelectKindlePath.setText(_translate("SettingsDialog", "Select"))
         self.checkCopyAfterConvert.setText(_translate("SettingsDialog", "Copy to device after conversion"))
         self.checkSyncCovers.setText(_translate("SettingsDialog", "Syncronize covers"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("SettingsDialog", "Kindle"))
+        self.checkWriteLog.setText(_translate("SettingsDialog", "Write log"))
+        self.checkClearLogAfterExit.setText(_translate("SettingsDialog", "Clear log after exit"))
+        self.label_6.setText(_translate("SettingsDialog", "Log level"))
+        self.comboLogLevel.setItemText(0, _translate("SettingsDialog", "DEBUG"))
+        self.comboLogLevel.setItemText(1, _translate("SettingsDialog", "INFO"))
+        self.comboLogLevel.setItemText(2, _translate("SettingsDialog", "ERROR"))
+        self.comboLogLevel.setItemText(3, _translate("SettingsDialog", "CRITICAL"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("SettingsDialog", "Log"))
 

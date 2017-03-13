@@ -180,6 +180,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.lineDestPath.setText(self.config.outputFolder)
         self.checkConvertToSrc.setChecked(self.config.convertToSourceDirectory)
         self.checkWriteLog.setChecked(self.config.writeLog)
+        self.checkClearLogAfterExit.setChecked(self.config.clearLogAfterExit)
 
         if self.config.hyphens.lower() == 'yes':
             self.radioHypYes.setChecked(True)
@@ -207,6 +208,8 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
             self.comboFont.setCurrentIndex(self.comboFont.findData('None'))
         else:
             self.comboFont.setCurrentIndex(self.comboFont.findData(self.config.embedFontFamily))
+
+        self.comboLogLevel.setCurrentIndex(self.comboLogLevel.findText(self.config.logLevel))
 
         self.lineKindlePath.setText(self.config.kindlePath)
         self.checkCopyAfterConvert.setChecked(self.config.kindleCopyToDevice)
@@ -275,6 +278,9 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.config.kindleCopyToDevice = self.checkCopyAfterConvert.isChecked()
         self.config.kindleSyncCovers = self.checkSyncCovers.isChecked()
         self.config.writeLog = self.checkWriteLog.isChecked()
+        self.config.clearLogAfterExit = self.checkClearLogAfterExit.isChecked()
+        self.config.logLevel = self.comboLogLevel.currentText()
+
         if self.comboFont.currentData() == 'None':
             self.config.embedFontFamily = None
         else:
@@ -350,21 +356,21 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.gui_config = GuiConfig(self.gui_config_file)
         self.gui_config.converterConfig = ConverterConfig(self.config_file)
 
-        log = logging.getLogger('fb2mobi')
-        log.setLevel("DEBUG")
+        self.log = logging.getLogger('fb2mobi')
+        self.log.setLevel(self.gui_config.logLevel)
 
         self.log_stream_handler = logging.StreamHandler()
         self.log_stream_handler.setLevel(fb2mobi.get_log_level(self.gui_config.converterConfig.console_level))
         self.log_stream_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
-        log.addHandler(self.log_stream_handler)
+        self.log.addHandler(self.log_stream_handler)
 
         self.log_file_handler = logging.FileHandler(filename=self.log_file, mode='a', encoding='utf-8')
         self.log_file_handler.setLevel(fb2mobi.get_log_level(self.gui_config.converterConfig.log_level))
         self.log_file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))        
         if self.gui_config.writeLog:            
-            log.addHandler(self.log_file_handler)
+            self.log.addHandler(self.log_file_handler)
 
-        self.gui_config.converterConfig.log = log
+        self.gui_config.converterConfig.log = self.log
         # Строим базу доступных шрифтов
         self.font_path = os.path.normpath(os.path.join(config_path, 'profiles/fonts'))
         if os.path.exists(self.font_path):
@@ -534,6 +540,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 self.convertedCount = 0
                 self.convertedFiles = []
                 
+                self.gui_config.converterConfig = ConverterConfig(self.config_file)
+                self.gui_config.converterConfig.log = self.log
+
+
                 self.convert_worker = ConvertThread(files, self.gui_config)
                 self.convert_worker.convertBegin.connect(self.convertBegin)
                 self.convert_worker.convertDone.connect(self.convertDone)
@@ -563,9 +573,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         font_italic = ''
         font_bold = ''
         font_bolditalic = ''
-
-        print(self.gui_config.embedFontFamily)
-        print(self.gui_config.fontDb.families[self.gui_config.embedFontFamily])
 
         if 'Regular' in self.gui_config.fontDb.families[self.gui_config.embedFontFamily]:
             font_regular = self.gui_config.fontDb.families[self.gui_config.embedFontFamily]['Regular']
@@ -769,6 +776,12 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
 
     def closeApp(self):
+        # Очистим лог-файл на выходе, если указано в настройках
+        if self.gui_config.clearLogAfterExit:
+            if self.log_file:
+                with open(self.log_file, 'w'):
+                    pass
+
         win_x = self.pos().x()
         win_y = self.pos().y()
         win_width = self.size().width()
@@ -811,6 +824,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         if settingsDlg.exec_():
             self.gui_config = settingsDlg.config
             self.gui_config.write()
+            self.log.setLevel(self.gui_config.logLevel)
 
             if prev_writeLog != self.gui_config.writeLog:
                 if self.gui_config.writeLog:
