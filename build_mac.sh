@@ -7,7 +7,7 @@ if [ -d ./dist ]; then
 fi
 
 echo "Building..."
-python3 setup-all.mac.cx_freeze.py
+python setup-all.mac.cx_freeze.py
 
 rm -rf ./build/exe.macos*
 mkdir dist

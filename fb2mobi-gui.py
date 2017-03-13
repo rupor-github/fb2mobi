@@ -130,6 +130,7 @@ class ConvertThread(QThread):
                 if os.path.exists(dest_file):
                     os.remove(dest_file)
 
+                self.config.log.info(' ')
                 fb2mobi.process_file(self.config, file, None)
 
                 if not os.path.exists(dest_file):
@@ -179,6 +180,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.lineDestPath.setText(self.config.outputFolder)
         self.checkConvertToSrc.setChecked(self.config.convertToSourceDirectory)
         self.checkWriteLog.setChecked(self.config.writeLog)
+        self.checkClearLogAfterExit.setChecked(self.config.clearLogAfterExit)
 
         if self.config.hyphens.lower() == 'yes':
             self.radioHypYes.setChecked(True)
@@ -198,7 +200,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         # Строим выбор шрифта
         # для начала обновим список доступных шрифтов
         self.config.fontDb.update_db()
-        self.comboFont.addItem('None', _translate('fb2mobi-gui', 'None'))
+        self.comboFont.addItem(_translate('fb2mobi-gui', 'None'), 'None')
         for font in self.config.fontDb.families:
             self.comboFont.addItem(font, font)
 
@@ -206,6 +208,8 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
             self.comboFont.setCurrentIndex(self.comboFont.findData('None'))
         else:
             self.comboFont.setCurrentIndex(self.comboFont.findData(self.config.embedFontFamily))
+
+        self.comboLogLevel.setCurrentIndex(self.comboLogLevel.findText(self.config.logLevel))
 
         self.lineKindlePath.setText(self.config.kindlePath)
         self.checkCopyAfterConvert.setChecked(self.config.kindleCopyToDevice)
@@ -274,6 +278,9 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.config.kindleCopyToDevice = self.checkCopyAfterConvert.isChecked()
         self.config.kindleSyncCovers = self.checkSyncCovers.isChecked()
         self.config.writeLog = self.checkWriteLog.isChecked()
+        self.config.clearLogAfterExit = self.checkClearLogAfterExit.isChecked()
+        self.config.logLevel = self.comboLogLevel.currentText()
+
         if self.comboFont.currentData() == 'None':
             self.config.embedFontFamily = None
         else:
@@ -315,10 +322,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.copy_worker = None
         self.is_convert_cancel = False
 
-        # Список стилей для встраивания шрифтов
-        self.style_rules = ['.titleblock', '.text-author', 'p', 'p.title', '.cite', '.poem', 
-               '.table th', '.table td', '.annotation']
-
         self.rootFileList = self.treeFileList.invisibleRootItem()
         self.iconWhite = QIcon(':/Images/bullet_white.png')
         self.iconRed = QIcon(':/Images/bullet_red.png')
@@ -353,21 +356,21 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.gui_config = GuiConfig(self.gui_config_file)
         self.gui_config.converterConfig = ConverterConfig(self.config_file)
 
-        log = logging.getLogger('fb2mobi')
-        log.setLevel("DEBUG")
+        self.log = logging.getLogger('fb2mobi')
+        self.log.setLevel(self.gui_config.logLevel)
 
-        log_stream_handler = logging.StreamHandler()
-        log_stream_handler.setLevel(fb2mobi.get_log_level(self.gui_config.converterConfig.console_level))
-        log_stream_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
-        log.addHandler(log_stream_handler)
+        self.log_stream_handler = logging.StreamHandler()
+        self.log_stream_handler.setLevel(fb2mobi.get_log_level(self.gui_config.converterConfig.console_level))
+        self.log_stream_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
+        self.log.addHandler(self.log_stream_handler)
 
-        if self.gui_config.writeLog:
-            log_file_handler = logging.FileHandler(filename=self.log_file, mode='a', encoding='utf-8')
-            log_file_handler.setLevel(fb2mobi.get_log_level(self.gui_config.converterConfig.log_level))
-            log_file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
-            log.addHandler(log_file_handler)
+        self.log_file_handler = logging.FileHandler(filename=self.log_file, mode='a', encoding='utf-8')
+        self.log_file_handler.setLevel(fb2mobi.get_log_level(self.gui_config.converterConfig.log_level))
+        self.log_file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))        
+        if self.gui_config.writeLog:            
+            self.log.addHandler(self.log_file_handler)
 
-        self.gui_config.converterConfig.log = log
+        self.gui_config.converterConfig.log = self.log
         # Строим базу доступных шрифтов
         self.font_path = os.path.normpath(os.path.join(config_path, 'profiles/fonts'))
         if os.path.exists(self.font_path):
@@ -537,6 +540,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 self.convertedCount = 0
                 self.convertedFiles = []
                 
+                self.gui_config.converterConfig = ConverterConfig(self.config_file)
+                self.gui_config.converterConfig.log = self.log
+
+
                 self.convert_worker = ConvertThread(files, self.gui_config)
                 self.convert_worker.convertBegin.connect(self.convertBegin)
                 self.convert_worker.convertDone.connect(self.convertDone)
@@ -554,6 +561,11 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
 
     def generateFontCSS(self):
+        # Список стилей для встраивания шрифтов
+        style_rules = ['.titleblock', '.text-author', 'p', 'p.title', '.cite', '.poem', 
+               '.table th', '.table td', '.annotation', 'body']
+
+
         css_string = modules.default_css.default_css
         css = cssutils.parseString(css_string)
 
@@ -561,9 +573,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         font_italic = ''
         font_bold = ''
         font_bolditalic = ''
-
-        print(self.gui_config.embedFontFamily)
-        print(self.gui_config.fontDb.families[self.gui_config.embedFontFamily])
 
         if 'Regular' in self.gui_config.fontDb.families[self.gui_config.embedFontFamily]:
             font_regular = self.gui_config.fontDb.families[self.gui_config.embedFontFamily]['Regular']
@@ -588,10 +597,18 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         css.add('@font-face {{ font-family: "para"; src: url("fonts/{0}"); font-weight: bold; }}'.format(font_bold))
         css.add('@font-face {{ font-family: "para"; src: url("fonts/{0}"); font-style: italic; font-weight: bold; }}'.format(font_bolditalic))
 
+        found_body = False
+
         for rule in css:
             if rule.type == rule.STYLE_RULE:
-                if rule.selectorText in self.style_rules:
+                if rule.selectorText in style_rules:
                     rule.style['font-family'] = '"para"'
+                if rule.selectorText == 'body':
+                    found_body = True
+
+        # Добавим стиль для 
+        if not found_body:
+            css.add('body {font-family: "para"; line-height: 100%; }')
 
         css_path = os.path.join(os.path.dirname(self.config_file), 'profiles')
         if not os.path.exists(css_path):
@@ -759,6 +776,12 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
 
     def closeApp(self):
+        # Очистим лог-файл на выходе, если указано в настройках
+        if self.gui_config.clearLogAfterExit:
+            if self.log_file:
+                with open(self.log_file, 'w'):
+                    pass
+
         win_x = self.pos().x()
         win_y = self.pos().y()
         win_width = self.size().width()
@@ -795,10 +818,19 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
 
     def settings(self):
+        prev_writeLog = self.gui_config.writeLog
+
         settingsDlg = SettingsDialog(self, self.gui_config)
         if settingsDlg.exec_():
             self.gui_config = settingsDlg.config
             self.gui_config.write()
+            self.log.setLevel(self.gui_config.logLevel)
+
+            if prev_writeLog != self.gui_config.writeLog:
+                if self.gui_config.writeLog:
+                    self.gui_config.converterConfig.log.addHandler(self.log_file_handler)
+                else:
+                    self.gui_config.converterConfig.log.removeHandler(self.log_file_handler)
 
 
     def about(self):
