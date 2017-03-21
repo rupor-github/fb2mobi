@@ -8,4 +8,11 @@
     <file>icon16.png</file>
     <file>icon128.png</file>
   </qresource>
+  <qresource prefix="toolbar16">
+  	<file>add16.png</file>
+  	<file>run16.png</file>
+  	<file>stop16.png</file>
+  	<file>info16.png</file>
+  	<file>settings16.png</file>
+  </qresource>
 </RCC>

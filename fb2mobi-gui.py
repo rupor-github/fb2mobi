@@ -12,9 +12,9 @@ import logging
 import shutil
 
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QTreeWidgetItem, QMessageBox, QDialog, QWidget, 
-                            QLabel, QAbstractItemView, QSizePolicy)
+                            QLabel, QAbstractItemView, QSizePolicy, QAction)
 from PyQt5.QtGui import QIcon, QPixmap 
-from PyQt5.QtCore import QObject, QThread, pyqtSignal, QEvent, Qt, QTranslator, QLocale, QCoreApplication, QTimer
+from PyQt5.QtCore import QObject, QThread, pyqtSignal, QEvent, Qt, QTranslator, QLocale, QCoreApplication, QTimer, QSize
 
 from ui.MainWindow import Ui_MainWindow
 from ui.AboutDialog import Ui_AboutDialog
@@ -418,6 +418,27 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.treeFileList.setAttribute(Qt.WA_MacShowFocusRect, 0)
             self.treeFileList.setStyleSheet(TREE_LIST_CSS_ACTIVE)
             self.labelStatus.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        else:
+            self.toolBar.setIconSize(QSize(16, 16))
+            self.toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+            # self.toolBar.setStyleSheet(' padding:4px; margin-right: 6px; margin-left: 6px;')
+            self.toolBar.setStyleSheet('QToolButton { padding: 4px; }')
+
+            spacer = QWidget()
+            self.toolAdd.setIcon(QIcon(':/toolbar16/add16.png'))
+            self.toolStart.setIcon(QIcon(':/toolbar16/run16.png'))
+            self.toolSettings.setIcon(QIcon(':/toolbar16/settings16.png'))
+            self.toolInfo.setIcon(QIcon(':/toolbar16/info16.png'))
+
+            self.toolBar.addAction(self.toolAdd)
+            self.toolBar.addAction(self.toolStart)
+            self.toolBar.addAction(self.toolSettings)
+            spacer = QWidget()
+            spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            self.toolBar.addWidget(spacer)            
+            self.toolBar.addAction(self.toolInfo)
+            self.toolInfo.setPriority(QAction.LowPriority)
+
             
 
         self.statusBar().addWidget(self.labelStatus, 1) 
