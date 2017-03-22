@@ -3,9 +3,8 @@ default_css = '''
     margin-left: 20px;
     margin-right:20px;
     margin-top:20px;
-    margin-bottom:5px
+    margin-bottom:5px;
 }
-
 
 .h0 {   
     font-size: 140%;
@@ -52,10 +51,15 @@ default_css = '''
     margin-bottom: 1em;
 }
 
-
 .titleblock {
     text-indent: 0em;
     page-break-before: always;
+    margin-top: 2em;
+    margin-bottom: 1em;
+}
+
+.titleblock_nobreak {
+    text-indent: 0em;
     margin-top: 2em;
     margin-bottom: 1em;
 }
@@ -81,10 +85,13 @@ default_css = '''
 .indent5 { margin-left: 40pt; text-align: left; }
 .indent6 { margin-left: 40pt; text-align: left; }
 
-
 .anchor {
     vertical-align: super;
     font-size: 70%;
+}
+
+.linkanchor {
+    font-size: 80%;
 }
 
 .inlineanchor {
@@ -95,7 +102,6 @@ default_css = '''
     vertical-align: super;
     font-size: 70%;
 }
-
 
 .emphasis {
     font-style: italic;
@@ -128,10 +134,13 @@ default_css = '''
 .subtitle {
     page-break-after: avoid;
     text-align: center;
-    text-indent: 0em;
     font-weight: bold;
     margin-bottom: 0.5em;
     margin-top: 1em;
+}
+
+p.subtitle {
+    text-indent: 0em;
 }
 
 p {
@@ -139,6 +148,7 @@ p {
     margin-bottom: 0pt;
     margin-top: 0pt;
     text-align: justify;
+    padding-bottom: 0.5em; 
 }
 
 p.title {
@@ -216,8 +226,13 @@ p.title {
     border: 1px #505050 solid;  
 }
 
+.floatnote {
+    font-size: 80%;
+    text-indent: 0em;
+}
+
 .notenum {
- font-weight: bold;
+    font-weight: bold;
 }
 
 .annotation {
