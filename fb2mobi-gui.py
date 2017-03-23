@@ -397,9 +397,9 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.move(self.gui_config.geometry['x'], self.gui_config.geometry['y'])
             self.resize(self.gui_config.geometry['width'], self.gui_config.geometry['height'])
 
-        self.progressBar.setRange(0, 100)
-        self.progressBar.setValue(0)
-        self.progressBar.setVisible(False)        
+        # self.progressBar.setRange(0, 100)
+        # self.progressBar.setValue(0)
+        # self.progressBar.setVisible(False)        
 
         self.setWindowIcon(QIcon(':/Images/icon32.png'))
         self.treeFileList.installEventFilter(self)
@@ -421,7 +421,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         else:
             self.toolBar.setIconSize(QSize(16, 16))
             self.toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-            # self.toolBar.setStyleSheet(' padding:4px; margin-right: 6px; margin-left: 6px;')
             self.toolBar.setStyleSheet('QToolButton { padding: 4px; }')
 
             spacer = QWidget()
@@ -439,7 +438,11 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.toolBar.addAction(self.toolInfo)
             self.toolInfo.setPriority(QAction.LowPriority)
 
-            
+        self.toolInfo.setChecked(self.gui_config.bookInfoVisible)
+        self.scrollBookInfo.setVisible(self.gui_config.bookInfoVisible)
+        if self.gui_config.bookInfoSplitterState:
+            splitter_sizes = self.gui_config.bookInfoSplitterState.split(',')
+            self.bookInfoSplitter.setSizes([int(i) for i in splitter_sizes])
 
         self.statusBar().addWidget(self.labelStatus, 1) 
         self.statusBar().addWidget(self.labelKindleStatusIcon)        
@@ -545,7 +548,9 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 return
 
             if not self.convertRun:
-                self.btnStart.setText(_translate('fb2mobi-gui', 'Cancel'))
+                # self.btnStart.setText(_translate('fb2mobi-gui', 'Cancel'))
+                self.toolStart.setText(_translate('fb2mobi-gui', 'Cancel'))
+                self.toolStart.setIcon(QIcon(':/toolbar16/stop16.png'))
                 self.actionConvert.setText(_translate('fb2mobi-gui', 'Cancel conversion'))
                 self.convertRun = True
                 self.is_convert_cancel = False
@@ -555,9 +560,9 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 for i in range(self.rootFileList.childCount()):
                     files.append(self.rootFileList.child(i).text(2))
 
-                self.progressBar.setRange(0, len(files))
-                self.progressBar.setValue(0)
-                self.progressBar.setVisible(True)
+                # self.progressBar.setRange(0, len(files))
+                # self.progressBar.setValue(0)
+                # self.progressBar.setVisible(True)
                 self.convertedCount = 0
                 self.convertedFiles = []
                 
@@ -577,7 +582,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             else:
                 self.is_convert_cancel = True
                 self.convert_worker.stop() 
-                self.btnStart.setEnabled(False)
+                # self.btnStart.setEnabled(False)
+                self.toolStart.setEnabled(False)
                 self.actionConvert.setEnabled(False)
 
 
@@ -641,13 +647,15 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
     def convertAllDone(self):
         self.convertRun = False        
-        self.btnStart.setText(_translate('fb2mobi-gui', 'Start'))
+        # self.btnStart.setText(_translate('fb2mobi-gui', 'Start'))
+        self.toolStart.setText(_translate('fb2mobi-gui', 'Start'))
+        self.toolStart.setIcon(QIcon(':/toolbar16/run16.png'))
         self.actionConvert.setText(_translate('fb2mobi-gui', 'Start conversion'))
         self.allControlsEnabled(True)
         self.clearMessage()
 
         time.sleep(0.5)    
-        self.progressBar.setVisible(False)
+        # self.progressBar.setVisible(False)
         
         if self.gui_config.kindleCopyToDevice and not self.is_convert_cancel:
             if self.gui_config.kindlePath and os.path.exists(self.gui_config.kindlePath):
@@ -657,11 +665,11 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 self.copy_worker.copyDone.connect(self.copyDone)
                 self.copy_worker.copyAllDone.connect(self.copyAllDone)
 
-                self.progressBar.setRange(0, len(self.convertedFiles))
-                self.progressBar.setValue(0)
+                # self.progressBar.setRange(0, len(self.convertedFiles))
+                # self.progressBar.setValue(0)
                 self.copyCount = 0
 
-                self.progressBar.setVisible(True)
+                # self.progressBar.setVisible(True)
                 self.allControlsEnabled(False, True)
                 self.copy_worker.start()
             else:
@@ -677,12 +685,12 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
     def copyDone(self):
         self.copyCount += 1
-        self.progressBar.setValue(self.copyCount)
+        # self.progressBar.setValue(self.copyCount)
 
 
     def copyAllDone(self):
         time.sleep(0.5)    
-        self.progressBar.setVisible(False)
+        # self.progressBar.setVisible(False)
         self.allControlsEnabled(True)
         self.clearMessage()
 
@@ -724,21 +732,26 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 item.setIcon(0, self.iconRed)
 
         self.convertedCount += 1
-        self.progressBar.setValue(self.convertedCount)
+        # self.progressBar.setValue(self.convertedCount)
 
 
     def allControlsEnabled(self, enable, disable_all=False):
-        self.btnSettings.setEnabled(enable)
+        # self.btnSettings.setEnabled(enable)
+        self.toolSettings.setEnabled(enable)
+        self.toolAdd.setEnabled(enable)
+        self.toolInfo.setEnabled(enable)
         self.actionAddFile.setEnabled(enable)
         self.actionSettings.setEnabled(enable)
         self.actionViewLog.setEnabled(enable)
         self.actionDelete.setEnabled(enable)
         if disable_all and not enable:
             self.actionConvert.setEnabled(enable)
-            self.btnStart.setEnabled(enable)
+            # self.btnStart.setEnabled(enable)
+            self.toolStart.setEnabled(enable)
         elif enable:
             self.actionConvert.setEnabled(enable)
-            self.btnStart.setEnabled(enable)
+            # self.btnStart.setEnabled(enable)
+            self.toolStart.setEnabled(enable)
 
 
     def addFile(self, file):
@@ -816,6 +829,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.gui_config.columns['0'] = self.treeFileList.columnWidth(0)   
         self.gui_config.columns['1'] = self.treeFileList.columnWidth(1)   
         self.gui_config.columns['2'] = self.treeFileList.columnWidth(2)   
+
+        self.gui_config.bookInfoVisible = self.toolInfo.isChecked()
+        splitter_sizes = self.bookInfoSplitter.sizes()
+        self.gui_config.bookInfoSplitterState = ', '.join(str(e) for e in splitter_sizes)
 
         self.gui_config.write()
 
