@@ -70,7 +70,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>363</width>
+          <width>341</width>
           <height>402</height>
          </rect>
         </property>
@@ -103,10 +103,10 @@
             </spacer>
            </item>
            <item>
-            <widget class="QGraphicsView" name="imgBookCover">
+            <widget class="QLabel" name="imgBookCover">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>100</horstretch>
+               <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
@@ -121,6 +121,21 @@
                <width>120</width>
                <height>160</height>
               </size>
+             </property>
+             <property name="baseSize">
+              <size>
+               <width>120</width>
+               <height>160</height>
+              </size>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
@@ -576,6 +591,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>treeFileList</sender>
+   <signal>itemSelectionChanged()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>changeBook()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>176</x>
+     <y>243</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>361</x>
+     <y>237</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonSaveBookInfo</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>saveBookInfo()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>659</x>
+     <y>416</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>361</x>
+     <y>237</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>closeApp()</slot>
@@ -590,5 +637,7 @@
   <slot>openLog()</slot>
   <slot>about()</slot>
   <slot>settings()</slot>
+  <slot>changeBook()</slot>
+  <slot>saveBookInfo()</slot>
  </slots>
 </ui>

@@ -13,8 +13,8 @@ import shutil
 
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QTreeWidgetItem, QMessageBox, QDialog, QWidget, 
                             QLabel, QAbstractItemView, QSizePolicy, QAction)
-from PyQt5.QtGui import QIcon, QPixmap 
-from PyQt5.QtCore import QObject, QThread, pyqtSignal, QEvent, Qt, QTranslator, QLocale, QCoreApplication, QTimer, QSize
+from PyQt5.QtGui import QIcon, QPixmap, QPainter, QFont, QFontMetrics
+from PyQt5.QtCore import QObject, QThread, pyqtSignal, QEvent, Qt, QTranslator, QLocale, QCoreApplication, QTimer, QSize, QRectF
 
 from ui.MainWindow import Ui_MainWindow
 from ui.AboutDialog import Ui_AboutDialog
@@ -753,6 +753,66 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             # self.btnStart.setEnabled(enable)
             self.toolStart.setEnabled(enable)
 
+
+    def clearBookInfo(self):        
+        self.imgBookCover.clear()
+        self.editAuthor.clear()
+        self.editTitle.clear()
+        self.editSeries.clear()
+        self.editSeriesNumber.clear()
+        self.editBookLanguage.clear()
+
+
+    def saveBookInfo(self):
+        selected_items = self.treeFileList.selectedItems()
+        if len(selected_items) == 1:
+            item = selected_items[0]
+            meta = Fb2Meta(item.text(2))
+
+            meta.set_authors(self.editAuthor.text())
+            meta.book_title = self.editTitle.text()
+            meta.set_series(self.editSeries.text(), self.editSeriesNumber.text())
+            meta.lang = self.editBookLanguage.text()
+            meta.write()
+
+            meta = Fb2Meta(item.text(2))
+            print(meta)
+
+            item.setText(0, meta.book_title)
+            item.setText(1, meta.get_autors())
+
+
+    def changeBook(self):
+        self.clearBookInfo()
+
+        selected_items = self.treeFileList.selectedItems()
+        if len(selected_items) == 1:
+            meta = Fb2Meta(selected_items[0].text(2))
+            meta.get()
+
+            self.editAuthor.setText(meta.get_autors())
+            self.editTitle.setText(meta.book_title)
+            (series_name, series_num) = meta.get_first_series()
+            self.editSeries.setText(series_name)
+            self.editSeriesNumber.setText(series_num)
+            self.editBookLanguage.setText(meta.lang)
+            
+            if meta.coverdata:
+                img = QPixmap()
+                img.loadFromData(meta.coverdata)
+                scaled_img = img.scaled(120, 160, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                painter = QPainter(scaled_img)
+                painter.setBackgroundMode(Qt.OpaqueMode)
+                cur_font = painter.font()
+                cur_font.setWeight(QFont.Bold)
+                painter.setFont(cur_font)                
+                img_size = '{0}x{1}'.format(img.width(), img.height())
+                metrics = QFontMetrics(cur_font)
+                painter.drawText(2, metrics.boundingRect(img_size).height(), img_size)
+                painter.end()
+
+                self.imgBookCover.setPixmap(scaled_img)
+       
 
     def addFile(self, file):
         if not file.lower().endswith((".fb2", ".fb2.zip", ".zip")):
