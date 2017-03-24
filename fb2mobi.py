@@ -277,6 +277,9 @@ def process_file(config, infile, outfile=None):
         if os.path.exists(debug_dir):
             rm_tmp_files(debug_dir)
         shutil.copytree(temp_dir, debug_dir)
+        # Store fb2 after xslt transformation for debugging
+        if fb2parser:
+            fb2parser.write_debug(debug_dir)
 
     # Копируем mobi(azw3) из временного в выходной каталог
     if not critical_error:

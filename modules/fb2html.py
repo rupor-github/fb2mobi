@@ -149,6 +149,8 @@ class Fb2XHTML:
         if os.path.splitext(temp_book_name)[1].lower() == '.fb2':
             temp_book_name = os.path.splitext(temp_book_name)[0]
 
+        self.orig_file_name = fb2file
+
         self.book_title = temp_book_name  # Название книги
         self.book_author = ''  # Автор
         self.book_lang = 'ru'  # Язык книги, по-умолчанию 'ru'
@@ -284,9 +286,6 @@ class Fb2XHTML:
 
     def generate(self):
 
-        # stdout = sys.stdout
-        # sys.stdout = codecs.open('stdout.txt', 'w', 'utf-8')
-
         for child in self.root:
             if ns_tag(child.tag) == 'description':
                 self.parse_description(child)
@@ -316,8 +315,6 @@ class Fb2XHTML:
         self.generate_opf()
         self.generate_container()
         self.generate_mimetype()
-
-        # sys.stdout = stdout
 
     def copy_css(self):
         base_dir = os.path.abspath(os.path.dirname(self.css_file))
@@ -403,28 +400,26 @@ class Fb2XHTML:
             self.buff = str.replace(str(etree.tostring(root, encoding='utf-8', method='xml', xml_declaration=True), 'utf-8'),' encoding=\'utf-8\'', '', 1)
 
             self.current_file = fl
-            self.write_buff_to_xhtml()
+            self.write_buff()
 
-    def write_buff_to_xhtml(self):
-        filename = os.path.join(self.temp_content_dir, self.current_file)
+    def write_buff(self, dname='', fname=''):
+        if len(fname) == 0:
+            dirname = self.temp_content_dir
+            filename = os.path.join(self.temp_content_dir, self.current_file)
+        else:
+            dirname = dname
+            filename = os.path.join(dname, fname)
 
-        if not os.path.exists(self.temp_content_dir):
-            os.makedirs(self.temp_content_dir)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
 
         parser = etree.XMLParser(encoding='utf-8', remove_blank_text=True)
         xhtml = etree.parse(io.StringIO(self.get_buff()), parser)
         indent(xhtml.getroot())
         xhtml.write(filename, encoding='utf-8', method='xml', xml_declaration=True, pretty_print=False)
 
-    def write_buff_to_xml(self, filename):
-        d = os.path.dirname(filename)
-        if not os.path.exists(d):
-            os.makedirs(d)
-
-        parser = etree.XMLParser(encoding='utf-8', remove_blank_text=True)
-        xml = etree.parse(io.StringIO(self.get_buff()), parser)
-        indent(xml.getroot())
-        xml.write(filename, encoding='utf-8', method='xml', xml_declaration=True, pretty_print=False)
+    def write_debug(self, dname):
+        self.tree.write(os.path.join(dname, os.path.split(self.orig_file_name)[1]), encoding='utf-8', method='xml', xml_declaration=True, pretty_print=False)
 
     def parse_note_elem(self, elem, body_name):
         note_title = ''
@@ -568,7 +563,7 @@ class Fb2XHTML:
                             self.buff.append('</div>')
                             self.buff.append(HTMLFOOT)
 
-                            self.write_buff_to_xhtml()
+                            self.write_buff()
 
                     elif ns_tag(t.tag) == 'date':
                         self.book_date = etree.tostring(t, method='text', encoding='utf-8').decode('utf-8').strip()
@@ -743,7 +738,7 @@ class Fb2XHTML:
         if not self.body_name:
             if self.chaptersplit and self.current_header_level < self.chapterlevel:
                 self.buff.append(HTMLFOOT)
-                self.write_buff_to_xhtml()
+                self.write_buff()
 
                 self.buff = []
                 self.current_file_index += 1
@@ -1018,7 +1013,7 @@ class Fb2XHTML:
             self.parse_format(elem)
 
         self.buff.append(HTMLFOOT)
-        self.write_buff_to_xhtml()
+        self.write_buff()
 
     def generate_toc(self):
         self.buff = []
@@ -1047,7 +1042,7 @@ class Fb2XHTML:
         self.buff.append('</div>')
         self.buff.append(HTMLFOOT)
 
-        self.write_buff_to_xhtml()
+        self.write_buff()
         self.html_file_list.append(self.current_file)
 
     def ncx_navp_beg(self, index, title, link):
@@ -1129,7 +1124,7 @@ class Fb2XHTML:
             self.ncx_navp_end()
 
         self.buff.append('</navMap></ncx>')
-        self.write_buff_to_xml(os.path.join(self.temp_content_dir, 'toc.ncx'))
+        self.write_buff(os.path.join(self.temp_content_dir, 'toc.ncx'))
 
     def generate_mimetype(self):
         mimetype = 'application/epub+zip'
@@ -1143,7 +1138,7 @@ class Fb2XHTML:
                          '<rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>'
                          '</rootfiles>'
                          '</container>')
-        self.write_buff_to_xml(os.path.join(self.temp_inf_dir, 'container.xml'))
+        self.write_buff(self.temp_inf_dir, 'container.xml')
 
     def generate_cover(self):
         if self.book_cover:
@@ -1161,7 +1156,7 @@ class Fb2XHTML:
             self.buff.append(HTMLFOOT)
             self.current_file = 'cover.xhtml'
 
-            self.write_buff_to_xhtml()
+            self.write_buff()
 
     def generate_pagemap(self):
         page = 1
@@ -1190,7 +1185,7 @@ class Fb2XHTML:
             page += 1
 
         self.buff.append('</page-map>')
-        self.write_buff_to_xml(os.path.join(self.temp_content_dir, 'page-map.xml'))
+        self.write_buff(self.temp_content_dir, 'page-map.xml')
 
     def generate_opf(self):
         self.buff = []
@@ -1314,7 +1309,7 @@ class Fb2XHTML:
 
         self.buff.append('</package>')
 
-        self.write_buff_to_xml(os.path.join(self.temp_content_dir, 'content.opf'))
+        self.write_buff(self.temp_content_dir, 'content.opf')
 
     def get_buff(self):
         return ''.join(self.buff)
