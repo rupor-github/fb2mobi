@@ -15,4 +15,11 @@
   	<file>info16.png</file>
   	<file>settings16.png</file>
   </qresource>
+  <qresource prefix="toolbar24">
+    <file>add24.png</file>
+    <file>run24.png</file>
+    <file>stop24.png</file>
+    <file>info24.png</file>
+    <file>settings24.png</file>
+  </qresource>
 </RCC>

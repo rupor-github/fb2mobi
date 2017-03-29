@@ -408,17 +408,43 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.labelKindleStatusIcon = QLabel()
         self.labelStatus = QLabel()
 
-        # Для Mac OS небольшой хак UI
+        # Немного подстраиваем стили UI для более нативного отображения
         if sys.platform == 'darwin':
+            # Для Mac OS X
             font = self.labelKindleStatus.font()
             font.setPointSize(11)
             self.labelKindleStatus.setFont(font)
             self.labelStatus.setFont(font)
             self.treeFileList.setFont(font)
+            self.labelAuthor.setFont(font)
+            self.labelBookTitle.setFont(font)
+            self.labelSeries.setFont(font)
+            self.labelSeriesNumber.setFont(font)
+            self.labelBookLanguage.setFont(font)
             self.treeFileList.setAttribute(Qt.WA_MacShowFocusRect, 0)
             self.treeFileList.setStyleSheet(TREE_LIST_CSS_ACTIVE)
             self.labelStatus.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+
+            self.toolAdd.setIcon(QIcon(':/toolbar24/add24.png'))
+            self.toolStart.setIcon(QIcon(':/toolbar24/run24.png'))
+            self.toolSettings.setIcon(QIcon(':/toolbar24/settings24.png'))
+            self.toolInfo.setIcon(QIcon(':/toolbar24/info24.png'))
+
+            self.toolBar.setIconSize(QSize(24, 24))
+            self.toolBar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+            self.setUnifiedTitleAndToolBarOnMac(True)
+            spacer = QWidget()
+            spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            self.toolBar.addWidget(spacer)
+            self.toolBar.addAction(self.toolAdd)
+            self.toolBar.addAction(self.toolStart)
+            self.toolBar.addAction(self.toolSettings)
+            spacer = QWidget()
+            spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            self.toolBar.addWidget(spacer)            
+            self.toolBar.addAction(self.toolInfo)
         else:
+            # Для Windows, Linux
             self.toolBar.setIconSize(QSize(16, 16))
             self.toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
             self.toolBar.setStyleSheet('QToolButton { padding: 4px; }')
@@ -550,7 +576,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             if not self.convertRun:
                 # self.btnStart.setText(_translate('fb2mobi-gui', 'Cancel'))
                 self.toolStart.setText(_translate('fb2mobi-gui', 'Cancel'))
-                self.toolStart.setIcon(QIcon(':/toolbar16/stop16.png'))
+                if sys.platform == 'darwin':
+                    self.toolStart.setIcon(QIcon(':/toolbar24/stop24.png'))
+                else:
+                    self.toolStart.setIcon(QIcon(':/toolbar16/stop16.png'))
                 self.actionConvert.setText(_translate('fb2mobi-gui', 'Cancel conversion'))
                 self.convertRun = True
                 self.is_convert_cancel = False
@@ -649,7 +678,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.convertRun = False        
         # self.btnStart.setText(_translate('fb2mobi-gui', 'Start'))
         self.toolStart.setText(_translate('fb2mobi-gui', 'Start'))
-        self.toolStart.setIcon(QIcon(':/toolbar16/run16.png'))
+        if sys.platform == 'darwin':
+            self.toolStart.setIcon(QIcon(':/toolbar24/run24.png'))
+        else:
+            self.toolStart.setIcon(QIcon(':/toolbar16/run16.png'))
         self.actionConvert.setText(_translate('fb2mobi-gui', 'Start conversion'))
         self.allControlsEnabled(True)
         self.clearMessage()

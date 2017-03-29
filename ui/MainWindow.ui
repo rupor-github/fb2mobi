@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>724</width>
-    <height>475</height>
+    <width>786</width>
+    <height>621</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -71,37 +71,42 @@
           <x>0</x>
           <y>0</y>
           <width>341</width>
-          <height>402</height>
+          <height>539</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
+         <property name="spacing">
+          <number>3</number>
+         </property>
+         <property name="leftMargin">
+          <number>8</number>
+         </property>
+         <property name="topMargin">
+          <number>8</number>
+         </property>
+         <property name="rightMargin">
+          <number>8</number>
+         </property>
+         <property name="bottomMargin">
+          <number>8</number>
+         </property>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <property name="spacing">
+            <number>0</number>
+           </property>
            <property name="leftMargin">
-            <number>8</number>
+            <number>0</number>
            </property>
            <property name="topMargin">
-            <number>8</number>
+            <number>0</number>
            </property>
            <property name="rightMargin">
-            <number>8</number>
+            <number>0</number>
            </property>
            <property name="bottomMargin">
-            <number>8</number>
+            <number>0</number>
            </property>
-           <item>
-            <spacer name="horizontalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
            <item>
             <widget class="QLabel" name="imgBookCover">
              <property name="sizePolicy">
@@ -139,73 +144,100 @@
              </property>
             </widget>
            </item>
+           <item>
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
           </layout>
          </item>
          <item>
-          <layout class="QFormLayout" name="formLayout">
-           <property name="horizontalSpacing">
-            <number>6</number>
+          <widget class="QLabel" name="labelAuthor">
+           <property name="text">
+            <string>Author</string>
            </property>
-           <property name="verticalSpacing">
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="editAuthor">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelBookTitle">
+           <property name="text">
+            <string>Title</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="editTitle"/>
+         </item>
+         <item>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <property name="spacing">
             <number>4</number>
            </property>
-           <property name="leftMargin">
-            <number>8</number>
-           </property>
-           <property name="rightMargin">
-            <number>8</number>
-           </property>
            <item row="0" column="0">
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>Author</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="editAuthor"/>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>Title</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="editTitle"/>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_3">
+            <widget class="QLabel" name="labelSeries">
              <property name="text">
               <string>Series</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="1">
+           <item row="0" column="1">
+            <widget class="QLabel" name="labelSeriesNumber">
+             <property name="text">
+              <string>#</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
             <widget class="QLineEdit" name="editSeries"/>
            </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>Series number</string>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="editSeriesNumber">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
              </property>
             </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QLineEdit" name="editSeriesNumber"/>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>Book language</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1">
-            <widget class="QLineEdit" name="editBookLanguage"/>
            </item>
           </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelBookLanguage">
+           <property name="text">
+            <string>Book language</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="editBookLanguage"/>
          </item>
          <item>
           <spacer name="verticalSpacer">
@@ -222,11 +254,14 @@
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
            <property name="rightMargin">
-            <number>8</number>
+            <number>0</number>
            </property>
            <property name="bottomMargin">
-            <number>8</number>
+            <number>0</number>
            </property>
            <item>
             <spacer name="horizontalSpacer">
@@ -268,8 +303,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>724</width>
-     <height>21</height>
+     <width>786</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
