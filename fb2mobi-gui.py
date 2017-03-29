@@ -12,9 +12,10 @@ import logging
 import shutil
 
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QTreeWidgetItem, QMessageBox, QDialog, QWidget, 
-                            QLabel, QAbstractItemView, QSizePolicy, QAction)
+                            QLabel, QAbstractItemView, QSizePolicy, QAction, QMenu)
 from PyQt5.QtGui import QIcon, QPixmap, QPainter, QFont, QFontMetrics
-from PyQt5.QtCore import QObject, QThread, pyqtSignal, QEvent, Qt, QTranslator, QLocale, QCoreApplication, QTimer, QSize, QRectF
+from PyQt5.QtCore import (QObject, QThread, pyqtSignal, QEvent, Qt, QTranslator, QLocale, QCoreApplication, QTimer, 
+                          QSize, QRectF, QByteArray, QBuffer, QPoint)
 
 from ui.MainWindow import Ui_MainWindow
 from ui.AboutDialog import Ui_AboutDialog
@@ -311,7 +312,14 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.copyCount = 0
         self.convertedFiles = []
 
-        self.setAcceptDrops(True)
+        # self.setAcceptDrops(True)
+        self.treeFileList.setAcceptDrops(True)
+        self.treeFileList.installEventFilter(self)
+
+        self.imgBookCover.setAcceptDrops(True)
+        self.imgBookCover.installEventFilter(self)
+
+        self.book_cover = None
 
         self.config_file = None
         self.log_file = None
@@ -407,6 +415,9 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.labelKindleStatus = QLabel()
         self.labelKindleStatusIcon = QLabel()
         self.labelStatus = QLabel()
+
+        self.imgBookCover.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.imgBookCover.customContextMenuRequested[QPoint].connect(self.contextCoverMenu)
 
         # Немного подстраиваем стили UI для более нативного отображения
         if sys.platform == 'darwin':
@@ -511,6 +522,40 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
 
     def eventFilter(self, source, event):
+        if source is self.treeFileList:
+            if event.type() == QEvent.DragEnter:
+                if event.mimeData().hasUrls():
+                    event.accept()
+                    return True
+                else:
+                    event.ignore()
+
+            elif event.type() == QEvent.Drop:
+                file_list = [u.toLocalFile() for u in event.mimeData().urls()]        
+                self.addFiles(file_list)
+                event.accept()
+                return True
+
+        elif source is self.imgBookCover:
+            if event.type() == QEvent.DragEnter:
+                if event.mimeData().hasUrls():
+                    if len(self.treeFileList.selectedItems()) == 1:
+                        event.accept()
+                        return True
+                    else:
+                        event.ignore()
+                else:
+                    event.ignore()
+
+            elif event.type() == QEvent.Drop:
+                file_list = [u.toLocalFile() for u in event.mimeData().urls()] 
+                for f in file_list:
+                    self.loadNewCoverFormFile(f)                    
+                    break
+                event.accept()
+                return True
+
+
         if event.type() == QEvent.KeyPress:
             if (event.key() == Qt.Key_Delete or (event.key() == Qt.Key_Backspace 
                 and event.modifiers() == Qt.ControlModifier)):
@@ -520,17 +565,37 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         return QWidget.eventFilter(self, source, event)
 
 
-    def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls():
-            event.accept()
-        else:
-            event.ignore()
+    def contextCoverMenu(self, point):
+        if len(self.treeFileList.selectedItems()) == 1:
+            menu = QMenu()
 
+            actionLoad = menu.addAction(_translate('fb2mobi-gui', 'Load from file...'))
+            actionSave = menu.addAction(_translate('fb2mobi-gui', 'Save to file...'))
+            actionClear = menu.addAction(_translate('fb2mobi-gui', 'Clear'))
 
-    def dropEvent(self, event):
-        file_list = [u.toLocalFile() for u in event.mimeData().urls()]        
-        self.addFiles(file_list)
-        event.accept()
+            action = menu.exec_(self.imgBookCover.mapToGlobal(point))
+
+            if action == actionLoad:
+                fileDialog = QFileDialog(self, _translate('fb2mobi-gui', 'Select book cover'))
+                fileDialog.setFileMode(QFileDialog.ExistingFile)
+                fileDialog.setNameFilters([_translate('fb2mobi-gui', 'Image files (*.png *.jpg *.bmp)')])
+
+                if fileDialog.exec_():
+                    file_list = fileDialog.selectedFiles()
+                    self.loadNewCoverFormFile(file_list[0])
+            elif action == actionSave:
+                fileDialog = QFileDialog(self, _translate('fb2mobi-gui', 'Save cover as'))
+                fileDialog.setAcceptMode(QFileDialog.AcceptSave)
+                fileDialog.setFileMode(QFileDialog.AnyFile)
+                fileDialog.setNameFilters([_translate('fb2mobi-gui', 'Image files (*.png *.jpg *.bmp)')])
+
+                if fileDialog.exec_():
+                    file_list = fileDialog.selectedFiles()  
+                    self.book_cover.save(file_list[0], os.path.splitext(file_list[0])[1][1:].upper());
+
+            elif action == actionClear:
+                self.book_cover = None
+                self.imgBookCover.clear()
 
 
     def selectAllAction(self):
@@ -786,7 +851,13 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.toolStart.setEnabled(enable)
 
 
+    def loadNewCoverFormFile(self, img_file):
+        self.book_cover = QPixmap(img_file)
+        self.displayCoverThumbmail(self.book_cover)
+
+
     def clearBookInfo(self):        
+        self.book_cover = None
         self.imgBookCover.clear()
         self.editAuthor.clear()
         self.editTitle.clear()
@@ -800,6 +871,19 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         if len(selected_items) == 1:
             item = selected_items[0]
             meta = Fb2Meta(item.text(2))
+            meta.get()
+
+            if self.book_cover:
+                data = QByteArray()
+                buf = QBuffer(data)
+                self.book_cover.save(buf, 'JPG')
+                meta.coverdata = bytes(buf.buffer())
+                if not meta.coverpage:
+                    meta.coverpage = 'cover.jpg'
+                    meta.coverpage_href = '{http://www.w3.org/1999/xlink}href'
+            else:
+                meta.coverpage = ''
+                meta.coverdata = None
 
             meta.set_authors(self.editAuthor.text())
             meta.book_title = self.editTitle.text()
@@ -807,11 +891,23 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             meta.lang = self.editBookLanguage.text()
             meta.write()
 
-            meta = Fb2Meta(item.text(2))
-            print(meta)
-
             item.setText(0, meta.book_title)
             item.setText(1, meta.get_autors())
+
+
+    def displayCoverThumbmail(self, img):
+        scaled_img = img.scaled(120, 160, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        painter = QPainter(scaled_img)
+        painter.setBackgroundMode(Qt.OpaqueMode)
+        cur_font = painter.font()
+        cur_font.setWeight(QFont.Bold)
+        painter.setFont(cur_font)                
+        img_size = '{0}x{1}'.format(img.width(), img.height())
+        metrics = QFontMetrics(cur_font)
+        painter.drawText(2, metrics.boundingRect(img_size).height(), img_size)
+        painter.end()
+
+        self.imgBookCover.setPixmap(scaled_img)
 
 
     def changeBook(self):
@@ -830,20 +926,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.editBookLanguage.setText(meta.lang)
             
             if meta.coverdata:
-                img = QPixmap()
-                img.loadFromData(meta.coverdata)
-                scaled_img = img.scaled(120, 160, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-                painter = QPainter(scaled_img)
-                painter.setBackgroundMode(Qt.OpaqueMode)
-                cur_font = painter.font()
-                cur_font.setWeight(QFont.Bold)
-                painter.setFont(cur_font)                
-                img_size = '{0}x{1}'.format(img.width(), img.height())
-                metrics = QFontMetrics(cur_font)
-                painter.drawText(2, metrics.boundingRect(img_size).height(), img_size)
-                painter.end()
-
-                self.imgBookCover.setPixmap(scaled_img)
+                self.book_cover = QPixmap()
+                self.book_cover.loadFromData(meta.coverdata)
+                self.displayCoverThumbmail(self.book_cover)
+                
        
 
     def addFile(self, file):

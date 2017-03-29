@@ -97,7 +97,7 @@ class Fb2Meta():
         if series_name:
             cur_series = Sequence()
             cur_series.name = series_name
-            cur_series.num = series_num
+            cur_series.number = series_num
             self.sequence.append(cur_series)
 
 
@@ -166,7 +166,6 @@ class Fb2Meta():
                         if QName(e).localname == 'image':
                             for attrib in e.attrib:                                
                                 if QName(attrib).localname == 'href':
-                                    print(e.attrib[attrib])
                                     self.coverpage = e.attrib[attrib][1:]
                                     self.coverpage_href = attrib
                 elif QName(elem).localname == 'lang':
@@ -233,12 +232,11 @@ class Fb2Meta():
             if sequence.name:
                 elem.attrib['name'] = sequence.name
             if sequence.number:
-                elem.attrib['number'] = sequence.name
+                elem.attrib['number'] = sequence.number
 
         for elem in self.tree.xpath('//fb:description/fb:title-info', namespaces=ns):
             elem.getparent().replace(elem, title_info)
 
-        print('coverpage=', self.coverpage)
         if self.coverpage and self.coverdata is not None:
             image_elem = None
             for elem in self.tree.xpath('//fb:binary[@id="{0}"]'.format(self.coverpage), namespaces=ns):
