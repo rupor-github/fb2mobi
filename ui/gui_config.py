@@ -25,6 +25,8 @@ class GuiConfig():
         self.writeLog = True
         self.logLevel = 'DEBUG'
         self.clearLogAfterExit = False
+        self.bookInfoVisible = True
+        self.bookInfoSplitterState = None
 
         self.columns = {}
         self.columns['0'] = None
@@ -70,6 +72,12 @@ class GuiConfig():
             elif e.tag == 'writeLog':
                 self.writeLog = e.text.lower() == 'true'
 
+            elif e.tag == 'bookInfoVisible':
+                self.bookInfoVisible = e.text.lower() == 'true'
+
+            elif e.tag == 'bookInfoSplitterState':
+                self.bookInfoSplitterState = e.text
+
             elif e.tag == 'clearLogAfterExit':
                 self.clearLogAfterExit = e.text.lower() == 'true'
 
@@ -108,6 +116,8 @@ class GuiConfig():
                     E('kindlePath', self.kindlePath) if self.kindlePath else E('kindlePath'),
                     E('kindleCopyToDevice', str(self.kindleCopyToDevice)),
                     E('kindleSyncCovers', str(self.kindleSyncCovers)),
+                    E('bookInfoVisible', str(self.bookInfoVisible)),
+                    E('bookInfoSplitterState', self.bookInfoSplitterState) if self.bookInfoSplitterState else E('bookInfoSplitterState'),
                     E('columns',
                         E('c0', str(self.columns['0'])) if self.columns['0'] else E('c0'),
                         E('c1', str(self.columns['1'])) if self.columns['1'] else E('c1'),

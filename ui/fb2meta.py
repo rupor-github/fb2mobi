@@ -82,6 +82,43 @@ class Fb2Meta():
         else:
             self.tree = etree.parse(self.file, parser=etree.XMLParser(recover=True))
 
+    def get_first_series(self):
+        series_name = ''
+        series_num = ''
+        for series in self.sequence:
+            series_name = series.name
+            series_num = series.number
+
+        return (series_name, series_num)
+
+
+    def set_series(self, series_name, series_num):
+        self.sequence = []
+        if series_name:
+            cur_series = Sequence()
+            cur_series.name = series_name
+            cur_series.number = series_num
+            self.sequence.append(cur_series)
+
+
+    def set_authors(self, author_str):
+        self.author = []
+        if author_str:
+            for cur_author_str in author_str.split(','):
+                author_elements = cur_author_str.strip().split()
+                cur_author = Author()
+                if len(author_elements) == 3:
+                    cur_author.first_name = author_elements[0]
+                    cur_author.middle_name = author_elements[1]
+                    cur_author.last_name = author_elements[2]
+                elif len(author_elements) == 2:
+                    cur_author.first_name = author_elements[0]
+                    cur_author.last_name = author_elements[1]
+                else:
+                    cur_author.last_name = cur_author_str.strip()
+
+                self.author.append(cur_author)
+
 
     def get_autors(self):
         author_str = ''
@@ -195,7 +232,7 @@ class Fb2Meta():
             if sequence.name:
                 elem.attrib['name'] = sequence.name
             if sequence.number:
-                elem.attrib['number'] = sequence.name
+                elem.attrib['number'] = sequence.number
 
         for elem in self.tree.xpath('//fb:description/fb:title-info', namespaces=ns):
             elem.getparent().replace(elem, title_info)
@@ -207,7 +244,7 @@ class Fb2Meta():
                 break
 
             if image_elem is None:
-                image_elem = etree.SubElement(self.tree, 'binary')
+                image_elem = etree.SubElement(self.tree.getroot(), 'binary')
                 image_elem.attrib['id'] = self.coverpage
                 image_elem.attrib['content-type']='image/jpeg'
 
@@ -232,6 +269,9 @@ if __name__ == '__main__':
     # meta = Fb2Meta('Судья Ди 01. Золото Будды.fb2.zip')
     # meta = Fb2Meta('_test.fb2')
     # meta = Fb2Meta('Судья Ди 09. Убийство среди лотосов.fb2')
-    meta = Fb2Meta('Судья Ди 09. Убийство среди лотосов.fb2.zip')
-    meta.get()
-    meta.write()
+    # meta = Fb2Meta('Судья Ди 09. Убийство среди лотосов.fb2.zip')
+    # meta.get()
+    # meta.write()
+
+    meta = Fb2Meta('Судья Ди 01. Золото Будды.fb2.zip')
+    meta.set_authors('Роберт ван Гулик, Гулик Ван Роберт')
