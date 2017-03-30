@@ -26,6 +26,9 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
+      <property name="childrenCollapsible">
+       <bool>false</bool>
+      </property>
       <widget class="QTreeWidget" name="treeFileList">
        <property name="acceptDrops">
         <bool>false</bool>
@@ -70,8 +73,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>341</width>
-          <height>539</height>
+          <width>339</width>
+          <height>548</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
@@ -304,7 +307,7 @@
      <x>0</x>
      <y>0</y>
      <width>786</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -419,9 +422,6 @@
    </property>
   </action>
   <action name="toolInfo">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="text">
     <string>Info</string>
    </property>
@@ -611,22 +611,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>toolInfo</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>scrollBookInfo</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>532</x>
-     <y>243</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>treeFileList</sender>
    <signal>itemSelectionChanged()</signal>
    <receiver>MainWindow</receiver>
@@ -658,6 +642,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>toolInfo</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>switchInfoPanel()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>392</x>
+     <y>310</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>closeApp()</slot>
@@ -674,5 +674,6 @@
   <slot>settings()</slot>
   <slot>changeBook()</slot>
   <slot>saveBookInfo()</slot>
+  <slot>switchInfoPanel()</slot>
  </slots>
 </ui>

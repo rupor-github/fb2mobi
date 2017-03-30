@@ -411,6 +411,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         self.setWindowIcon(QIcon(':/Images/icon32.png'))
         self.treeFileList.installEventFilter(self)
+        self.bookInfoSplitter.installEventFilter(self)
 
         self.labelKindleStatus = QLabel()
         self.labelKindleStatusIcon = QLabel()
@@ -418,6 +419,13 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         self.imgBookCover.setContextMenuPolicy(Qt.CustomContextMenu)
         self.imgBookCover.customContextMenuRequested[QPoint].connect(self.contextCoverMenu)
+
+        self.toolBar.setIconSize(QSize(26, 26))
+
+        self.toolAdd.setIcon(QIcon(':/toolbar/add.png'))
+        self.toolStart.setIcon(QIcon(':/toolbar/start.png'))
+        self.toolSettings.setIcon(QIcon(':/toolbar/settings.png'))
+        self.toolInfo.setIcon(QIcon(':/toolbar/info_on.png'))        
 
         # Немного подстраиваем стили UI для более нативного отображения
         if sys.platform == 'darwin':
@@ -436,12 +444,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.treeFileList.setStyleSheet(TREE_LIST_CSS_ACTIVE)
             self.labelStatus.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
 
-            self.toolAdd.setIcon(QIcon(':/toolbar24/add24.png'))
-            self.toolStart.setIcon(QIcon(':/toolbar24/run24.png'))
-            self.toolSettings.setIcon(QIcon(':/toolbar24/settings24.png'))
-            self.toolInfo.setIcon(QIcon(':/toolbar24/info24.png'))
-
-            self.toolBar.setIconSize(QSize(24, 24))
             self.toolBar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
             self.setUnifiedTitleAndToolBarOnMac(True)
             spacer = QWidget()
@@ -456,15 +458,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.toolBar.addAction(self.toolInfo)
         else:
             # Для Windows, Linux
-            self.toolBar.setIconSize(QSize(16, 16))
             self.toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
             self.toolBar.setStyleSheet('QToolButton { padding: 4px; }')
 
             spacer = QWidget()
-            self.toolAdd.setIcon(QIcon(':/toolbar16/add16.png'))
-            self.toolStart.setIcon(QIcon(':/toolbar16/run16.png'))
-            self.toolSettings.setIcon(QIcon(':/toolbar16/settings16.png'))
-            self.toolInfo.setIcon(QIcon(':/toolbar16/info16.png'))
 
             self.toolBar.addAction(self.toolAdd)
             self.toolBar.addAction(self.toolStart)
@@ -475,7 +472,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.toolBar.addAction(self.toolInfo)
             self.toolInfo.setPriority(QAction.LowPriority)
 
-        self.toolInfo.setChecked(self.gui_config.bookInfoVisible)
+        self.setBookInfoPanelVisible()
         self.scrollBookInfo.setVisible(self.gui_config.bookInfoVisible)
         if self.gui_config.bookInfoSplitterState:
             splitter_sizes = self.gui_config.bookInfoSplitterState.split(',')
@@ -520,6 +517,19 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.labelKindleStatus.setText('')
             self.labelKindleStatusIcon.clear()
 
+    def setBookInfoPanelVisible(self):
+        if self.gui_config.bookInfoVisible:
+            self.toolInfo.setIcon(QIcon(':/toolbar/info_on.png'))
+        else:
+            self.toolInfo.setIcon(QIcon(':/toolbar/info_off.png'))
+
+        self.scrollBookInfo.setVisible(self.gui_config.bookInfoVisible)
+
+
+    def switchInfoPanel(self):
+        self.gui_config.bookInfoVisible = not self.gui_config.bookInfoVisible
+        self.setBookInfoPanelVisible()
+
 
     def eventFilter(self, source, event):
         if source is self.treeFileList:
@@ -555,6 +565,11 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 event.accept()
                 return True
 
+        elif source is self.bookInfoSplitter:
+            if event.type() == QEvent.Paint:
+                splitter_sizes = self.bookInfoSplitter.sizes()
+                if splitter_sizes[1] > 0:
+                    self.gui_config.bookInfoSplitterState = ', '.join(str(e) for e in splitter_sizes)
 
         if event.type() == QEvent.KeyPress:
             if (event.key() == Qt.Key_Delete or (event.key() == Qt.Key_Backspace 
@@ -640,11 +655,9 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
             if not self.convertRun:
                 # self.btnStart.setText(_translate('fb2mobi-gui', 'Cancel'))
+                QApplication.setOverrideCursor(Qt.WaitCursor)
                 self.toolStart.setText(_translate('fb2mobi-gui', 'Cancel'))
-                if sys.platform == 'darwin':
-                    self.toolStart.setIcon(QIcon(':/toolbar24/stop24.png'))
-                else:
-                    self.toolStart.setIcon(QIcon(':/toolbar16/stop16.png'))
+                self.toolStart.setIcon(QIcon(':/toolbar/stop.png'))
                 self.actionConvert.setText(_translate('fb2mobi-gui', 'Cancel conversion'))
                 self.convertRun = True
                 self.is_convert_cancel = False
@@ -742,11 +755,9 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
     def convertAllDone(self):
         self.convertRun = False        
         # self.btnStart.setText(_translate('fb2mobi-gui', 'Start'))
+        QApplication.restoreOverrideCursor()
         self.toolStart.setText(_translate('fb2mobi-gui', 'Start'))
-        if sys.platform == 'darwin':
-            self.toolStart.setIcon(QIcon(':/toolbar24/run24.png'))
-        else:
-            self.toolStart.setIcon(QIcon(':/toolbar16/run16.png'))
+        self.toolStart.setIcon(QIcon(':/toolbar/start.png'))
         self.actionConvert.setText(_translate('fb2mobi-gui', 'Start conversion'))
         self.allControlsEnabled(True)
         self.clearMessage()
@@ -768,6 +779,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
                 # self.progressBar.setVisible(True)
                 self.allControlsEnabled(False, True)
+                QApplication.setOverrideCursor(Qt.WaitCursor)
                 self.copy_worker.start()
             else:
                 msg = QMessageBox(QMessageBox.Critical, _translate('fb2mobi-gui', 'Error'), 
@@ -788,6 +800,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
     def copyAllDone(self):
         time.sleep(0.5)    
         # self.progressBar.setVisible(False)
+        QApplication.restoreOverrideCursor()
         self.allControlsEnabled(True)
         self.clearMessage()
 
@@ -869,6 +882,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
     def saveBookInfo(self):
         selected_items = self.treeFileList.selectedItems()
         if len(selected_items) == 1:
+            QApplication.setOverrideCursor(Qt.BusyCursor)
+
             item = selected_items[0]
             meta = Fb2Meta(item.text(2))
             meta.get()
@@ -894,6 +909,37 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             item.setText(0, meta.book_title)
             item.setText(1, meta.get_autors())
 
+            QApplication.restoreOverrideCursor()
+        elif len(selected_items) > 1:
+            msg = QMessageBox(self)
+            msg.setIcon(QMessageBox.Question)
+            msg.setWindowTitle(_translate('fb2mobi', 'Save'))
+            msg.setText(_translate('fb2mobi', 'Save changes in selected files?'))
+            msg.setStandardButtons(QMessageBox.Save | QMessageBox.Cancel)
+            if msg.exec_() == QMessageBox.Save:
+                QApplication.setOverrideCursor(Qt.BusyCursor)
+                
+                for item in selected_items:
+                    meta = Fb2Meta(item.text(2))
+                    meta.get()
+                    (series, series_number) = meta.get_first_series()
+                    authors = meta.get_autors()
+                    if self.editAuthor.text():
+                        authors = self.editAuthor.text()
+                    if self.editSeries.text():
+                        series = self.editSeries.text()
+
+                    meta.set_authors(authors)
+                    meta.set_series(series, series_number)
+                    if self.editBookLanguage.text():
+                        meta.lang = self.editBookLanguage.text()
+                    meta.write()
+
+                    item.setText(0, meta.book_title)
+                    item.setText(1, meta.get_autors())
+
+                QApplication.restoreOverrideCursor()
+
 
     def displayCoverThumbmail(self, img):
         scaled_img = img.scaled(120, 160, Qt.KeepAspectRatio, Qt.SmoothTransformation)
@@ -915,6 +961,9 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         selected_items = self.treeFileList.selectedItems()
         if len(selected_items) == 1:
+            self.editTitle.setEnabled(True)
+            self.editSeriesNumber.setEnabled(True)
+
             meta = Fb2Meta(selected_items[0].text(2))
             meta.get()
 
@@ -929,6 +978,9 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 self.book_cover = QPixmap()
                 self.book_cover.loadFromData(meta.coverdata)
                 self.displayCoverThumbmail(self.book_cover)
+        elif len(selected_items) > 1:
+            self.editTitle.setEnabled(False)
+            self.editSeriesNumber.setEnabled(False)
                 
        
 
@@ -963,6 +1015,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
 
     def addFiles(self, file_list):
+        QApplication.setOverrideCursor(Qt.BusyCursor)
         for item in file_list:
             if os.path.isdir(item):
                 for root, dirs, files in os.walk(item):
@@ -970,6 +1023,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                         self.addFile(os.path.join(root, f))
             else:
                 self.addFile(item)
+        QApplication.restoreOverrideCursor()
 
 
     def addFilesAction(self):
@@ -1008,9 +1062,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.gui_config.columns['1'] = self.treeFileList.columnWidth(1)   
         self.gui_config.columns['2'] = self.treeFileList.columnWidth(2)   
 
-        self.gui_config.bookInfoVisible = self.toolInfo.isChecked()
-        splitter_sizes = self.bookInfoSplitter.sizes()
-        self.gui_config.bookInfoSplitterState = ', '.join(str(e) for e in splitter_sizes)
+        # # self.gui_config.bookInfoVisible = self.toolInfo.isChecked()
+        # splitter_sizes = self.bookInfoSplitter.sizes()
+        # print(splitter_sizes[1])
+        # self.gui_config.bookInfoSplitterState = ', '.join(str(e) for e in splitter_sizes)
 
         self.gui_config.write()
 

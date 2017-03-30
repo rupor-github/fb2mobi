@@ -8,18 +8,18 @@
     <file>icon16.png</file>
     <file>icon128.png</file>
   </qresource>
-  <qresource prefix="toolbar16">
-  	<file>add16.png</file>
-  	<file>run16.png</file>
-  	<file>stop16.png</file>
-  	<file>info16.png</file>
-  	<file>settings16.png</file>
-  </qresource>
-  <qresource prefix="toolbar24">
-    <file>add24.png</file>
-    <file>run24.png</file>
-    <file>stop24.png</file>
-    <file>info24.png</file>
-    <file>settings24.png</file>
+  <qresource prefix="toolbar">
+    <file>add.png</file>
+    <file>add@2x.png</file>
+    <file>info_off.png</file>
+    <file>info_off@2x.png</file>
+    <file>info_on.png</file>
+    <file>info_on@2x.png</file>
+    <file>settings.png</file>
+    <file>settings@2x.png</file>
+    <file>start.png</file>
+    <file>start@2x.png</file>
+    <file>stop.png</file>
+    <file>stop@2x.png</file>
   </qresource>
 </RCC>

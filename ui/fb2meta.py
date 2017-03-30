@@ -244,7 +244,7 @@ class Fb2Meta():
                 break
 
             if image_elem is None:
-                image_elem = etree.SubElement(self.tree, 'binary')
+                image_elem = etree.SubElement(self.tree.getroot(), 'binary')
                 image_elem.attrib['id'] = self.coverpage
                 image_elem.attrib['content-type']='image/jpeg'
 

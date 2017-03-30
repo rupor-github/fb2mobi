@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui/MainWindow.ui'
+# Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.8
+# Created by: PyQt5 UI code generator 5.7.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -36,7 +36,7 @@ class Ui_MainWindow(object):
         self.scrollBookInfo.setWidgetResizable(True)
         self.scrollBookInfo.setObjectName("scrollBookInfo")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 341, 539))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 339, 548))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout.setContentsMargins(8, 8, 8, 8)
@@ -130,7 +130,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.bookInfoSplitter, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 786, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 786, 21))
         self.menubar.setObjectName("menubar")
         self.menu = QtWidgets.QMenu(self.menubar)
         self.menu.setObjectName("menu")
@@ -171,7 +171,6 @@ class Ui_MainWindow(object):
         self.toolStart = QtWidgets.QAction(MainWindow)
         self.toolStart.setObjectName("toolStart")
         self.toolInfo = QtWidgets.QAction(MainWindow)
-        self.toolInfo.setCheckable(True)
         self.toolInfo.setObjectName("toolInfo")
         self.toolSettings = QtWidgets.QAction(MainWindow)
         self.toolSettings.setObjectName("toolSettings")
@@ -203,9 +202,9 @@ class Ui_MainWindow(object):
         self.toolAdd.triggered.connect(MainWindow.addFilesAction)
         self.toolStart.triggered.connect(MainWindow.startConvert)
         self.toolSettings.triggered.connect(MainWindow.settings)
-        self.toolInfo.toggled['bool'].connect(self.scrollBookInfo.setVisible)
         self.treeFileList.itemSelectionChanged.connect(MainWindow.changeBook)
         self.buttonSaveBookInfo.clicked.connect(MainWindow.saveBookInfo)
+        self.toolInfo.triggered.connect(MainWindow.switchInfoPanel)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
