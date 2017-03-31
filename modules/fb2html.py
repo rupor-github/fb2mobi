@@ -1124,7 +1124,7 @@ class Fb2XHTML:
             self.ncx_navp_end()
 
         self.buff.append('</navMap></ncx>')
-        self.write_buff(os.path.join(self.temp_content_dir, 'toc.ncx'))
+        self.write_buff(self.temp_content_dir, 'toc.ncx')
 
     def generate_mimetype(self):
         mimetype = 'application/epub+zip'
