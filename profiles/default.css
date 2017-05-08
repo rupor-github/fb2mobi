@@ -217,6 +217,14 @@ p.title {
     color: #6e6e6e;
 }
 
+.inlinenote::before { 
+    content: "["; 
+} 
+
+.inlinenote::after { 
+    content: "]"; 
+}
+
 .blocknote {
     font-style: italic;
     font-size: 80%;

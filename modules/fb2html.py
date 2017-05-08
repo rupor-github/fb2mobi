@@ -822,7 +822,7 @@ class Fb2XHTML:
                 page = self.pages_list[self.current_file]
                 text = ''
                 for w in elem.text.split(' '):
-                    text = ' '.join([text, w])
+                    text = w if text == '' else ' '.join([text, w])
                     if self.page_length + len(text) >= self.characters_per_page:
                         hs = self.insert_hyphenation(text)
                         if dodropcaps > 0:
@@ -916,7 +916,7 @@ class Fb2XHTML:
 
             if self.current_notes:
                 if self.notes_mode == 'inline' and tag == 'span':
-                    self.buff.append('<span class="inlinenote">[{0}]</span>'.format(save_html(self.insert_hyphenation(''.join(self.current_notes[0][1])))))
+                    self.buff.append('<span class="inlinenote">{0}</span>'.format(save_html(self.insert_hyphenation(''.join(self.current_notes[0][1])))))
                     self.current_notes = []
                 elif self.notes_mode == 'block' and tag == 'p':
                     self.buff.append('<div class="blocknote">')
