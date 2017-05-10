@@ -767,8 +767,8 @@ class Fb2XHTML:
 
         if elem.text:
             # Обработка dropcaps
-            if self.first_chapter_line and not (self.header or self.subheader) and tag == 'p' and not self.body_name:
-                if not self.no_paragraph:
+            if self.first_chapter_line and not (self.header or self.subheader or self.body_name or self.no_paragraph):
+                if tag == 'p':
                     if self.dropcaps == 'simple':
                         if elem.text[0] not in self.nodropcaps:
                             dodropcaps = 1
@@ -779,7 +779,7 @@ class Fb2XHTML:
                                 dodropcaps = i + 1
                                 css = 'dropcaps'
                                 break
-                    self.first_chapter_line = False
+                self.first_chapter_line = False
 
         if self.notes_mode in ('inline', 'block') and tag == 'a':
             note_id = href[1:]
