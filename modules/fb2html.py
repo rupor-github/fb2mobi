@@ -821,8 +821,12 @@ class Fb2XHTML:
             if self.current_file in self.pages_list and self.page_length + len(elem.text) >= self.characters_per_page:
                 page = self.pages_list[self.current_file]
                 text = ''
+
                 for w in elem.text.split(' '):
-                    text = w if text == '' else ' '.join([text, w])
+                    if not text:
+                        text = ' ' if not w else w
+                    else:
+                        text = ' '.join([text, w])
                     if self.page_length + len(text) >= self.characters_per_page:
                         hs = self.insert_hyphenation(text)
                         if dodropcaps > 0:
@@ -830,7 +834,7 @@ class Fb2XHTML:
                             dodropcaps = 0
                         else:
                             self.buff.append(save_html(hs))
-                        self.buff.append('<a class="pagemarker" id="page_{0:d}"/>'.format(page))
+                        self.buff.append('<a class="pagemarker" id="page_{0:d}"/> '.format(page))
                         page += 1
                         text = ''
                         self.page_length = 0
