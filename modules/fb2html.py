@@ -340,12 +340,18 @@ class Fb2XHTML:
             return new_url
 
         if self.parse_css:
+
+            # Note, macros are temporary, until CSS3 module is fixed and starts to recognize "rem" units
             cssutils.profile.addProfile('CSS extentions',
                                         {'-webkit-hyphens': 'none',
                                          'adobe-hyphenate': 'none',
                                          '-moz-hyphens': 'none',
                                          '-ms-hyphens': 'none',
-                                         'hyphens': 'none|manual|auto'})
+                                         'hyphens': 'none|manual|auto'},
+                                        {'length': r'0|{num}(em|ex|px|in|cm|mm|pt|pc|q|ch|rem|vw|vh|vmin|vmax)',
+                                         'positivelength': r'0|{positivenum}(em|ex|px|in|cm|mm|pt|pc|q|ch|rem|vw|vh|vmin|vmax)',
+                                         'angle': r'0|{num}(deg|grad|rad|turn)'})
+
             stylesheet = cssutils.parseFile(self.css_file)
             cssutils.replaceUrls(stylesheet, replace_url)
             write_file(str(stylesheet.cssText, 'utf-8'), os.path.join(self.temp_content_dir, 'stylesheet.css'))
