@@ -94,17 +94,23 @@ def format_title(s, seq):
 
     p_o = -1
     p_c = -1
-    for i in range(len(s)):
-        if s[i] == '{':
+
+    # Hack - I do not want to write real parser
+    pps = s.replace('\{', chr(1)).replace('\}', chr(2))
+
+    for i in range(len(pps)):
+        if pps[i] == '{':
             p_o = i
-        elif s[i] == '}':
+        elif pps[i] == '}':
             p_c = i
             break
 
     if p_o >= 0 and p_c > 0 and p_o < p_c:
-        return format_title(s[0:p_o] + replace_keywords(s[p_o + 1:p_c], seq) + s[p_c + 1:], seq)
+        pps = format_title(pps[0:p_o] + replace_keywords(pps[p_o + 1:p_c], seq) + pps[p_c + 1:], seq)
     else:
-        return replace_keywords(s, seq)
+        pps = replace_keywords(pps, seq)
+
+    return pps.replace(chr(1), '{').replace(chr(2), '}')
 
 
 class TOCStack:
