@@ -212,6 +212,7 @@ class Fb2XHTML:
         # Для включения сносок и комментариев в текст книги
         self.notes_dict = {}  # Словарь со сносками и комментариями
         self.notes_order = []  # Notes in order of discovery
+        self.notes_titles = {} # Dictionary of note body titles
         self.notes_mode = config.current_profile['notesMode']  # Режим отображения сносок: inline, block
         self.notes_bodies = config.current_profile['notesBodies']
         self.current_notes = []  # Переменная для хранения текущей сноски
@@ -430,7 +431,12 @@ class Fb2XHTML:
     def parse_note_elem(self, elem, body_name):
         note_title = ''
 
-        if ns_tag(elem.tag) == 'section' and 'id' in elem.attrib:
+        if ns_tag(elem.tag) == 'title':
+            toc_title = etree.tostring(elem, method='text', encoding='utf-8').decode('utf-8').strip()
+            toc_title = re.compile('\[.*\]').sub('', toc_title)
+            if toc_title:
+                self.notes_titles[body_name] = toc_title
+        elif ns_tag(elem.tag) == 'section' and 'id' in elem.attrib:
             id = elem.attrib['id']
             notetext = []
             self.buff = []
@@ -984,7 +990,11 @@ class Fb2XHTML:
                 self.parse_format(elem)
             elif self.notes_mode == 'float':
                 if len(self.notes_order) > 0:
-                    toc_title = self.body_name[0].upper() + self.body_name[1:]
+                    if self.body_name in self.notes_titles:
+                        toc_title = self.notes_titles[self.body_name]
+                    else:
+                        toc_title = self.body_name[0].upper() + self.body_name[1:]
+
                     toc_ref_id = 'tocref{0}'.format(self.toc_index)
 
                     self.buff.append('<div class="titleblock" id="{0}">'.format(toc_ref_id))
