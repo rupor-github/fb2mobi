@@ -22,7 +22,7 @@ Here is brief list of changes to the original project (in addition to bug fixes)
 * Added synchronous logging to file and console (console logging level is set independently by `--console-level` key or `<consoleLevel>` config tag)
 * Added an option to make PNG images non-transparent to prevent "ghostly images" on Kindle (`--remove-png-transparency` key or `<removePngTransparency>` config tag)
 * Added support for auto-generation of PageMaps - now it is possible to have APNX files (`--apnx=eInk|PC` key or `<generateAPNX>` profile tag). Number of uncompessed 
-  text characters per page is (aproximatly) controlled by `charactersPerPage` profile tag and by default is equal to 2300 (as in Calibre)
+  text characters per page is (approximately) controlled by `charactersPerPage` profile tag and by default is equal to 2300 (Calibre default setting)
 * Removed `<flatTOC>` support. New config tag `<tocType>` and command line parameter `--toc-type` could be used instead with values `Flat|Kindle|Normal`.
   This introduces special support for eInk Kindle devices with 2-level TOC views. Additional tag `<tocKindleLevel>` and parameter `--toc-kindle-level` allow for precise 
   tuning of generated NCX for eInk devices.
@@ -31,7 +31,7 @@ Here is brief list of changes to the original project (in addition to bug fixes)
 * Added new `<chapterLevel>` configuration tag and `---chapter-level` parameter along with new style `.titleblock_nobreak`. When parsing sections this style will be generated
   if nesting level is greater or equal to specified value. This allows better control of page breaks on sections boundaries.
 * Supported `<openBookFromCover>` configuration tag and `---open-book-from-cover` parameter for compatibility with fb2conv.
-* Changed how book title and book author are formatted - added processing of conditional blocks ex: `<bookTitleFormat>{(#abbrseries{ #padnumber}) }#title</bookTitleFormat>`.
+* Changed how book title and book author are formatted - added processing of conditional blocks ex: `<bookTitleFormat>{(#abbrseries{ #padnumber}) }#title</bookTitleFormat>`. To output curly braces escape them with backslash.
 * Added new css style `.linkanchor` - this is style for all href links which are NOT pointing to the note bodies. This allows for flexible formatting of hyperlinks in the text.
 
 More info can be found on [russian forum](http://www.the-ebook.org/forum/viewtopic.php?t=30380).
