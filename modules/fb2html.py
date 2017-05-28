@@ -113,26 +113,6 @@ def format_title(s, seq):
     return pps.replace(chr(1), '{').replace(chr(2), '}')
 
 
-class TOCStack:
-    def __init__(self):
-        self.items = []
-
-    def isempty(self):
-        return self.items == []
-
-    def push(self, item):
-        self.items.append(item)
-
-    def pop(self):
-        return self.items.pop()
-
-    def peek(self):
-        return self.items[len(self.items) - 1]
-
-    def size(self):
-        return len(self.items)
-
-
 class Fb2XHTML:
     def __init__(self, fb2file, mobifile, tempdir, config):
 
@@ -431,6 +411,15 @@ class Fb2XHTML:
         indent(xhtml.getroot())
         xhtml.write(filename, encoding='utf-8', method='xml', xml_declaration=True, pretty_print=False)
 
+    def write_buff_debug(self, dname='', fname=''):
+        if len(fname) == 0:
+            dirname = self.temp_content_dir
+            filename = os.path.join(self.temp_content_dir, self.current_file)
+        else:
+            dirname = dname
+            filename = os.path.join(dname, fname)
+        write_file(self.get_buff(), filename)
+
     def write_debug(self, dname):
         self.tree.write(os.path.join(dname, os.path.split(self.orig_file_name)[1]), encoding='utf-8', method='xml', xml_declaration=True, pretty_print=False)
 
@@ -652,8 +641,6 @@ class Fb2XHTML:
                 if vignette:
                     self.buff.append('<div class="vignette_title_after"><img src="vignettes/{0}" /></div>'.format(vignette))
 
-            if self.first_header_in_body:
-                self.current_header_level = 0
             self.toc[self.toc_index] = ['{0}#{1}'.format(self.current_file, toc_ref_id), toc_title, self.current_header_level, self.body_name]
         else:
             self.buff.append('<div class="titlenotes" id="{0}">'.format(toc_ref_id))
@@ -666,7 +653,6 @@ class Fb2XHTML:
 
     def parse_subtitle(self, elem):
         self.subheader = True
-        # self.first_chapter_line = True
         self.parse_format(elem, 'p', 'subtitle')
         self.subheader = False
 
@@ -751,6 +737,35 @@ class Fb2XHTML:
         self.parse_format(elem, ns_tag(elem.tag))
 
     def parse_section(self, elem):
+
+        if not self.body_name and self.current_header_level == 0 and self.first_header_in_body:
+
+            # We encountered main body without a title - need to add it forcefully, otherwise toc and books structure would be wrong
+
+            toc_ref_id = 'tocref{0}'.format(self.toc_index)
+            toc_title = self.book_author + self.book_title
+
+            if self.current_header_level < self.chapterlevel:
+                self.buff.append('<div class="titleblock" id="{0}">'.format(toc_ref_id))
+            else:
+                self.buff.append('<div class="titleblock_nobreak" id="{0}">'.format(toc_ref_id))
+
+            vignette = self.get_vignette('h0', 'beforeTitle')
+            if vignette:
+                self.buff.append('<div class="vignette_title_before"><img src="vignettes/{0}" /></div>'.format(vignette))
+
+            self.buff.append('<div class ="h0"><p class="title">{0}</p><p class="title">{1}<span class="strong"></span></p></div>'.format(self.book_author, self.book_title))
+
+            vignette = self.get_vignette('h0', 'afterTitle')
+            if vignette:
+                self.buff.append('<div class="vignette_title_after"><img src="vignettes/{0}" /></div>'.format(vignette))
+
+            self.toc[self.toc_index] = ['{0}#{1}'.format(self.current_file, toc_ref_id), toc_title, self.current_header_level, '']
+
+            self.buff.append('</div>')
+            self.first_header_in_body = False
+            self.toc_index += 1
+
         self.current_header_level = self.current_header_level + 1
 
         if not self.body_name:
@@ -1098,49 +1113,48 @@ class Fb2XHTML:
             self.ncx_navp_end()
             i += 1
 
-        ncx_level = -1
+        # First (book title) on the same level as the rest, if you want everything be under it do ncx_level = -1
+        ncx_level = 2
         ncx_barrier = sys.maxsize
+
         if self.toc_type in 'flat':
             ncx_level = sys.maxsize
             ncx_barrier = 1
+
         if self.toc_type in 'kindle':
             ncx_level = self.toc_kindle_level
             ncx_barrier = 1
 
-        history = TOCStack()
+        history = []
         prev_item = None
         for (idx, item) in self.toc.items():
             if prev_item is None:  # first time
                 self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
-                history.push(item[2])
+                history.append(item[2])
                 i += 1
-                prev_item = item
             elif prev_item[2] < item[2]:
-                if item[2] <= ncx_level or history.size() > ncx_barrier:
+                if item[2] < ncx_level or len(history) > ncx_barrier:
                     self.ncx_navp_end()
                     history.pop()
-                # Going in
                 self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
-                history.push(item[2])
+                history.append(item[2])
                 i += 1
-                prev_item = item
             elif prev_item[2] == item[2]:  # Same level
                 self.ncx_navp_end()
                 self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
-                prev_item = item
             elif prev_item[2] > item[2]:  # Going out
-                while not history.isempty() and history.peek() >= item[2]:
+                while history != [] and history[len(history) - 1] >= item[2]:
                     self.ncx_navp_end()
                     history.pop()
                 self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
-                history.push(item[2])
+                history.append(item[2])
                 i += 1
-                prev_item = item
             else:
                 assert False
+            prev_item = item
 
-        # Close whats left
-        while not history.isempty():
+        # Whatever levels are open - close them
+        while history != []:
             self.ncx_navp_end()
             history.pop()
 
