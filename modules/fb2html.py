@@ -10,6 +10,7 @@ import cssutils
 import base64
 import hashlib
 import html
+import imghdr
 
 from copy import deepcopy
 from lxml import etree, objectify
@@ -348,12 +349,13 @@ class Fb2XHTML:
     def remove_png_transparency(self):
         self.log.info('Removing PNG transparency...')
         for img_rel_path in self.image_file_list:
-            if os.path.splitext(img_rel_path)[1] == '.png':
-                self.log.debug('Processing file "{}"'.format(img_rel_path))
 
+            filename = os.path.split(img_rel_path)[1]
+            img_full_path = os.path.join(self.temp_content_dir, 'images', filename)
+
+            if imghdr.what(img_full_path) == 'png':
+                self.log.debug('Processing file "{}"'.format(img_rel_path))
                 try:
-                    filename = os.path.split(img_rel_path)[1]
-                    img_full_path = os.path.join(self.temp_content_dir, 'images', filename)
                     img = Image.open(img_full_path)
 
                     if img.format == 'PNG' and (img.mode in ('RGBA', 'LA') or (img.mode in ('RGB', 'L', 'P') and 'transparency' in img.info)):
@@ -525,7 +527,10 @@ class Fb2XHTML:
                             if ns_tag(c.tag) == 'image':
                                 for a in c.attrib:
                                     if ns_tag(a) == 'href':
-                                        self.book_cover = 'images/' + c.attrib[a][1:]
+                                        image = c.attrib[a][1:]
+                                        if not os.path.splitext(image)[1]:
+                                            image += '.jpg'
+                                        self.book_cover = 'images/' + image
                                         break
 
                     elif ns_tag(t.tag) == 'genre':
@@ -1182,7 +1187,6 @@ class Fb2XHTML:
 
     def generate_cover(self):
         if self.book_cover:
-
             # make sure kindlegen does not complain on cover size and make sure that epub cover takes whole screen
             im = Image.open(os.path.join(self.temp_content_dir, self.book_cover))
             if im.height < self.screen_height:
