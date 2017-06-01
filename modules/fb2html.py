@@ -586,8 +586,16 @@ class Fb2XHTML:
             filename = elem.attrib['id']
             if not os.path.splitext(filename)[1]:
                 filename = filename + '.jpg'
-            write_file_bin(base64.b64decode(elem.text.encode('ascii')),os.path.join(os.path.join(self.temp_content_dir, 'images'), filename))
+            full_name = os.path.join(os.path.join(self.temp_content_dir, 'images'), filename)
+            write_file_bin(base64.b64decode(elem.text.encode('ascii')),full_name)
             self.image_file_list.append('images/' + filename)
+            if elem.attrib['content-type']:
+                type = elem.attrib['content-type'].split('/')[1].lower()
+                if type and not type in ('gif','jpeg','png','svg','bmp'):
+                    self.log.warning('This image type "{0}" more then likely is not supported by your device: "images/{1}"'.format(elem.attrib['content-type'], filename))
+                detected_type = imghdr.what(full_name)
+                if type != detected_type:
+                    self.log.warning('Declared and detected image types for "images/{0}" do not match: "{1}" is not "{2}"'.format(filename, type, detected_type))
 
     def parse_span(self, span, elem):
         self.parse_format(elem, 'span', span)
