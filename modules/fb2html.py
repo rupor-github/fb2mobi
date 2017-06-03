@@ -462,7 +462,7 @@ class Fb2XHTML:
         middlename = ''
         firstname = ''
 
-        self.log.debug('Parsing desctiption')
+        self.log.debug('Parsing description')
 
         for e in elem:
             if ns_tag(e.tag) == 'document-info':
@@ -1251,7 +1251,7 @@ class Fb2XHTML:
                     filename = file
                     break
             if not filename:
-                self.log.error('Unable to find book cover image for ref-id "{0}".'.format(self.book_cover))
+                self.log.error('Unable to find book cover image for ref-id "{0}". Disabling book cover...'.format(self.book_cover))
                 self.book_cover = ''
                 return
 
