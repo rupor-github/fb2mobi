@@ -462,6 +462,8 @@ class Fb2XHTML:
         middlename = ''
         firstname = ''
 
+        self.log.debug('Parsing desctiption')
+
         for e in elem:
             if ns_tag(e.tag) == 'document-info':
                 for t in e:
@@ -497,6 +499,10 @@ class Fb2XHTML:
                                 for a in c.attrib:
                                     if ns_tag(a) == 'href':
                                         self.book_cover = c.attrib[a][1:]
+                                        break
+                                    elif ':href' in a:
+                                        self.book_cover = c.attrib[a][1:]
+                                        self.log.warning('Wrong namespace is used for href attribute for cover page: {0}. Will attempt to recover...'.format(c.attrib))
                                         break
 
                     elif ns_tag(t.tag) == 'genre':
@@ -549,6 +555,7 @@ class Fb2XHTML:
     def parse_binary(self, elem):
         if elem.attrib['id'] and elem.attrib['content-type']:
             have_file = False
+            self.log.debug('Parsing binary {0}'.format(elem.attrib))
             id = elem.attrib['id']
             decl_type = elem.attrib['content-type'].lower()
             buff = base64.b64decode(elem.text.encode('ascii'))
@@ -580,7 +587,7 @@ class Fb2XHTML:
                         bg.save(full_name, dpi=img.info.get("dpi"))
                         have_file = True
                     except:
-                        self.log.warning('Error while removing transparency for ref-id "{0}" in file "{1}"'.format(id, filename))
+                        self.log.warning('Unable to remove transparency for ref-id "{0}" in file "{1}"'.format(id, filename))
                         self.log.debug('Getting details:', exc_info=True)
 
                 self.image_count += 1
@@ -593,7 +600,7 @@ class Fb2XHTML:
                     full_name = os.path.join(os.path.join(self.temp_content_dir, 'images'), filename)
                     self.image_count += 1
                 else:
-                    self.log.warning('Error while processing binary for ref-id "{0}". Skipping...'.format(id))
+                    self.log.error('Unable to process binary for ref-id "{0}". Skipping...'.format(id))
                     # self.log.debug('Getting details:', exc_info=True)
                     return
 
@@ -678,8 +685,12 @@ class Fb2XHTML:
         img_id = None
         int_id = None
         alt = None
+
         for a in elem.attrib:
             if ns_tag(a) == 'href':
+                int_id = elem.attrib[a][1:]
+            elif ':href' in a:
+                self.log.warning('Wrong namespace is used for href attribute in <image>: {0}. Will attempt to recover...'.format(elem.attrib))
                 int_id = elem.attrib[a][1:]
             elif ns_tag(a) == 'id':
                 img_id = elem.attrib[a]
@@ -687,7 +698,7 @@ class Fb2XHTML:
                 alt = elem.attrib[a]
 
         if not int_id:
-            self.log.warning('Unable to find image ref-id for "{0}". Something is very wrong, skipping...'.format(elem))
+            self.log.error('Unable to find image ref-id in "{0}" "{1}.'.format(elem.tag, elem.attrib))
             return
 
         filename = None
@@ -696,7 +707,7 @@ class Fb2XHTML:
                 filename = file
                 break
         if not filename:
-            self.log.warning('Unable to find image for ref-id "{0}". Something is very wrong...'.format(int_id))
+            self.log.error('Unable to find image for ref-id "{0}" in "{1}" "{2}.'.format(int_id, elem.tag, elem.attrib))
             filename = "nonexistent.gif"
             alt = int_id
 
@@ -719,7 +730,19 @@ class Fb2XHTML:
         self.parse_format(elem)
 
     def parse_a(self, elem):
-        self.parse_format(elem, 'a', 'anchor', href=elem.attrib['{http://www.w3.org/1999/xlink}href'])
+        href = None
+        for name in elem.attrib:
+            if ns_tag(name) == 'href':
+                href = elem.attrib[name]
+                break
+            elif ':href' in name:
+                self.log.warning('Wrong namespace is used for href attribute in <a>: {0}. Will attempt to recover...'.format(elem.attrib))
+                href = elem.attrib[name]
+                break
+        if not href:
+            self.log.error('Unable to find href attribute in <a>: {0}.'.format(elem.attrib))
+
+        self.parse_format(elem, 'a', 'anchor', href=href)
 
     def parse_p(self, elem):
         ptag = 'p'
@@ -1020,6 +1043,9 @@ class Fb2XHTML:
         return html.unescape(s) if not self.hyphenate or not self.hyphenator or self.header or self.subheader else self.hyphenator.hyphenate_text(html.unescape(s), self.replaceNBSP)
 
     def parse_body(self, elem):
+
+        self.log.debug('Parsing body: {0}'.format(elem.attrib))
+
         self.body_name = elem.attrib['name'] if 'name' in elem.attrib else ''
         self.current_header_level = 0
         self.first_header_in_body = True
@@ -1225,7 +1251,7 @@ class Fb2XHTML:
                     filename = file
                     break
             if not filename:
-                self.log.warning('Unable to find book cover image for ref-id "{0}". Something is very wrong...'.format(self.book_cover))
+                self.log.error('Unable to find book cover image for ref-id "{0}".'.format(self.book_cover))
                 self.book_cover = ''
                 return
 
