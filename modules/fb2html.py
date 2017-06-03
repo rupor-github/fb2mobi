@@ -119,6 +119,8 @@ class Fb2XHTML:
 
         self.log = config.log
 
+        self.kindle = config.output_format.lower() in ('mobi', 'azw3')
+
         self.buff = []
         self.current_header_level = 0  # Уровень текущего заголовка
         self.header = False  # Признак формирования заголовка
@@ -210,6 +212,7 @@ class Fb2XHTML:
 
         self.html_file_list = []  # Массив для хранения списка сгенерированных xhtml файлов
         self.image_file_list = []  # Массив для хранения списка картинок
+        self.image_count = 0
 
         self.pages_list = {}  # Additional pages per file
         self.page_length = 0
@@ -265,26 +268,25 @@ class Fb2XHTML:
 
         self.first_body = True  # Признак первого body
         self.font_list = []
-
         self.book_uuid = uuid.uuid4()
-
         self.links_location = {}
+
+    def generate(self):
 
         self.get_notes_dict()
 
-    def generate(self):
+        for child in self.root:
+            if ns_tag(child.tag) == 'binary':
+                self.parse_binary(child)
 
         for child in self.root:
             if ns_tag(child.tag) == 'description':
                 self.parse_description(child)
             elif ns_tag(child.tag) == 'body':
                 self.parse_body(child)
-            elif ns_tag(child.tag) == 'binary':
-                self.parse_binary(child)
 
-        if self.removepngtransparency:
-            self.remove_png_transparency()
         self.correct_links()
+
         if self.generate_toc_page:
             self.generate_toc()
         self.generate_cover()
@@ -345,39 +347,6 @@ class Fb2XHTML:
             write_file(str(stylesheet.cssText, 'utf-8'), os.path.join(self.temp_content_dir, 'stylesheet.css'))
         else:
             copy_file(self.css_file, os.path.join(self.temp_content_dir, 'stylesheet.css'))
-
-    def remove_png_transparency(self):
-        self.log.info('Removing PNG transparency...')
-        for img_rel_path in self.image_file_list:
-
-            filename = os.path.split(img_rel_path)[1]
-            img_full_path = os.path.join(self.temp_content_dir, 'images', filename)
-
-            if imghdr.what(img_full_path) == 'png':
-                self.log.debug('Processing file "{}"'.format(img_rel_path))
-                try:
-                    img = Image.open(img_full_path)
-
-                    if img.format == 'PNG' and (img.mode in ('RGBA', 'LA') or (img.mode in ('RGB', 'L', 'P') and 'transparency' in img.info)):
-
-                        if img.mode == "P" and type(img.info.get("transparency")) is bytes:
-                            img = img.convert("RGBA")
-
-                        if img.mode in ("L", "LA"):
-                            bg = Image.new("L", img.size, 255)
-                        else:
-                            bg = Image.new("RGB", img.size, (255, 255, 255))
-
-                        alpha = img.convert("RGBA").split()[-1]
-                        bg.paste(img, mask=alpha)
-
-                        img_temp_path = os.path.splitext(img_full_path)[0] + "-o.png"
-                        bg.save(img_temp_path, dpi=img.info.get("dpi"))
-                        os.replace(img_temp_path, img_full_path)
-
-                except:
-                    self.log.warning('Error while removing transparency in file "{}"'.format(img_rel_path))
-                    self.log.debug('Getting details:', exc_info=True)
 
     def correct_links(self):
         for fl in self.html_file_list:
@@ -527,10 +496,7 @@ class Fb2XHTML:
                             if ns_tag(c.tag) == 'image':
                                 for a in c.attrib:
                                     if ns_tag(a) == 'href':
-                                        image = c.attrib[a][1:]
-                                        if not os.path.splitext(image)[1]:
-                                            image += '.jpg'
-                                        self.book_cover = 'images/' + image
+                                        self.book_cover = c.attrib[a][1:]
                                         break
 
                     elif ns_tag(t.tag) == 'genre':
@@ -581,21 +547,63 @@ class Fb2XHTML:
                         self.book_date = etree.tostring(t, method='text', encoding='utf-8').decode('utf-8').strip()
 
     def parse_binary(self, elem):
-        filename = None
-        if elem.attrib['id']:
-            filename = elem.attrib['id']
-            if not os.path.splitext(filename)[1]:
-                filename = filename + '.jpg'
-            full_name = os.path.join(os.path.join(self.temp_content_dir, 'images'), filename)
-            write_file_bin(base64.b64decode(elem.text.encode('ascii')),full_name)
-            self.image_file_list.append('images/' + filename)
-            if elem.attrib['content-type']:
-                type = elem.attrib['content-type'].split('/')[1].lower()
-                if type and not type in ('gif','jpeg','png','svg','bmp'):
-                    self.log.warning('This image type "{0}" more then likely is not supported by your device: "images/{1}"'.format(elem.attrib['content-type'], filename))
-                detected_type = imghdr.what(full_name)
-                if type != detected_type:
-                    self.log.warning('Declared and detected image types for "images/{0}" do not match: "{1}" is not "{2}"'.format(filename, type, detected_type))
+        if elem.attrib['id'] and elem.attrib['content-type']:
+            have_file = False
+            id = elem.attrib['id']
+            decl_type = elem.attrib['content-type'].lower()
+            filename = None
+            real_type = None
+            full_name = None
+            buff = base64.b64decode(elem.text.encode('ascii'))
+            try:
+                img = Image.open(io.BytesIO(buff))
+                real_type = Image.MIME[img.format]
+                format = img.format.lower()
+                filename = "bin{0:08}.{1}".format(self.image_count,format.lower().replace('jpeg','jpg'))
+                full_name = os.path.join(os.path.join(self.temp_content_dir, 'images'), filename)
+
+                if self.kindle and not format in ('gif', 'jpeg', 'png', 'bmp'):
+                    self.log.warning('Image type "{0}" for ref-id "{1} is not supported by your device. Ignoring...'.format(real_type, id))
+                    return
+
+                if real_type != decl_type:
+                    self.log.warning('Declared and detected image types for ref id "{0}" do not match: "{1}" is not "{2}". Using detected type...'.format(id, decl_type, real_type))
+
+                if self.removepngtransparency and format == 'png' and (img.mode in ('RGBA', 'LA') or (img.mode in ('RGB', 'L', 'P') and 'transparency' in img.info)):
+                    try:
+                        self.log.debug('Removing image transparency for ref-id "{0}" in file "{1}"'.format(id, filename))
+                        if img.mode == "P" and type(img.info.get("transparency")) is bytes:
+                            img = img.convert("RGBA")
+                        if img.mode in ("L", "LA"):
+                            bg = Image.new("L", img.size, 255)
+                        else:
+                            bg = Image.new("RGB", img.size, (255, 255, 255))
+                        alpha = img.convert("RGBA").split()[-1]
+                        bg.paste(img, mask=alpha)
+                        bg.save(full_name, dpi=img.info.get("dpi"))
+                        have_file = True
+                    except:
+                        self.log.warning('Error while removing transparency for ref-id "{0}" in file "{1}"'.format(id, filename))
+                        self.log.debug('Getting details:', exc_info=True)
+
+                self.image_count += 1
+
+            except:
+                # Pillow does not recognize SVG files
+                if decl_type.split('/')[1].lower() == 'svg':
+                    real_type = 'image/svg+xml'
+                    filename = "bin{0:08}.svg".format(self.image_count)
+                    full_name = os.path.join(os.path.join(self.temp_content_dir, 'images'), filename)
+                    self.image_count += 1
+                else:
+                    self.log.warning('Error while processing binary for ref-id "{0}". Skipping'.format(id))
+                    self.log.debug('Getting details:', exc_info=True)
+                    return
+
+            if not have_file:
+                write_file_bin(buff, full_name)
+
+            self.image_file_list.append((id, real_type, filename))
 
     def parse_span(self, span, elem):
         self.parse_format(elem, 'span', span)
@@ -671,25 +679,44 @@ class Fb2XHTML:
 
     def parse_image(self, elem):
         img_id = None
+        int_id = None
+        alt = None
         for a in elem.attrib:
             if ns_tag(a) == 'href':
-                image = elem.attrib[a][1:]
-                if not os.path.splitext(image)[1]:
-                    image += '.jpg'
+                int_id = elem.attrib[a][1:]
             elif ns_tag(a) == 'id':
                 img_id = elem.attrib[a]
+            elif ns_tag(a) == 'alt':
+                alt = elem.attrib[a]
+
+        if not int_id:
+            self.log.warning('Unable to find image ref-id for "{0}". Something is very wrong, skipping...'.format(elem))
+            return
+
+        filename = None
+        for id, type, file in self.image_file_list:
+            if id == int_id:
+                filename = file
+                break
+        if not filename:
+            self.log.warning('Unable to find image for ref-id "{0}". Something is very wrong...'.format(int_id))
+            filename = "nonexistent.gif"
+            alt = int_id
+
+        if not alt:
+            alt = filename
 
         if self.inline_image_mode:
             if img_id:
-                self.buff.append('<img id="{0}" class="inlineimage" src="images/{1}" alt="{2}"/>'.format(img_id, image, image))
+                self.buff.append('<img id="{0}" class="inlineimage" src="images/{1}" alt="{2}"/>'.format(img_id, filename, alt))
             else:
-                self.buff.append('<img class="inlineimage" src="images/{0}" alt="{1}"/>'.format(image, image))
+                self.buff.append('<img class="inlineimage" src="images/{0}" alt="{1}"/>'.format(filename, alt))
         else:
             if img_id:
                 self.buff.append('<div id="{0}" class="image">'.format(img_id))
             else:
                 self.buff.append('<div class="image">')
-            self.buff.append('<img src="images/{0}" alt="{1}"/>'.format(image, image))
+            self.buff.append('<img src="images/{0}" alt="{1}"/>'.format(filename, alt))
             self.buff.append('</div>')
 
         self.parse_format(elem)
@@ -1194,16 +1221,27 @@ class Fb2XHTML:
         self.write_buff(self.temp_inf_dir, 'container.xml')
 
     def generate_cover(self):
+        filename = None
         if self.book_cover:
+            for id, type, file in self.image_file_list:
+                if id == self.book_cover:
+                    filename = file
+                    break
+            if not filename:
+                self.log.warning('Unable to find book cover image for ref-id "{0}. Something is very wrong..."'.format(self.book_cover))
+                self.book_cover = ''
+                return
+
             # make sure kindlegen does not complain on cover size and make sure that epub cover takes whole screen
-            im = Image.open(os.path.join(self.temp_content_dir, self.book_cover))
+            full_name = os.path.join(self.temp_content_dir, 'images', filename)
+            im = Image.open(full_name)
             if im.height < self.screen_height:
-                im.resize((int(self.screen_height * im.width / im.height), self.screen_height), Image.LANCZOS).save(os.path.join(self.temp_content_dir, self.book_cover))
+                im.resize((int(self.screen_height * im.width / im.height), self.screen_height), Image.LANCZOS).save(full_name)
 
             self.buff = []
             self.buff.append(HTMLHEAD)
             self.buff.append('<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0 0 {0} {1}" preserveAspectRatio="xMidYMid meet">'.format(self.screen_width, self.screen_height))
-            self.buff.append('<image width="{0}" height="{1}" xlink:href="{2}" />'.format(self.screen_width, self.screen_height, self.book_cover))
+            self.buff.append('<image width="{0}" height="{1}" xlink:href="images/{2}" />'.format(self.screen_width, self.screen_height, filename))
             self.buff.append('</svg>')
             self.buff.append(HTMLFOOT)
             self.current_file = 'cover.xhtml'
@@ -1290,18 +1328,12 @@ class Fb2XHTML:
             self.buff.append('<item id="{0}" media-type="application/xhtml+xml" href="{1}"/>'.format(item.split('.')[0], item))
 
         item_id = 0
-        for item in self.image_file_list:
-            item_type = os.path.splitext(os.path.split(item)[1])[1]
-            item_type = item_type[1:]
-
-            if item_type == 'jpg':
-                item_type = 'jpeg'
-
-            if item == self.book_cover:
-                self.buff.append('<item id="cover-image" media-type="image/{0}" href="{1}"/>'.format(item_type, item))
+        for id, type, filename in self.image_file_list:
+            if id == self.book_cover:
+                self.buff.append('<item id="cover-image" media-type="{0}" href="images/{1}"/>'.format(type, filename))
                 self.buff.append('<item id="cover-page" href="cover.xhtml" media-type="application/xhtml+xml"/>')
             else:
-                self.buff.append('<item id="image{0}" media-type="image/{1}" href="{2}"/>'.format(item_id, item_type, item))
+                self.buff.append('<item id="image{0}" media-type="{1}" href="images/{2}"/>'.format(item_id, type, filename))
 
             item_id += 1
 
