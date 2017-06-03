@@ -551,9 +551,6 @@ class Fb2XHTML:
             have_file = False
             id = elem.attrib['id']
             decl_type = elem.attrib['content-type'].lower()
-            filename = None
-            real_type = None
-            full_name = None
             buff = base64.b64decode(elem.text.encode('ascii'))
             try:
                 img = Image.open(io.BytesIO(buff))
@@ -567,7 +564,7 @@ class Fb2XHTML:
                     return
 
                 if real_type != decl_type:
-                    self.log.warning('Declared and detected image types for ref id "{0}" do not match: "{1}" is not "{2}". Using detected type...'.format(id, decl_type, real_type))
+                    self.log.warning('Declared and detected image types for ref-id "{0}" do not match: "{1}" is not "{2}". Using detected type...'.format(id, decl_type, real_type))
 
                 if self.removepngtransparency and format == 'png' and (img.mode in ('RGBA', 'LA') or (img.mode in ('RGB', 'L', 'P') and 'transparency' in img.info)):
                     try:
@@ -596,8 +593,8 @@ class Fb2XHTML:
                     full_name = os.path.join(os.path.join(self.temp_content_dir, 'images'), filename)
                     self.image_count += 1
                 else:
-                    self.log.warning('Error while processing binary for ref-id "{0}". Skipping'.format(id))
-                    self.log.debug('Getting details:', exc_info=True)
+                    self.log.warning('Error while processing binary for ref-id "{0}". Skipping...'.format(id))
+                    # self.log.debug('Getting details:', exc_info=True)
                     return
 
             if not have_file:
@@ -1228,7 +1225,7 @@ class Fb2XHTML:
                     filename = file
                     break
             if not filename:
-                self.log.warning('Unable to find book cover image for ref-id "{0}. Something is very wrong..."'.format(self.book_cover))
+                self.log.warning('Unable to find book cover image for ref-id "{0}". Something is very wrong...'.format(self.book_cover))
                 self.book_cover = ''
                 return
 
