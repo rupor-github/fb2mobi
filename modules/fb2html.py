@@ -398,10 +398,21 @@ class Fb2XHTML:
         note_title = ''
 
         if ns_tag(elem.tag) == 'title':
+
+            # this is essetially a hack to preserve notes title (if any) for floating notes
+
             toc_title = etree.tostring(elem, method='text', encoding='utf-8').decode('utf-8').strip()
-            toc_title = re.compile('\[.*\]').sub('', toc_title)
+            toc_title = re.compile('[\[{].*[\]}]').sub('', toc_title) # Удалим остатки ссылок
             if toc_title:
-                self.notes_titles[body_name] = toc_title
+                # Do real title parsing (notes file is not in pages_list anyways)
+                save_buff = self.buff
+                self.buff = []
+                self.header = True
+                self.parse_format(elem, 'div', 'h0')
+                self.header = False
+                self.notes_titles[body_name] = (toc_title, self.buff[:])
+                self.buff = save_buff
+
         elif ns_tag(elem.tag) == 'section' and 'id' in elem.attrib:
             id = elem.attrib['id']
             notetext = []
@@ -630,8 +641,7 @@ class Fb2XHTML:
     def parse_title(self, elem):
         toc_ref_id = 'tocref{0}'.format(self.toc_index)
         toc_title = etree.tostring(elem, method='text', encoding='utf-8').decode('utf-8').strip()
-        p = re.compile('\[.*\]')  # Удалим остатки ссылок
-        toc_title = p.sub('', toc_title)
+        toc_title = re.compile('[\[{].*[\]}]').sub('', toc_title) # Удалим остатки ссылок
 
         if not self.body_name or self.first_header_in_body:
             self.header = True
@@ -1073,14 +1083,18 @@ class Fb2XHTML:
             if self.body_name not in notes_bodies:
                 self.parse_format(elem)
             elif self.notes_mode == 'float':
+
+                # To satisfy Amazon's requirements for floating notes I have to create notes body on the fly here, removing most of the formatting
+
                 if len(self.notes_order) > 0:
                     if self.body_name in self.notes_titles:
-                        toc_title = self.notes_titles[self.body_name]
+                        toc_title = self.notes_titles[self.body_name][0]
+                        title = ''.join(self.notes_titles[self.body_name][1])
                     else:
                         toc_title = self.body_name[0].upper() + self.body_name[1:]
+                        title = '<div class="h0"><p class="title">{0}</p></div>'.format(toc_title)
 
                     toc_ref_id = 'tocref{0}'.format(self.toc_index)
-
                     self.buff.append('<div class="titleblock" id="{0}">'.format(toc_ref_id))
 
                     vignette = self.get_vignette('h0', 'beforeTitle')
@@ -1088,7 +1102,7 @@ class Fb2XHTML:
                         self.buff.append(
                             '<div class="vignette_title_before"><img src="vignettes/{0}" /></div>'.format(vignette))
 
-                    self.buff.append('<div class="h0"><p class="title">{0}</p></div>'.format(toc_title))
+                    self.buff.append(title)
 
                     vignette = self.get_vignette('h0', 'afterTitle')
                     if vignette:
