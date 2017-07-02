@@ -41,11 +41,12 @@ _dist=dist
 
 print_msg1 "Building ${_os} ${_arch} release"
 (
-	python setup-cli.linux.cx_freeze.py
+	python3.6 setup-cli.linux.cx_freeze.py
 	(
 
 		(
-			tar --directory ${_dist} --create --gzip --file fb2mobi_cli_${_system}_${_arch}.tar.gz .
+			_glibc=`ldd --version | head -n 1 | awk '{ print $5; }'`
+			tar --directory ${_dist} --create --gzip --file fb2mobi_cli_${_system}_${_arch}_glibc_${_glibc}.tar.gz .
 		)
 	)
 )
