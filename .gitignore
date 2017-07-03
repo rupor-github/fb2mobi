@@ -5,6 +5,7 @@
 *_clip.txt
 
 # releases
+*.xz
 *.7z
 *.tar.gz
 *.zip
@@ -25,6 +26,9 @@ env/
 build/
 develop-eggs/
 dist/
+bin_linux_x86_64/
+bin_win32/ 
+bin_win64/ 
 downloads/
 eggs/
 .eggs/

@@ -49,7 +49,7 @@ setup(
     options={
         'build_exe': {
 #            'silent': 1,
-            'build_exe': 'dist',
+#            'build_exe': 'dist',
             'zip_exclude_packages': '',
             'zip_include_packages': '*',
             'packages': 'lxml,PIL',
