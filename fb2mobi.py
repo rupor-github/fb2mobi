@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import os
@@ -260,7 +260,8 @@ def process_file(config, infile, outfile=None):
                 config.log.critical('{0} not found'.format(kindlegen_cmd))
                 critical_error = True
             else:
-                config.log.critical(e.winerror)
+                if sys.platform == 'win32':
+                    config.log.critical(e.winerror)
                 config.log.critical(e.strerror)
                 config.log.debug('Getting details', exc_info=True, stack_info=True)
                 raise e

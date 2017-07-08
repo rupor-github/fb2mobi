@@ -5,7 +5,7 @@ import html
 import uuid
 
 from lxml import etree
-from modules.utils import transliterate, indent
+from modules.utils import transliterate
 from modules.myhyphen import MyHyphen
 
 
@@ -49,9 +49,6 @@ class EpubProc:
 
     def process(self):
 
-        #        stdout = sys.stdout
-        #        sys.stdout = codecs.open('stdout.txt', 'w', 'utf-8')
-
         # get uuid if any
         for node in self.root.iter('{*}identifier'):
             try:
@@ -87,8 +84,7 @@ class EpubProc:
             self.book_lang = node.text
         self.hyphenator.set_language(self.book_lang)
 
-        indent(self.root)
-        self.tree.write(self.opffile, encoding='utf-8', method='xml', xml_declaration=True)
+        self.tree.write(self.opffile, encoding='utf-8', method='xml', xml_declaration=True, pretty_print=True)
 
         # See if we have items to correct and process
         for node in self.root.iter('{*}item'):
@@ -119,4 +115,3 @@ class EpubProc:
                     # TODO: Replace stylesheets?
                     # TODO: book_author = transliterate(book_author)
 
-# sys.stdout = stdout

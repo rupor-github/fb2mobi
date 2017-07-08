@@ -35,8 +35,6 @@ YELLOW='[38;5;03m'
 readonly ALL_OFF BOLD BLUE GREEN RED YELLOW
 ARCH_INSTALLS="${ARCH_INSTALLS:-win32 win64 linux}"
 
-w_pyver=3.6.0
-w_pydir=d:/python/python${w_pyver}
 w_cmd=/mnt/c/Windows/System32/cmd.exe
 
 find . -type d -name '__pycache__' -print0 | xargs -0 rm -rf
@@ -48,13 +46,13 @@ for _mingw in ${ARCH_INSTALLS}; do
 			_arch=win32
 			_msystem=MINGW32
 			_dist=bin_win32
-			_python=${w_pydir}_x86/python.exe
+			_python=d:/python/python3.6.0_x86/python.exe
 		;;
 		win64)
 			_arch=win64
 			_msystem=MINGW64
 			_dist=bin_win64
-			_python=${w_pydir}_x64/python.exe
+			_python=d:/python/python3.6.0_x64/python.exe
 		;;
 		linux)
 			_glibc=`ldd --version | head -n 1 | awk '{ print $5; }'`
@@ -66,11 +64,6 @@ for _mingw in ${ARCH_INSTALLS}; do
 		;;
 	esac
 
-	# if command -v ${_gcc} >/dev/null 2>&1; then
-	# else
-	# 	print_warning "You don't have installed mingw-w64 toolchain for ${_mingw}."
-	# fi
-		
 	print_msg1 "Building ${_arch} release"
 	print_msg1 "........................."
 

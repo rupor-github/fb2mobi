@@ -16,7 +16,7 @@ from copy import deepcopy
 from lxml import etree, objectify
 from PIL import Image
 
-from modules.utils import transliterate, indent
+from modules.utils import transliterate
 from modules.myhyphen import MyHyphen
 
 HTMLHEAD = ('<html xmlns="http://www.w3.org/1999/xhtml">'
@@ -379,8 +379,7 @@ class Fb2XHTML:
 
         parser = etree.XMLParser(encoding='utf-8', remove_blank_text=True)
         xhtml = etree.parse(io.StringIO(self.get_buff()), parser)
-        indent(xhtml.getroot())
-        xhtml.write(filename, encoding='utf-8', method='xml', xml_declaration=True, pretty_print=False)
+        xhtml.write(filename, encoding='utf-8', method='xml', xml_declaration=True, pretty_print=True)
 
     def write_buff_debug(self, dname='', fname=''):
         if len(fname) == 0:
