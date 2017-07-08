@@ -20,7 +20,7 @@
 	</xsl:template-->
 
 	<xsl:template match="fb:p[starts-with(.,'‐') or starts-with(.,'‑') or starts-with(.,'−') or starts-with(.,'–') or starts-with(.,'—') or starts-with(.,'―') or starts-with(.,'…')]">
-		<rupor:katz_tr>–&#8198;</rupor:katz_tr>
+		<rupor:katz_tr>—&#8198;</rupor:katz_tr>
 	</xsl:template>
 
 </xsl:stylesheet>
