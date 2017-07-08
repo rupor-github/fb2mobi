@@ -77,7 +77,7 @@ for _mingw in ${ARCH_INSTALLS}; do
 				tar --directory ${_dist} --create --xz --file fb2mobi_cli_${_arch}_glibc_${_glibc}.tar.xz .
 			fi
 		else
-			[ -f fb2mobi_all_${_arch}.7z ] && rm fb2mobi_${_arch}.7z
+			[ -f fb2mobi_all_${_arch}.7z ] && rm fb2mobi_all_${_arch}.7z
 
 			w_tmp_dir=`${w_cmd} /c echo %TMP% 2>/dev/null | tr -d '\r'`
 			u_tmp_dir=/mnt/c`echo -n ${w_tmp_dir:2} | tr '\\\\\\\\' '/'`
