@@ -84,6 +84,11 @@ for _mingw in ${ARCH_INSTALLS}; do
 			u_work_dir=`mktemp -d -p "${u_tmp_dir}"`
 			w_work_dir=${w_tmp_dir}\\`basename ${u_work_dir}`
 
+			echo "AAAA ${w_tmp_dir}"
+			echo "AAAA ${u_tmp_dir}"
+			echo "AAAA ${w_work_dir}"
+			echo "AAAA ${u_work_dir}"
+
 			repo=`git remote -v | grep fetch | awk '{ print $2; }'`
 
 			pushd ${u_work_dir}
@@ -93,7 +98,7 @@ for _mingw in ${ARCH_INSTALLS}; do
 
 			cat <<EOF >${u_work_dir}/_build_${_arch}.cmd
 cd ${w_work_dir}
-${_python} setup-all.win32.cx_freeze.py build_exe -b ${_dist}
+${_python} setup-all.win32.cx_freeze.py build_exe -b ${w_work_dir}/${_dist}
 EOF
 
 			${w_cmd} /c ${w_work_dir}/_build_${_arch}.cmd 2>/dev/null
