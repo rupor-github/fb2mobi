@@ -17,9 +17,11 @@
     <file>info_on@2x.png</file>
     <file>settings.png</file>
     <file>settings@2x.png</file>
-    <file>start.png</file>
-    <file>start@2x.png</file>
-    <file>stop.png</file>
-    <file>stop@2x.png</file>
+    <file>kindle.png</file>
+    <file>kindle@2x.png</file>
+    <file>save.png</file>
+    <file>save@2x.png</file>
+    <file>send.png</file>
+    <file>send@2x.png</file>
   </qresource>
 </RCC>

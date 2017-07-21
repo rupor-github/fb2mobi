@@ -24,18 +24,6 @@
        <string>Converter</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout">
-       <property name="leftMargin">
-        <number>8</number>
-       </property>
-       <property name="topMargin">
-        <number>8</number>
-       </property>
-       <property name="rightMargin">
-        <number>8</number>
-       </property>
-       <property name="bottomMargin">
-        <number>8</number>
-       </property>
        <item>
         <layout class="QGridLayout" name="gridLayout_2">
          <item row="0" column="0">
@@ -133,48 +121,38 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="comboFont">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Destination folder</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
-          <widget class="QLineEdit" name="lineDestPath"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnSelectDestPath">
+          <widget class="QComboBox" name="comboFont">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnOpenFontsFolder">
            <property name="text">
-            <string>Select</string>
+            <string>Open fonts folder...</string>
            </property>
           </widget>
          </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
         </layout>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkConvertToSrc">
-         <property name="text">
-          <string>Save target files in source folder</string>
-         </property>
-        </widget>
        </item>
        <item>
         <spacer name="verticalSpacer_2">
@@ -195,25 +173,13 @@
       <attribute name="title">
        <string>Kindle</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout_3">
-       <property name="leftMargin">
-        <number>8</number>
-       </property>
-       <property name="topMargin">
-        <number>8</number>
-       </property>
-       <property name="rightMargin">
-        <number>8</number>
-       </property>
-       <property name="bottomMargin">
-        <number>8</number>
-       </property>
+      <layout class="QGridLayout" name="gridLayout_4">
        <item row="0" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <layout class="QVBoxLayout" name="verticalLayout_5">
          <item>
           <widget class="QLabel" name="label_4">
            <property name="text">
-            <string>&quot;documents&quot; device folder</string>
+            <string>Kindle mount point (if not detected on connect)</string>
            </property>
           </widget>
          </item>
@@ -238,17 +204,57 @@
           </layout>
          </item>
          <item>
-          <widget class="QCheckBox" name="checkCopyAfterConvert">
-           <property name="text">
-            <string>Copy to device after conversion</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="QCheckBox" name="checkSyncCovers">
            <property name="text">
             <string>Syncronize covers</string>
            </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox">
+           <property name="title">
+            <string>Send via Gmail</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_3">
+            <item row="0" column="0">
+             <layout class="QVBoxLayout" name="verticalLayout_2">
+              <item>
+               <widget class="QLabel" name="label_3">
+                <property name="text">
+                 <string>Gmial address</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="lineGoogleMail"/>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_8">
+                <property name="text">
+                 <string>Gmail password</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="lineGooglePassword">
+                <property name="echoMode">
+                 <enum>QLineEdit::Password</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_7">
+                <property name="text">
+                 <string>Kindle address</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="lineKindleMail"/>
+              </item>
+             </layout>
+            </item>
+           </layout>
           </widget>
          </item>
          <item>
@@ -419,38 +425,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>checkCopyAfterConvert</sender>
-   <signal>stateChanged(int)</signal>
-   <receiver>SettingsDialog</receiver>
-   <slot>checkCopyAfterConvertClicked(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>84</x>
-     <y>58</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>231</x>
-     <y>211</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkConvertToSrc</sender>
-   <signal>stateChanged(int)</signal>
-   <receiver>SettingsDialog</receiver>
-   <slot>checkConvertToSrcClicked(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>234</x>
-     <y>293</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>231</x>
-     <y>211</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>btnSelectKindlePath</sender>
    <signal>clicked()</signal>
    <receiver>SettingsDialog</receiver>
@@ -467,18 +441,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>btnSelectDestPath</sender>
+   <sender>btnOpenFontsFolder</sender>
    <signal>clicked()</signal>
    <receiver>SettingsDialog</receiver>
-   <slot>selectDestPath()</slot>
+   <slot>OpenFontsFolder()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>388</x>
-     <y>259</y>
+     <x>148</x>
+     <y>176</y>
     </hint>
     <hint type="destinationlabel">
      <x>231</x>
-     <y>211</y>
+     <y>194</y>
     </hint>
    </hints>
   </connection>
@@ -489,5 +463,6 @@
   <slot>selectDestPath()</slot>
   <slot>selectKindlePath()</slot>
   <slot>checkCopyAfterConvertClicked(int)</slot>
+  <slot>OpenFontsFolder()</slot>
  </slots>
 </ui>

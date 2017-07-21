@@ -20,6 +20,7 @@ WORD_SEPARATORS = [' ', '“', '”', '"', '-', '.', ',', ';', ':', '!', '?', NO
 
 class MyHyphen:
     def __init__(self, language):
+        print(DICTIONARIES_DIR)
         self.hyphenator = hyphen.Hyphenator(language=language, directory=DICTIONARIES_DIR)
 
     def process_text(self, text, replace_nbsp, separators):

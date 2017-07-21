@@ -14,12 +14,13 @@ class GuiConfig():
         self.currentProfile = None
         self.currentFormat = None
         self.outputFolder = None
-        self.convertToSourceDirectory = False
         self.hyphens = None
         self.kindlePath = None
-        self.kindleCopyToDevice = False
         self.kindleSyncCovers = False
         self.lastUsedPath = None
+        self.GoogleMail = None
+        self.GooglePassword = None
+        self.KindleMail = None
         self.embedFontFamily = None
         self.fontDb = None
         self.writeLog = True
@@ -81,17 +82,22 @@ class GuiConfig():
             elif e.tag == 'clearLogAfterExit':
                 self.clearLogAfterExit = e.text.lower() == 'true'
 
+            elif e.tag == 'GoogleMail':
+                self.GoogleMail = e.text
+
+            elif e.tag == 'GooglePassword':
+                self.GooglePassword = e.text
+
+            elif e.tag == 'KindleMail':
+                self.KindleMail = e.text
+
             elif e.tag == 'logLevel':
                 self.logLevel = e.text    
-
-            elif e.tag == 'kindleCopyToDevice':
-                self.kindleCopyToDevice = e.text.lower() == 'true'
 
             elif e.tag == 'kindleSyncCovers':
                 self.kindleSyncCovers = e.text.lower() == 'true'
 
-            elif e.tag == 'convertToSourceDirectory':
-                self.convertToSourceDirectory = e.text.lower() == 'true'
+          
             elif e.tag == 'columns':
                 for c in e:
                     self.columns[c.tag[1:]] = int(c.text) if c.text else None
@@ -109,13 +115,14 @@ class GuiConfig():
                     E('hyphens', self.hyphens) if self.hyphens else E('hyphens'),
                     E('outputFolder', self.outputFolder) if self.outputFolder else E('outputFolder'),
                     E('lastUsedPath', self.lastUsedPath) if self.lastUsedPath else E('lastUsedPath'),
-                    E('convertToSourceDirectory', str(self.convertToSourceDirectory)),
                     E('writeLog', str(self.writeLog)),
                     E('clearLogAfterExit', str(self.clearLogAfterExit)),
                     E('logLevel', self.logLevel) if self.logLevel else E('logLevel'),
                     E('kindlePath', self.kindlePath) if self.kindlePath else E('kindlePath'),
-                    E('kindleCopyToDevice', str(self.kindleCopyToDevice)),
                     E('kindleSyncCovers', str(self.kindleSyncCovers)),
+                    E('GoogleMail', self.GoogleMail) if self.GoogleMail else E('GoogleMail'),
+                    E('GooglePassword', self.GooglePassword) if self.GooglePassword else E('GooglePassword'),
+                    E('KindleMail', self.KindleMail) if self.KindleMail else E('KindleMail'),
                     E('bookInfoVisible', str(self.bookInfoVisible)),
                     E('bookInfoSplitterState', self.bookInfoSplitterState) if self.bookInfoSplitterState else E('bookInfoSplitterState'),
                     E('columns',

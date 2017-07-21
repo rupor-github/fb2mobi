@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>786</width>
-    <height>621</height>
+    <width>937</width>
+    <height>562</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -73,8 +73,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>339</width>
-          <height>548</height>
+          <width>407</width>
+          <height>489</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
@@ -306,7 +306,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>786</width>
+     <width>937</width>
      <height>21</height>
     </rect>
    </property>
@@ -416,11 +416,6 @@
     <string>Add</string>
    </property>
   </action>
-  <action name="toolStart">
-   <property name="text">
-    <string>Start</string>
-   </property>
-  </action>
   <action name="toolInfo">
    <property name="text">
     <string>Info</string>
@@ -429,6 +424,24 @@
   <action name="toolSettings">
    <property name="text">
     <string>Settings</string>
+   </property>
+  </action>
+  <action name="toolSaveToDisk">
+   <property name="text">
+    <string>Convert to disk</string>
+   </property>
+   <property name="toolTip">
+    <string>Convert to disk</string>
+   </property>
+  </action>
+  <action name="toolSendToKindle">
+   <property name="text">
+    <string>Send to Kindle</string>
+   </property>
+  </action>
+  <action name="toolSendMail">
+   <property name="text">
+    <string>Send via Gmail</string>
    </property>
   </action>
  </widget>
@@ -455,22 +468,6 @@
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>addFilesAction()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>381</x>
-     <y>237</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionConvert</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>startConvert()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -579,22 +576,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>toolStart</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>startConvert()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>381</x>
-     <y>237</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>toolSettings</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
@@ -658,11 +639,58 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>toolSaveToDisk</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>convertToDisk()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>280</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolSendToKindle</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>sendToKindle()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>280</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolSendMail</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>sendViaMail()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>280</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>closeApp()</slot>
   <slot>addFilesAction()</slot>
-  <slot>startConvert()</slot>
   <slot>selectDestDir()</slot>
   <slot>openDestDir()</slot>
   <slot>checkDestDir()</slot>
@@ -675,5 +703,8 @@
   <slot>changeBook()</slot>
   <slot>saveBookInfo()</slot>
   <slot>switchInfoPanel()</slot>
+  <slot>convertToDisk()</slot>
+  <slot>sendToKindle()</slot>
+  <slot>sendViaMail()</slot>
  </slots>
 </ui>

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.7.1
+# Created by: PyQt5 UI code generator 5.9
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(786, 621)
+        MainWindow.resize(937, 562)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -23,6 +23,7 @@ class Ui_MainWindow(object):
         self.gridLayout.setObjectName("gridLayout")
         self.bookInfoSplitter = QtWidgets.QSplitter(self.centralwidget)
         self.bookInfoSplitter.setOrientation(QtCore.Qt.Horizontal)
+        self.bookInfoSplitter.setChildrenCollapsible(False)
         self.bookInfoSplitter.setObjectName("bookInfoSplitter")
         self.treeFileList = QtWidgets.QTreeWidget(self.bookInfoSplitter)
         self.treeFileList.setAcceptDrops(False)
@@ -36,7 +37,7 @@ class Ui_MainWindow(object):
         self.scrollBookInfo.setWidgetResizable(True)
         self.scrollBookInfo.setObjectName("scrollBookInfo")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 339, 548))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 407, 489))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout.setContentsMargins(8, 8, 8, 8)
@@ -130,7 +131,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.bookInfoSplitter, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 786, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 937, 21))
         self.menubar.setObjectName("menubar")
         self.menu = QtWidgets.QMenu(self.menubar)
         self.menu.setObjectName("menu")
@@ -168,12 +169,16 @@ class Ui_MainWindow(object):
         self.actionSettings.setObjectName("actionSettings")
         self.toolAdd = QtWidgets.QAction(MainWindow)
         self.toolAdd.setObjectName("toolAdd")
-        self.toolStart = QtWidgets.QAction(MainWindow)
-        self.toolStart.setObjectName("toolStart")
         self.toolInfo = QtWidgets.QAction(MainWindow)
         self.toolInfo.setObjectName("toolInfo")
         self.toolSettings = QtWidgets.QAction(MainWindow)
         self.toolSettings.setObjectName("toolSettings")
+        self.toolSaveToDisk = QtWidgets.QAction(MainWindow)
+        self.toolSaveToDisk.setObjectName("toolSaveToDisk")
+        self.toolSendToKindle = QtWidgets.QAction(MainWindow)
+        self.toolSendToKindle.setObjectName("toolSendToKindle")
+        self.toolSendMail = QtWidgets.QAction(MainWindow)
+        self.toolSendMail.setObjectName("toolSendMail")
         self.menu.addAction(self.actionAddFile)
         self.menu.addAction(self.actionConvert)
         self.menu.addSeparator()
@@ -193,18 +198,19 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.actionExit.triggered.connect(MainWindow.closeApp)
         self.actionAddFile.triggered.connect(MainWindow.addFilesAction)
-        self.actionConvert.triggered.connect(MainWindow.startConvert)
         self.actionDelete.triggered.connect(MainWindow.deleteRecAction)
         self.actionOpenForumURL.triggered.connect(MainWindow.openSupportURL)
         self.actionViewLog.triggered.connect(MainWindow.openLog)
         self.actionAbout.triggered.connect(MainWindow.about)
         self.actionSettings.triggered.connect(MainWindow.settings)
         self.toolAdd.triggered.connect(MainWindow.addFilesAction)
-        self.toolStart.triggered.connect(MainWindow.startConvert)
         self.toolSettings.triggered.connect(MainWindow.settings)
         self.treeFileList.itemSelectionChanged.connect(MainWindow.changeBook)
         self.buttonSaveBookInfo.clicked.connect(MainWindow.saveBookInfo)
         self.toolInfo.triggered.connect(MainWindow.switchInfoPanel)
+        self.toolSaveToDisk.triggered.connect(MainWindow.convertToDisk)
+        self.toolSendToKindle.triggered.connect(MainWindow.sendToKindle)
+        self.toolSendMail.triggered.connect(MainWindow.sendViaMail)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -233,7 +239,10 @@ class Ui_MainWindow(object):
         self.actionDelete.setText(_translate("MainWindow", "Delete"))
         self.actionSettings.setText(_translate("MainWindow", "Settings..."))
         self.toolAdd.setText(_translate("MainWindow", "Add"))
-        self.toolStart.setText(_translate("MainWindow", "Start"))
         self.toolInfo.setText(_translate("MainWindow", "Info"))
         self.toolSettings.setText(_translate("MainWindow", "Settings"))
+        self.toolSaveToDisk.setText(_translate("MainWindow", "Convert to disk"))
+        self.toolSaveToDisk.setToolTip(_translate("MainWindow", "Convert to disk"))
+        self.toolSendToKindle.setText(_translate("MainWindow", "Send to Kindle"))
+        self.toolSendMail.setText(_translate("MainWindow", "Send via Gmail"))
 
