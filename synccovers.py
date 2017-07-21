@@ -58,6 +58,9 @@ def process_folder(inputdir, width, height, stretch, verbose):
                 if os.path.isdir(kindle_dir):
                     print('Found Kindle thumbnails directory "{}"'.format(kindle_dir))
                     break
+            elif os.path.samefile(inputdir, head):
+                # Possibly trailing path separator, try again, without it
+                tail = head
         else:
             print('ERROR: unable to find Kindle system directory along the path "{0}"'.format(inputdir))
             sys.exit(-1)
