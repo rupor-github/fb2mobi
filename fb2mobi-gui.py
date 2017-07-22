@@ -315,16 +315,16 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.setUnifiedTitleAndToolBarOnMac(True)
             spacer = QWidget()
             spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-            self.toolBar.addWidget(spacer)
             self.toolBar.addAction(self.toolAdd)
+            self.toolBar.addWidget(spacer)
             self.toolBar.addAction(self.toolSaveToDisk)
             self.toolBar.addAction(self.toolSendToKindle)
             self.toolBar.addAction(self.toolSendMail)
-            self.toolBar.addAction(self.toolSettings)
             spacer = QWidget()
             spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.toolBar.addWidget(spacer)            
             self.toolBar.addAction(self.toolInfo)
+            self.toolBar.addAction(self.toolSettings)
         else:
             # Для Windows, Linux
             self.toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
