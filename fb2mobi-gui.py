@@ -363,7 +363,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         self.enableSendViaMail()
 
-   
+
     def event(self, event):
         if event.type() == QEvent.WindowActivate:
             if sys.platform == 'darwin':
@@ -590,7 +590,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             import psutil
             mounted_list = psutil.disk_partitions()
             for fs in mounted_list:
-                mounted_fs.append(fs.mountpoint)
+                if fs.fstype:
+                    mounted_fs.append(fs.mountpoint)
 
         for fs in mounted_fs:
             dir_documents = os.path.join(fs, 'documents')
