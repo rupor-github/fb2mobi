@@ -65,6 +65,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.comboFormat.setCurrentIndex(self.comboFormat.findData(self.config.currentFormat))        
         self.checkWriteLog.setChecked(self.config.writeLog)
         self.checkClearLogAfterExit.setChecked(self.config.clearLogAfterExit)
+        self.lineKindleDocsSubfolder.setText(self.config.kindleDocsSubfolder)
         self.lineGoogleMail.setText(self.config.GoogleMail)
         self.lineGooglePassword.setText(self.config.GooglePassword)
         self.lineKindleMail.setText(self.config.KindleMail)
@@ -144,7 +145,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
             self.config.hyphens = 'Profile'
 
         self.config.kindlePath = os.path.normpath(self.lineKindlePath.text()) if self.lineKindlePath.text()  else ''
-        
+        self.config.kindleDocsSubfolder = self.lineKindleDocsSubfolder.text()
         self.config.GoogleMail = self.lineGoogleMail.text()
         self.config.GooglePassword = self.lineGooglePassword.text()
         self.config.KindleMail = self.lineKindleMail.text()
@@ -422,6 +423,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 config.current_profile['hyphens'] = False
 
             i = 1
+            errors = 0
 
             for file in files:
                 result = True
@@ -450,14 +452,30 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                             item.setIcon(0, self.iconGreen)
                         else:
                             item.setIcon(0, self.iconRed)
+                            errors += 1
 
                 
                 if progressDlg.wasCanceled():
                     break
                 i += 1
 
+            if errors > 0:
+                QMessageBox.warning(self, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui', 'Error while sending file(s). Check log for details.'))
+
+
             if mode == PROCESS_MODE_KINDLE:                
                 kindle_doc_path = os.path.join(self.kindle_path, 'documents')
+                if self.gui_config.kindleDocsSubfolder:
+                    kindle_doc_path = os.path.join(kindle_doc_path, self.gui_config.kindleDocsSubfolder)
+                    if not os.path.isdir(kindle_doc_path):
+                        try:
+                            os.makedirs(kindle_doc_path)
+                        except:
+                            self.log.critical('Error while creating subfolder {0} in documents folder.'.format(self.gui_config.kindleDocsSubfolder))
+                            self.log.debug('Getting details', exc_info=True)
+                            QMessageBox.critical(self, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui'), 'Error while sending file(s). Check log for details.')
+                            return
+
                 thumbnail_path = os.path.join(self.kindle_path, 'system', 'thumbnails')
                 if not os.path.isdir(thumbnail_path):
                     thumbnail_path = ''
@@ -466,6 +484,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                     progressDlg.setLabelText(_translate('fb2mobi-gui', 'Sending to Kindle...'))
                     progressDlg.setRange(1, len(dest_files))                    
                     i = 1
+                    errors = 0
                     for file in dest_files:
                         progressDlg.setValue(i)
                         try:
@@ -483,11 +502,17 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                                 if os.path.exists(dest_file):
                                     synccovers.process_file(dest_file, thumbnail_path, 330, 470, False, False)
                         except:
-                            pass
+                            self.log.critical('Error while sending file {0}.'.format(file))
+                            self.log.debug('Getting details', exc_info=True)
+                            errors += 1
 
                         i += 1
-                        if progressDlg.wasCanceled():
+                        if progressDlg.wasCanceled() or errors == 3:
                             break
+
+                if errors > 0:
+                    QMessageBox.critical(self, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui', 'Error while sending file(s). Check log for details.'))
+
                 fb2mobi.rm_tmp_files(config.output_dir, True)
 
             if mode == PROCESS_MODE_MAIL:
@@ -504,16 +529,22 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 kindle.convert = False
 
                 i = 1
+                errors = 0
                 for file in dest_files:
                     progressDlg.setValue(i)
-                    # try:
-                    kindle.send_mail([file])
-                    # except:
-                        # print('Error')
+                    try:
+                        kindle.send_mail([file])
+                    except:
+                        self.log.critical('Error while sending file {0}.'.format(file))
+                        self.log.debug('Getting details', exc_info=True)
+                        errors += 1
 
                     i += 1
-                    if progressDlg.wasCanceled():
+                    if progressDlg.wasCanceled() or errors == 3:
                         break
+
+                if errors > 0:
+                    QMessageBox.critical(self, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui', 'Error while sending file(s). Check log for details.'))
 
                 fb2mobi.rm_tmp_files(config.output_dir, True)
 
@@ -543,14 +574,18 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
     def enableSendViaMail(self):
         if self.gui_config.GoogleMail and self.gui_config.GooglePassword and self.gui_config.KindleMail and self.gui_config.currentFormat.lower() == 'mobi':
             self.toolSendMail.setEnabled(True)
+            self.actionSendViaMail.setEnabled(True)
         else:
             self.toolSendMail.setEnabled(False)
+            self.actionSendViaMail.setEnabled(False)
 
     def findKindle(self):
         mounted_fs = []
 
         if sys.platform == 'darwin':
-            pass
+            list_dir = os.listdir('/Volumes')
+            for dir_name in list_dir:
+                mounted_fs.append(os.path.join('/Volumes', dir_name))
         else:
             import psutil
             mounted_list = psutil.disk_partitions()
@@ -576,9 +611,11 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         if self.kindle_path and os.path.isdir(self.kindle_path):            
             self.toolSendToKindle.setEnabled(True)
+            self.actionSendToKindle.setEnabled(True)
             self.labelStatus.setText(_translate('fb2mobi-gui', 'Kindle connected to {0}'.format(self.kindle_path)))
         else:
             self.toolSendToKindle.setEnabled(False)
+            self.actionSendToKindle.setEnabled(False)
             self.labelStatus.setText('')
 
     def setBookInfoPanelVisible(self):
@@ -691,12 +728,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
     def checkDestDir(self):
         filename = os.path.normpath(self.gui_config.outputFolder)
         if not os.path.exists(filename):
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Critical)
-            msg.setText(_translate('fb2mobi-gui', 'Folder does not exist.'))
-            msg.setWindowTitle(_translate('fb2mobi-gui', 'Error'))
-            msg.exec_()
-
+            QMessageBox.critical(self, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui', 'Folder does not exist.'))
             return False
         else:
             return True

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'MainWindow.ui'
+# Form implementation generated from reading ui file 'ui/MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.9
+# Created by: PyQt5 UI code generator 5.8
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -37,7 +37,7 @@ class Ui_MainWindow(object):
         self.scrollBookInfo.setWidgetResizable(True)
         self.scrollBookInfo.setObjectName("scrollBookInfo")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 407, 489))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 394, 480))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout.setContentsMargins(8, 8, 8, 8)
@@ -131,7 +131,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.bookInfoSplitter, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 937, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 937, 22))
         self.menubar.setObjectName("menubar")
         self.menu = QtWidgets.QMenu(self.menubar)
         self.menu.setObjectName("menu")
@@ -150,8 +150,6 @@ class Ui_MainWindow(object):
         MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.actionAddFile = QtWidgets.QAction(MainWindow)
         self.actionAddFile.setObjectName("actionAddFile")
-        self.actionConvert = QtWidgets.QAction(MainWindow)
-        self.actionConvert.setObjectName("actionConvert")
         self.actionExit = QtWidgets.QAction(MainWindow)
         self.actionExit.setMenuRole(QtWidgets.QAction.QuitRole)
         self.actionExit.setObjectName("actionExit")
@@ -179,8 +177,17 @@ class Ui_MainWindow(object):
         self.toolSendToKindle.setObjectName("toolSendToKindle")
         self.toolSendMail = QtWidgets.QAction(MainWindow)
         self.toolSendMail.setObjectName("toolSendMail")
+        self.actionConvertToDisk = QtWidgets.QAction(MainWindow)
+        self.actionConvertToDisk.setObjectName("actionConvertToDisk")
+        self.actionSendToKindle = QtWidgets.QAction(MainWindow)
+        self.actionSendToKindle.setObjectName("actionSendToKindle")
+        self.actionSendViaMail = QtWidgets.QAction(MainWindow)
+        self.actionSendViaMail.setObjectName("actionSendViaMail")
         self.menu.addAction(self.actionAddFile)
-        self.menu.addAction(self.actionConvert)
+        self.menu.addSeparator()
+        self.menu.addAction(self.actionConvertToDisk)
+        self.menu.addAction(self.actionSendToKindle)
+        self.menu.addAction(self.actionSendViaMail)
         self.menu.addSeparator()
         self.menu.addAction(self.actionSettings)
         self.menu.addSeparator()
@@ -211,6 +218,9 @@ class Ui_MainWindow(object):
         self.toolSaveToDisk.triggered.connect(MainWindow.convertToDisk)
         self.toolSendToKindle.triggered.connect(MainWindow.sendToKindle)
         self.toolSendMail.triggered.connect(MainWindow.sendViaMail)
+        self.actionConvertToDisk.triggered.connect(MainWindow.convertToDisk)
+        self.actionSendToKindle.triggered.connect(MainWindow.sendToKindle)
+        self.actionSendViaMail.triggered.connect(MainWindow.sendViaMail)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -231,7 +241,6 @@ class Ui_MainWindow(object):
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
         self.actionAddFile.setText(_translate("MainWindow", "Add..."))
         self.actionAddFile.setShortcut(_translate("MainWindow", "Ctrl+O"))
-        self.actionConvert.setText(_translate("MainWindow", "Start conversion"))
         self.actionExit.setText(_translate("MainWindow", "Exit"))
         self.actionOpenForumURL.setText(_translate("MainWindow", "Support forum"))
         self.actionAbout.setText(_translate("MainWindow", "About..."))
@@ -245,4 +254,7 @@ class Ui_MainWindow(object):
         self.toolSaveToDisk.setToolTip(_translate("MainWindow", "Convert to disk"))
         self.toolSendToKindle.setText(_translate("MainWindow", "Send to Kindle"))
         self.toolSendMail.setText(_translate("MainWindow", "Send via Gmail"))
+        self.actionConvertToDisk.setText(_translate("MainWindow", "Convert to disk"))
+        self.actionSendToKindle.setText(_translate("MainWindow", "Send to Kindle"))
+        self.actionSendViaMail.setText(_translate("MainWindow", "Send via Gmail"))
 

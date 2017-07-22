@@ -73,8 +73,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>407</width>
-          <height>489</height>
+          <width>394</width>
+          <height>480</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
@@ -307,7 +307,7 @@
      <x>0</x>
      <y>0</y>
      <width>937</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -315,7 +315,10 @@
      <string>File</string>
     </property>
     <addaction name="actionAddFile"/>
-    <addaction name="actionConvert"/>
+    <addaction name="separator"/>
+    <addaction name="actionConvertToDisk"/>
+    <addaction name="actionSendToKindle"/>
+    <addaction name="actionSendViaMail"/>
     <addaction name="separator"/>
     <addaction name="actionSettings"/>
     <addaction name="separator"/>
@@ -365,11 +368,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
-   </property>
-  </action>
-  <action name="actionConvert">
-   <property name="text">
-    <string>Start conversion</string>
    </property>
   </action>
   <action name="actionExit">
@@ -440,6 +438,21 @@
    </property>
   </action>
   <action name="toolSendMail">
+   <property name="text">
+    <string>Send via Gmail</string>
+   </property>
+  </action>
+  <action name="actionConvertToDisk">
+   <property name="text">
+    <string>Convert to disk</string>
+   </property>
+  </action>
+  <action name="actionSendToKindle">
+   <property name="text">
+    <string>Send to Kindle</string>
+   </property>
+  </action>
+  <action name="actionSendViaMail">
    <property name="text">
     <string>Send via Gmail</string>
    </property>
@@ -673,6 +686,54 @@
   </connection>
   <connection>
    <sender>toolSendMail</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>sendViaMail()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>280</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionConvertToDisk</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>convertToDisk()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>280</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSendToKindle</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>sendToKindle()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>280</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSendViaMail</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>sendViaMail()</slot>

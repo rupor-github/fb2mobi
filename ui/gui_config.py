@@ -17,6 +17,7 @@ class GuiConfig():
         self.hyphens = None
         self.kindlePath = None
         self.kindleSyncCovers = False
+        self.kindleDocsSubfolder = None
         self.lastUsedPath = None
         self.GoogleMail = None
         self.GooglePassword = None
@@ -70,6 +71,9 @@ class GuiConfig():
             elif e.tag == 'kindlePath':
                 self.kindlePath = e.text
 
+            elif e.tag == 'kindleDocsSubfolder':
+                self.kindleDocsSubfolder = e.text
+
             elif e.tag == 'writeLog':
                 self.writeLog = e.text.lower() == 'true'
 
@@ -120,6 +124,7 @@ class GuiConfig():
                     E('logLevel', self.logLevel) if self.logLevel else E('logLevel'),
                     E('kindlePath', self.kindlePath) if self.kindlePath else E('kindlePath'),
                     E('kindleSyncCovers', str(self.kindleSyncCovers)),
+                    E('kindleDocsSubfolder', self.kindleDocsSubfolder) if self.kindleDocsSubfolder else E('kindleDocsSubfolder'),
                     E('GoogleMail', self.GoogleMail) if self.GoogleMail else E('GoogleMail'),
                     E('GooglePassword', self.GooglePassword) if self.GooglePassword else E('GooglePassword'),
                     E('KindleMail', self.KindleMail) if self.KindleMail else E('KindleMail'),

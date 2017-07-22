@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>463</width>
-    <height>390</height>
+    <width>546</width>
+    <height>523</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -173,41 +173,64 @@
       <attribute name="title">
        <string>Kindle</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout_4">
+      <layout class="QGridLayout" name="gridLayout_5">
        <item row="0" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_5">
+        <layout class="QVBoxLayout" name="verticalLayout_6">
          <item>
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>Kindle mount point (if not detected on connect)</string>
+          <widget class="QGroupBox" name="groupBox_2">
+           <property name="title">
+            <string>Send To Kindle</string>
            </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
-           <item>
-            <widget class="QLineEdit" name="lineKindlePath"/>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnSelectKindlePath">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>Select</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="checkSyncCovers">
-           <property name="text">
-            <string>Syncronize covers</string>
-           </property>
+           <layout class="QGridLayout" name="gridLayout_4">
+            <item row="0" column="0">
+             <layout class="QVBoxLayout" name="verticalLayout_5">
+              <item>
+               <widget class="QLabel" name="label_4">
+                <property name="text">
+                 <string>Kindle mount point (if not detected on connect)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_3">
+                <item>
+                 <widget class="QLineEdit" name="lineKindlePath"/>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btnSelectKindlePath">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Select</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="checkSyncCovers">
+                <property name="text">
+                 <string>Syncronize covers</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_9">
+                <property name="text">
+                 <string>Place files in folder</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="lineKindleDocsSubfolder"/>
+              </item>
+             </layout>
+            </item>
+           </layout>
           </widget>
          </item>
          <item>
@@ -221,7 +244,7 @@
               <item>
                <widget class="QLabel" name="label_3">
                 <property name="text">
-                 <string>Gmial address</string>
+                 <string>Gmail address</string>
                 </property>
                </widget>
               </item>
