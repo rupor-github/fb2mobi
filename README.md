@@ -49,6 +49,7 @@ In order to build [releases](https://github.com/rupor-github/fb2mobi/releases) w
   * on all platforms usage of Python 3.6 pymalloc interface in hjn module corrupts Python heap and prevents converter from working
   * on Windows PyHyphen 2.0.5 does not handle Unicode path names, which prevents converter from working when installed in directories with localized names
 * PyQt 5.82
+* psutil 5.2.2 for Linux and Windows
 
 If you are not using "frozen" distribution you would need to download [Amazon's KindleGen](https://www.amazon.com/gp/feature.html?docId=1000765211).
 
