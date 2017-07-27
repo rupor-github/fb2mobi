@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui/MainWindow.ui'
+# Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.8
+# Created by: PyQt5 UI code generator 5.9
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -37,7 +37,7 @@ class Ui_MainWindow(object):
         self.scrollBookInfo.setWidgetResizable(True)
         self.scrollBookInfo.setObjectName("scrollBookInfo")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 394, 480))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 407, 489))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout.setContentsMargins(8, 8, 8, 8)
@@ -131,7 +131,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.bookInfoSplitter, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 937, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 937, 21))
         self.menubar.setObjectName("menubar")
         self.menu = QtWidgets.QMenu(self.menubar)
         self.menu.setObjectName("menu")
@@ -183,6 +183,8 @@ class Ui_MainWindow(object):
         self.actionSendToKindle.setObjectName("actionSendToKindle")
         self.actionSendViaMail = QtWidgets.QAction(MainWindow)
         self.actionSendViaMail.setObjectName("actionSendViaMail")
+        self.actionOpenHelpURL = QtWidgets.QAction(MainWindow)
+        self.actionOpenHelpURL.setObjectName("actionOpenHelpURL")
         self.menu.addAction(self.actionAddFile)
         self.menu.addSeparator()
         self.menu.addAction(self.actionConvertToDisk)
@@ -192,6 +194,7 @@ class Ui_MainWindow(object):
         self.menu.addAction(self.actionSettings)
         self.menu.addSeparator()
         self.menu.addAction(self.actionExit)
+        self.menu_2.addAction(self.actionOpenHelpURL)
         self.menu_2.addAction(self.actionOpenForumURL)
         self.menu_2.addSeparator()
         self.menu_2.addAction(self.actionAbout)
@@ -221,6 +224,7 @@ class Ui_MainWindow(object):
         self.actionConvertToDisk.triggered.connect(MainWindow.convertToDisk)
         self.actionSendToKindle.triggered.connect(MainWindow.sendToKindle)
         self.actionSendViaMail.triggered.connect(MainWindow.sendViaMail)
+        self.actionOpenHelpURL.triggered.connect(MainWindow.openHelpURL)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -257,4 +261,5 @@ class Ui_MainWindow(object):
         self.actionConvertToDisk.setText(_translate("MainWindow", "Convert to disk"))
         self.actionSendToKindle.setText(_translate("MainWindow", "Send to Kindle"))
         self.actionSendViaMail.setText(_translate("MainWindow", "Send via Gmail"))
+        self.actionOpenHelpURL.setText(_translate("MainWindow", "Help"))
 

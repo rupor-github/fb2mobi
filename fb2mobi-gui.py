@@ -40,6 +40,7 @@ TREE_LIST_CSS_ACTIVE = "selection-color: white; selection-background-color: #386
 TREE_LIST_CSS_UNACTIVE = "selection-color: black; selection-background-color: #D4D4D4; alternate-background-color: #F3F6FA;"
 
 SUPPORT_URL = u'http://www.the-ebook.org/forum/viewtopic.php?t=30380'
+HELP_URL = u'https://github.com/rupor-github/fb2mobi/wiki'
 
 PROCESS_MODE_CONVERT = 0
 PROCESS_MODE_KINDLE = 1
@@ -62,7 +63,8 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
             self.comboFormat.addItem(f, f)
 
         self.comboProfile.setCurrentIndex(self.comboProfile.findData(self.config.currentProfile))
-        self.comboFormat.setCurrentIndex(self.comboFormat.findData(self.config.currentFormat))        
+        self.comboFormat.setCurrentIndex(self.comboFormat.findData(self.config.currentFormat))     
+        self.lineDestFolder.setText(self.config.outputFolder)   
         self.checkWriteLog.setChecked(self.config.writeLog)
         self.checkClearLogAfterExit.setChecked(self.config.clearLogAfterExit)
         self.lineKindleDocsSubfolder.setText(self.config.kindleDocsSubfolder)
@@ -117,6 +119,9 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
             except:
                 pass
 
+    def selectDestPath(self):
+        self.lineDestFolder.setText(self.selectPath(self.lineDestFolder.text()))
+
     def selectKindlePath(self):
         self.lineKindlePath.setText(self.selectPath(self.lineKindlePath.text()))
 
@@ -146,6 +151,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
 
         self.config.kindlePath = os.path.normpath(self.lineKindlePath.text()) if self.lineKindlePath.text()  else ''
         self.config.kindleDocsSubfolder = self.lineKindleDocsSubfolder.text()
+        self.config.outputFolder = self.lineDestFolder.text()
         self.config.GoogleMail = self.lineGoogleMail.text()
         self.config.GooglePassword = self.lineGooglePassword.text()
         self.config.KindleMail = self.lineKindleMail.text()
@@ -259,8 +265,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         if os.path.exists(self.font_path):
             self.gui_config.fontDb = FontDb(self.font_path)
 
-        if not self.gui_config.outputFolder:
-            self.gui_config.outputFolder = os.path.abspath(os.path.expanduser("~/Desktop"))
+        if not self.gui_config.lastUsedTargetPath:
+            self.gui_config.lastUsedTargetPath = os.path.abspath(os.path.expanduser("~/Desktop"))
 
         if not self.gui_config.currentFormat:
             self.gui_config.currentFormat = 'mobi'
@@ -413,7 +419,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                     config.current_profile['css'] = css_file
 
             if mode == PROCESS_MODE_CONVERT:
-                config.output_dir = self.gui_config.outputFolder
+                config.output_dir = self.gui_config.outputFolder if self.gui_config.outputFolder else self.gui_config.lastUsedTargetPath
             else:
                 config.output_dir = tempfile.mkdtemp()
 
@@ -551,18 +557,18 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             progressDlg.deleteLater()
 
     def convertToDisk(self):
-        if not self.gui_config.outputFolder:
-            self.gui_config.outputFolder = os.path.expanduser('~')
-
         files = self.getFileList()
         if len(files) > 0:
-            dlgPath = QFileDialog(self, _translate('fb2mobi-gui', 'Select folder to convert'), self.gui_config.outputFolder)
-            dlgPath.setFileMode(QFileDialog.Directory)
-            dlgPath.setOption(QFileDialog.ShowDirsOnly, True)
+            if not self.gui_config.outputFolder:
+                dlgPath = QFileDialog(self, _translate('fb2mobi-gui', 'Select folder to convert'), self.gui_config.lastUsedTargetPath)
+                dlgPath.setFileMode(QFileDialog.Directory)
+                dlgPath.setOption(QFileDialog.ShowDirsOnly, True)
 
-            if dlgPath.exec_():
-                for d in dlgPath.selectedFiles():
-                    self.gui_config.outputFolder = os.path.normpath(d)
+                if dlgPath.exec_():
+                    for d in dlgPath.selectedFiles():
+                        self.gui_config.lastUsedTargetPath = os.path.normpath(d)
+                    self.process(PROCESS_MODE_CONVERT)
+            else:
                 self.process(PROCESS_MODE_CONVERT)
 
     def sendToKindle(self):
@@ -581,6 +587,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
     def findKindle(self):
         mounted_fs = []
+        add_files = []
 
         if sys.platform == 'darwin':
             list_dir = os.listdir('/Volumes')
@@ -595,11 +602,15 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         for fs in mounted_fs:
             dir_documents = os.path.join(fs, 'documents')
-            dir_system = os.path.join(fs, 'system', 'thumbnails')
-            file_version = os.path.join(fs, 'system', 'version.txt')
+            dir_system = os.path.join(fs, 'system')
     
-            if os.path.exists(dir_documents) and os.path.exists(dir_system) and os.path.exists(file_version):
-                return fs
+            if os.path.exists(dir_documents) and os.path.exists(dir_system):
+                # Kindle Paperwhite, Voyage, Oasis
+                if os.path.exists(os.path.join(fs, 'system', 'thumbnails')) and os.path.exists(os.path.join(fs, 'system', 'version.txt')):
+                    return fs
+                # Kindle 4, 5
+                elif os.path.exists(os.path.join(fs, 'system', 'com.amazon.ebook.booklet.reader', 'reader.pref')):
+                    return fs
 
         return ''
 
@@ -613,7 +624,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         if self.kindle_path and os.path.isdir(self.kindle_path):            
             self.toolSendToKindle.setEnabled(True)
             self.actionSendToKindle.setEnabled(True)
-            self.labelStatus.setText(_translate('fb2mobi-gui', 'Kindle connected to {0}'.format(self.kindle_path)))
+            self.labelStatus.setText(_translate('fb2mobi-gui', 'Kindle connected to {0}').format(self.kindle_path))
         else:
             self.toolSendToKindle.setEnabled(False)
             self.actionSendToKindle.setEnabled(False)
@@ -724,15 +735,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
     def openLog(self):
         self.openFile(self.log_file)
-
-
-    def checkDestDir(self):
-        filename = os.path.normpath(self.gui_config.outputFolder)
-        if not os.path.exists(filename):
-            QMessageBox.critical(self, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui', 'Folder does not exist.'))
-            return False
-        else:
-            return True
 
 
     def generateFontCSS(self):
@@ -994,6 +996,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.gui_config.write()
 
         self.close()
+
+    def openHelpURL(self):
+        webbrowser.open(url=HELP_URL)
+
 
     def openSupportURL(self):
         webbrowser.open(url=SUPPORT_URL)
