@@ -581,6 +581,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
     def findKindle(self):
         mounted_fs = []
+        add_files = []
 
         if sys.platform == 'darwin':
             list_dir = os.listdir('/Volumes')
@@ -595,11 +596,15 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         for fs in mounted_fs:
             dir_documents = os.path.join(fs, 'documents')
-            dir_system = os.path.join(fs, 'system', 'thumbnails')
-            file_version = os.path.join(fs, 'system', 'version.txt')
+            dir_system = os.path.join(fs, 'system')
     
-            if os.path.exists(dir_documents) and os.path.exists(dir_system) and os.path.exists(file_version):
-                return fs
+            if os.path.exists(dir_documents) and os.path.exists(dir_system):
+                # Kindle Paperwhite/Oasis
+                if os.path.exists(os.path.join(fs, 'system', 'thumbnails')) and os.path.exists(os.path.join(fs, 'system', 'version.txt')):
+                    return fs
+                # Kindle 4/5
+                elif os.path.exists(os.path.join(fs, 'system', 'com.amazon.ebook.booklet.reader', 'reader.pref')):
+                    return fs
 
         return ''
 
