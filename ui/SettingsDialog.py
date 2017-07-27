@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui/SettingsDialog.ui'
+# Form implementation generated from reading ui file 'SettingsDialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.8
+# Created by: PyQt5 UI code generator 5.9
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -18,8 +18,10 @@ class Ui_SettingsDialog(object):
         self.tabWidget.setObjectName("tabWidget")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.tab)
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_6 = QtWidgets.QGridLayout(self.tab)
+        self.gridLayout_6.setContentsMargins(8, 8, 8, 8)
+        self.gridLayout_6.setObjectName("gridLayout_6")
+        self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
         self.gridLayout_2 = QtWidgets.QGridLayout()
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -78,6 +80,18 @@ class Ui_SettingsDialog(object):
         self.horizontalLayout.addWidget(self.radioHypProfile)
         self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.groupBox_3)
+        self.label_10 = QtWidgets.QLabel(self.tab)
+        self.label_10.setObjectName("label_10")
+        self.verticalLayout.addWidget(self.label_10)
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.lineDestFolder = QtWidgets.QLineEdit(self.tab)
+        self.lineDestFolder.setObjectName("lineDestFolder")
+        self.horizontalLayout_4.addWidget(self.lineDestFolder)
+        self.btnSelectDestFolder = QtWidgets.QPushButton(self.tab)
+        self.btnSelectDestFolder.setObjectName("btnSelectDestFolder")
+        self.horizontalLayout_4.addWidget(self.btnSelectDestFolder)
+        self.verticalLayout.addLayout(self.horizontalLayout_4)
         self.label_5 = QtWidgets.QLabel(self.tab)
         self.label_5.setObjectName("label_5")
         self.verticalLayout.addWidget(self.label_5)
@@ -99,11 +113,12 @@ class Ui_SettingsDialog(object):
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         spacerItem1 = QtWidgets.QSpacerItem(20, 19, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem1)
+        self.gridLayout_6.addLayout(self.verticalLayout, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
         self.gridLayout_5 = QtWidgets.QGridLayout(self.tab_2)
-        self.gridLayout_5.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_5.setContentsMargins(8, 8, 8, 8)
         self.gridLayout_5.setObjectName("gridLayout_5")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout()
         self.verticalLayout_6.setObjectName("verticalLayout_6")
@@ -216,6 +231,7 @@ class Ui_SettingsDialog(object):
         SettingsDialog.accepted.connect(SettingsDialog.closeAccept)
         self.btnSelectKindlePath.clicked.connect(SettingsDialog.selectKindlePath)
         self.btnOpenFontsFolder.clicked.connect(SettingsDialog.OpenFontsFolder)
+        self.btnSelectDestFolder.clicked.connect(SettingsDialog.selectDestPath)
         QtCore.QMetaObject.connectSlotsByName(SettingsDialog)
 
     def retranslateUi(self, SettingsDialog):
@@ -227,6 +243,8 @@ class Ui_SettingsDialog(object):
         self.radioHypYes.setText(_translate("SettingsDialog", "Yes"))
         self.radioHypNo.setText(_translate("SettingsDialog", "No"))
         self.radioHypProfile.setText(_translate("SettingsDialog", "Profile default"))
+        self.label_10.setText(_translate("SettingsDialog", "Destination folder"))
+        self.btnSelectDestFolder.setText(_translate("SettingsDialog", "Select"))
         self.label_5.setText(_translate("SettingsDialog", "Embed font family"))
         self.btnOpenFontsFolder.setText(_translate("SettingsDialog", "Open fonts folder..."))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("SettingsDialog", "Converter"))

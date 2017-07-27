@@ -14,6 +14,7 @@ class GuiConfig():
         self.currentProfile = None
         self.currentFormat = None
         self.outputFolder = None
+        self.lastUsedTargetPath = None
         self.hyphens = None
         self.kindlePath = None
         self.kindleSyncCovers = False
@@ -58,6 +59,9 @@ class GuiConfig():
 
             elif e.tag == 'outputFolder':
                 self.outputFolder = e.text
+
+            elif e.tag == 'lastUsedTargetPath':
+                self.lastUsedTargetPath = e.text
 
             elif e.tag == 'embedFontFamily':
                 self.embedFontFamily = e.text
@@ -118,6 +122,7 @@ class GuiConfig():
                     E('embedFontFamily', self.embedFontFamily) if self.embedFontFamily else E('embedFontFamily'),
                     E('hyphens', self.hyphens) if self.hyphens else E('hyphens'),
                     E('outputFolder', self.outputFolder) if self.outputFolder else E('outputFolder'),
+                    E('lastUsedTargetPath', self.lastUsedTargetPath) if self.lastUsedTargetPath else E('lastUsedTargetPath'),
                     E('lastUsedPath', self.lastUsedPath) if self.lastUsedPath else E('lastUsedPath'),
                     E('writeLog', str(self.writeLog)),
                     E('clearLogAfterExit', str(self.clearLogAfterExit)),
