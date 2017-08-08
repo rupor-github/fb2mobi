@@ -823,7 +823,11 @@ class Fb2XHTML:
             if vignette:
                 self.buff.append('<div class="vignette_title_before"><img src="vignettes/{0}" /></div>'.format(vignette))
 
-            self.buff.append('<div class ="h0"><p class="title">{0}</p><p class="title">{1}<span class="strong"></span></p></div>'.format(self.book_author, self.book_title))
+            self.buff.append('<div class ="h0">')
+            if self.book_author:
+                self.buff.append('<p class="title">{0}</p>'.format(self.book_author))
+            self.buff.append('<p class="title">{0}</p>'.format(self.book_title))
+            self.buff.append('</div>')
 
             vignette = self.get_vignette('h0', 'afterTitle')
             if vignette:
