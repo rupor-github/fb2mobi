@@ -295,5 +295,5 @@ p.dropcaps {
 .chapter_end {
     page-break-before: avoid;
     page-break-inside: avoid;
-    page-break-after: always
+    page-break-after: always;
 }
