@@ -414,7 +414,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             # Отключим отправку книг на Kinlde из командной строки
             config.send_to_kindle['send'] = False
             if self.gui_config.embedFontFamily:
-                css_file = os.path.join(os.path.dirname(gui_config.config_file), 'profiles', '_font.css')
+                css_file = os.path.join(os.path.dirname(self.gui_config.config_file), 'profiles', '_font.css')
                 if os.path.exists(css_file):
                     config.current_profile['css'] = css_file
 
