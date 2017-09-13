@@ -743,7 +743,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                '.table th', '.table td', '.annotation', 'body']
 
 
-        css_string = modules.default_css.default_css
+        css_string = modules.default_css.gui_default_css
         css = cssutils.parseString(css_string)
 
         font_regular = ''
