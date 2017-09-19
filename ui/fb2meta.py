@@ -259,7 +259,11 @@ class Fb2Meta():
 
         if self.is_zip:
             zip_file = zipfile.ZipFile(self.file, 'w', zipfile.ZIP_DEFLATED)
-            zip_file.writestr(os.path.splitext(os.path.split(self.file)[1])[0], etree.tostring(self.tree, encoding='utf-8', 
+            zipped_file_name = os.path.splitext(os.path.split(self.file)[1])[0]
+            if not zipped_file_name.lower().endswith('.fb2'):
+                zipped_file_name += '.fb2'
+
+            zip_file.writestr(zipped_file_name, etree.tostring(self.tree, encoding='utf-8', 
             																 method='xml', xml_declaration=True))
             zip_file.close()
         else:
