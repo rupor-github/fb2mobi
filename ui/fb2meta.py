@@ -5,6 +5,9 @@ import base64
 import os
 import zipfile
 import codecs
+import shutil
+import tempfile
+
 
 from io import StringIO, BytesIO
 from lxml import etree
@@ -62,6 +65,7 @@ class Fb2Meta():
         self.coverdata = None
         self.coverpage_href = ''
         self.is_zip = False
+        self.encoding = ''
 
         if os.path.splitext(self.file)[1].lower() == '.zip':
             self.is_zip = True
@@ -76,11 +80,13 @@ class Fb2Meta():
                 f.close()
 
                 self.tree = etree.parse(BytesIO(content), parser=etree.XMLParser(recover=True))
+                self.encoding = self.tree.docinfo.encoding
             else:
                 # TODO: архиве несколько файлов. Ошибка
                 pass
         else:
             self.tree = etree.parse(self.file, parser=etree.XMLParser(recover=True))
+            self.encoding = self.tree.docinfo.encoding
 
     def get_first_series(self):
         series_name = ''
@@ -258,16 +264,30 @@ class Fb2Meta():
         indent(self.tree.getroot())
 
         if self.is_zip:
-            zip_file = zipfile.ZipFile(self.file, 'w', zipfile.ZIP_DEFLATED)
-            zipped_file_name = os.path.splitext(os.path.split(self.file)[1])[0]
-            if not zipped_file_name.lower().endswith('.fb2'):
-                zipped_file_name += '.fb2'
+            zipped_file_name = ''
+            temp_dir = tempfile.mkdtemp()
+            try:
+                zip_file = zipfile.ZipFile(self.file, 'r', zipfile.ZIP_DEFLATED)
+                zip_file.extractall(temp_dir)
+                zip_file.close()
 
-            zip_file.writestr(zipped_file_name, etree.tostring(self.tree, encoding='utf-8', 
-            																 method='xml', xml_declaration=True))
-            zip_file.close()
+                file_list = os.listdir(temp_dir)
+                if len(file_list) == 1:
+                    for file in file_list:
+                        if file.lower().endswith('.fb2'):
+                            zipped_file_name = file
+                            break
+                shutil.rmtree(temp_dir)
+            except:
+                shutil.rmtree(temp_dir)
+
+            if zipped_file_name:            
+                zip_file = zipfile.ZipFile(self.file, 'w', zipfile.ZIP_DEFLATED)
+                zip_file.writestr(zipped_file_name, etree.tostring(self.tree, encoding=self.encoding, 
+                                                                  method='xml', xml_declaration=True))
+                zip_file.close()
         else:
-            self.tree.write(self.file, encoding='utf-8', method='xml', xml_declaration=True, pretty_print=False)
+            self.tree.write(self.file, encoding=self.encoding, method='xml', xml_declaration=True, pretty_print=False)
 
 if __name__ == '__main__':
     # meta = Fb2Meta('Судья Ди 01. Золото Будды.fb2.zip')
