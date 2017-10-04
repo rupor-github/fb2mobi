@@ -51,30 +51,25 @@ def sanitize_id(string):
     else:
         return ''
 
-
-def write_file(buff, filename):
+def make_dir(filename):
     d = os.path.dirname(filename)
     if not os.path.exists(d):
         os.makedirs(d)
 
+def write_file(buff, filename):
+    make_dir(filename)
     with codecs.open(filename, 'w', 'utf-8') as f:
         f.write(buff)
 
 
 def write_file_bin(buff, filename):
-    d = os.path.dirname(filename)
-    if not os.path.exists(d):
-        os.makedirs(d)
-
+    make_dir(filename)
     with open(filename, 'wb') as f:
         f.write(buff)
 
 
 def copy_file(src, dest):
-    d = os.path.dirname(dest)
-    if not os.path.exists(d):
-        os.makedirs(d)
-
+    make_dir(dest)
     shutil.copyfile(src, dest)
 
 
@@ -575,6 +570,7 @@ class Fb2XHTML:
                 format = img.format.lower()
                 filename = "bin{0:08}.{1}".format(self.image_count,format.lower().replace('jpeg','jpg'))
                 full_name = os.path.join(os.path.join(self.temp_content_dir, 'images'), filename)
+                make_dir(full_name)
 
                 if self.kindle and not format in ('gif', 'jpeg', 'png', 'bmp'):
                     self.log.warning('Image type "{0}" for ref-id "{1} is not supported by your device. Ignoring...'.format(real_type, id))
