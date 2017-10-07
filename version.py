@@ -4,5 +4,5 @@ import platform
 
 WINDOWS = platform.system().lower() == "windows"
 
-VERSION = u'3.6.38'
+VERSION = u'3.6.39'
 

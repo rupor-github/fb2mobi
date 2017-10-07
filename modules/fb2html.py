@@ -933,7 +933,7 @@ class Fb2XHTML:
                     if self.page_length + len(text) >= self.characters_per_page:
                         hs = self.insert_hyphenation(text)
                         if dodropcaps > 0:
-                            self.buff.append('<span class="dropcaps">{}</span>{}'.format(hs[0:dodropcaps], save_html(hs[dodropcaps:])))
+                            self.buff.append('<span class="dropcaps">{}</span>{}'.format(save_html(hs[0:dodropcaps]), save_html(hs[dodropcaps:])))
                             dodropcaps = 0
                         else:
                             self.buff.append(save_html(hs))
@@ -946,7 +946,7 @@ class Fb2XHTML:
                 if len(text) > 0:
                     hs = self.insert_hyphenation(text)
                     if dodropcaps > 0:
-                        self.buff.append('<span class="dropcaps">{}</span>{}'.format(hs[0:dodropcaps], save_html(hs[dodropcaps:])))
+                        self.buff.append('<span class="dropcaps">{}</span>{}'.format(save_html(hs[0:dodropcaps]), save_html(hs[dodropcaps:])))
                     else:
                         self.buff.append(save_html(hs))
                 self.pages_list[self.current_file] = page
@@ -954,7 +954,7 @@ class Fb2XHTML:
                 self.page_length += len(elem.text)
                 hs = self.insert_hyphenation(elem.text)
                 if dodropcaps > 0:
-                    self.buff.append('<span class="dropcaps">{}</span>{}'.format(hs[0:dodropcaps], save_html(hs[dodropcaps:])))
+                    self.buff.append('<span class="dropcaps">{}</span>{}'.format(save_html(hs[0:dodropcaps]), save_html(hs[dodropcaps:])))
                 else:
                     self.buff.append(save_html(hs))
 
