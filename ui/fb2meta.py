@@ -4,34 +4,10 @@
 import base64
 import os
 import zipfile
-import codecs
-import shutil
-import tempfile
 
-
-from io import StringIO, BytesIO
+from io import BytesIO
 from lxml import etree
 from lxml.etree import QName
-
-
-def indent(elem, level=0):
-    '''Функция для улучшения вида xml/html.
-    Вставляет символы пробела согласно уровню вложенности тэга
-    '''
-
-    i = '\n' + level * '  '
-    if len(elem):
-        if not elem.text or not elem.text.strip():
-            elem.text = i + '  '
-        if not elem.tail or not elem.tail.strip():
-            elem.tail = i
-        for elem in elem:
-            indent(elem, level + 1)
-        if not elem.tail or not elem.tail.strip():
-            elem.tail = i
-    else:
-        if level and (not elem.tail or not elem.tail.strip()):
-            elem.tail = i
 
 class Author():
     def __init__(self):
@@ -66,24 +42,18 @@ class Fb2Meta():
         self.coverpage_href = ''
         self.is_zip = False
         self.encoding = ''
+        self.zip_info = zipfile.ZipInfo()
 
         if os.path.splitext(self.file)[1].lower() == '.zip':
             self.is_zip = True
 
         if self.is_zip:
-            zip_file = zipfile.ZipFile(self.file, 'r')
-            content = None
-
-            if len(zip_file.namelist()) == 1:
-                f = zip_file.open(zip_file.namelist()[0])
-                content = f.read()
-                f.close()
-
-                self.tree = etree.parse(BytesIO(content), parser=etree.XMLParser(recover=True))
-                self.encoding = self.tree.docinfo.encoding
-            else:
-                # TODO: архиве несколько файлов. Ошибка
-                pass
+            with zipfile.ZipFile(self.file) as myzip:
+                # TODO - warn here if len(myzip.infolist) > 1?
+                self.zip_info = myzip.infolist()[0]
+                with myzip.open(self.zip_info,'r') as myfile:
+                    self.tree = etree.parse(BytesIO(myfile.read()), parser=etree.XMLParser(recover=True))
+                    self.encoding = self.tree.docinfo.encoding
         else:
             self.tree = etree.parse(self.file, parser=etree.XMLParser(recover=True))
             self.encoding = self.tree.docinfo.encoding
@@ -134,7 +104,7 @@ class Fb2Meta():
                 author_str += ', '
 
             if author.first_name:
-            	author_str += author.first_name 
+                author_str += author.first_name
             if author.middle_name:
                 author_str += ' ' + author.middle_name
             if author.last_name:
@@ -258,36 +228,12 @@ class Fb2Meta():
 
 
     def write(self):
-        ns = {'fb': 'http://www.gribuser.ru/xml/fictionbook/2.0'}
-
         self._create_title_info()
-        indent(self.tree.getroot())
-
         if self.is_zip:
-            zipped_file_name = ''
-            temp_dir = tempfile.mkdtemp()
-            try:
-                zip_file = zipfile.ZipFile(self.file, 'r', zipfile.ZIP_DEFLATED)
-                zip_file.extractall(temp_dir)
-                zip_file.close()
-
-                file_list = os.listdir(temp_dir)
-                if len(file_list) == 1:
-                    for file in file_list:
-                        if file.lower().endswith('.fb2'):
-                            zipped_file_name = file
-                            break
-                shutil.rmtree(temp_dir)
-            except:
-                shutil.rmtree(temp_dir)
-
-            if zipped_file_name:            
-                zip_file = zipfile.ZipFile(self.file, 'w', zipfile.ZIP_DEFLATED)
-                zip_file.writestr(zipped_file_name, etree.tostring(self.tree, encoding=self.encoding, 
-                                                                  method='xml', xml_declaration=True))
-                zip_file.close()
+            with zipfile.ZipFile(self.file,'w') as myzip:
+                myzip.writestr(self.zip_info, etree.tostring(self.tree, encoding=self.encoding, method='xml', xml_declaration=True, pretty_print=True))
         else:
-            self.tree.write(self.file, encoding=self.encoding, method='xml', xml_declaration=True, pretty_print=False)
+            self.tree.write(self.file, encoding=self.encoding, method='xml', xml_declaration=True, pretty_print=True)
 
 if __name__ == '__main__':
     # meta = Fb2Meta('Судья Ди 01. Золото Будды.fb2.zip')
@@ -297,5 +243,6 @@ if __name__ == '__main__':
     # meta.get()
     # meta.write()
 
-    meta = Fb2Meta('Судья Ди 01. Золото Будды.fb2.zip')
+    meta = Fb2Meta('E:/builds_lib/fb2mobi/ui/1.fb2.zip')
     meta.set_authors('Роберт ван Гулик, Гулик Ван Роберт')
+    meta.write()

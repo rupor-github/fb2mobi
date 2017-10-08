@@ -10,7 +10,6 @@ import cssutils
 import base64
 import hashlib
 import html
-import imghdr
 
 from copy import deepcopy
 from lxml import etree, objectify
