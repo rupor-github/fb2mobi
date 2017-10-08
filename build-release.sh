@@ -88,6 +88,8 @@ for _mingw in ${ARCH_INSTALLS}; do
 
 			pushd ${u_work_dir}
 			git clone ${repo} .
+			######### temporary branch
+			git checkout test_zip
 			popd
 			cp kindlegen.exe ${u_work_dir}/.
 

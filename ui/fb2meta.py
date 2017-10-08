@@ -3,7 +3,8 @@
 
 import base64
 import os
-import zipfile
+
+from modules.myzipfile import ZipFile, ZipInfo
 
 from io import BytesIO
 from lxml import etree
@@ -42,13 +43,13 @@ class Fb2Meta():
         self.coverpage_href = ''
         self.is_zip = False
         self.encoding = ''
-        self.zip_info = zipfile.ZipInfo()
+        self.zip_info = ZipInfo()
 
         if os.path.splitext(self.file)[1].lower() == '.zip':
             self.is_zip = True
 
         if self.is_zip:
-            with zipfile.ZipFile(self.file) as myzip:
+            with ZipFile(self.file) as myzip:
                 # TODO - warn here if len(myzip.infolist) > 1?
                 self.zip_info = myzip.infolist()[0]
                 with myzip.open(self.zip_info,'r') as myfile:
@@ -230,7 +231,7 @@ class Fb2Meta():
     def write(self):
         self._create_title_info()
         if self.is_zip:
-            with zipfile.ZipFile(self.file,'w') as myzip:
+            with ZipFile(self.file,'w') as myzip:
                 myzip.writestr(self.zip_info, etree.tostring(self.tree, encoding=self.encoding, method='xml', xml_declaration=True, pretty_print=True))
         else:
             self.tree.write(self.file, encoding=self.encoding, method='xml', xml_declaration=True, pretty_print=True)
@@ -243,6 +244,10 @@ if __name__ == '__main__':
     # meta.get()
     # meta.write()
 
-    meta = Fb2Meta('E:/builds_lib/fb2mobi/ui/1.fb2.zip')
+    meta = Fb2Meta('E:/test/Луна_суровая+хозяйка.zip')
+    meta.set_authors('Роберт ван Гулик, Гулик Ван Роберт')
+    meta.write()
+
+    meta = Fb2Meta('E:/test/Не отпускай меня.fb2.zip')
     meta.set_authors('Роберт ван Гулик, Гулик Ван Роберт')
     meta.write()
