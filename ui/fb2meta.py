@@ -3,35 +3,13 @@
 
 import base64
 import os
-import zipfile
-import codecs
-import shutil
-import tempfile
 
+from modules.myzipfile import ZipFile, ZipInfo
 
-from io import StringIO, BytesIO
+from io import BytesIO
 from lxml import etree
 from lxml.etree import QName
 
-
-def indent(elem, level=0):
-    '''Функция для улучшения вида xml/html.
-    Вставляет символы пробела согласно уровню вложенности тэга
-    '''
-
-    i = '\n' + level * '  '
-    if len(elem):
-        if not elem.text or not elem.text.strip():
-            elem.text = i + '  '
-        if not elem.tail or not elem.tail.strip():
-            elem.tail = i
-        for elem in elem:
-            indent(elem, level + 1)
-        if not elem.tail or not elem.tail.strip():
-            elem.tail = i
-    else:
-        if level and (not elem.tail or not elem.tail.strip()):
-            elem.tail = i
 
 class Author():
     def __init__(self):
@@ -61,29 +39,23 @@ class Fb2Meta():
         self.src_lang = ''
         self.translator = []
         self.sequence = []
-        
+
         self.coverdata = None
         self.coverpage_href = ''
         self.is_zip = False
         self.encoding = ''
+        self.zip_info = ZipInfo()
 
         if os.path.splitext(self.file)[1].lower() == '.zip':
             self.is_zip = True
 
         if self.is_zip:
-            zip_file = zipfile.ZipFile(self.file, 'r')
-            content = None
-
-            if len(zip_file.namelist()) == 1:
-                f = zip_file.open(zip_file.namelist()[0])
-                content = f.read()
-                f.close()
-
-                self.tree = etree.parse(BytesIO(content), parser=etree.XMLParser(recover=True))
-                self.encoding = self.tree.docinfo.encoding
-            else:
-                # TODO: архиве несколько файлов. Ошибка
-                pass
+            with ZipFile(self.file) as myzip:
+                # TODO - warn here if len(myzip.infolist) > 1?
+                self.zip_info = myzip.infolist()[0]
+                with myzip.open(self.zip_info, 'r') as myfile:
+                    self.tree = etree.parse(BytesIO(myfile.read()), parser=etree.XMLParser(recover=True))
+                    self.encoding = self.tree.docinfo.encoding
         else:
             self.tree = etree.parse(self.file, parser=etree.XMLParser(recover=True))
             self.encoding = self.tree.docinfo.encoding
@@ -97,7 +69,6 @@ class Fb2Meta():
 
         return (series_name, series_num)
 
-
     def set_series(self, series_name, series_num):
         self.sequence = []
         if series_name:
@@ -105,7 +76,6 @@ class Fb2Meta():
             cur_series.name = series_name
             cur_series.number = series_num
             self.sequence.append(cur_series)
-
 
     def set_authors(self, author_str):
         self.author = []
@@ -125,16 +95,15 @@ class Fb2Meta():
 
                 self.author.append(cur_author)
 
-
     def get_autors(self):
         author_str = ''
-        
+
         for author in self.author:
             if len(author_str) > 0:
                 author_str += ', '
 
             if author.first_name:
-            	author_str += author.first_name 
+                author_str += author.first_name
             if author.middle_name:
                 author_str += ' ' + author.middle_name
             if author.last_name:
@@ -142,11 +111,10 @@ class Fb2Meta():
 
         return author_str.replace('  ', ' ').strip()
 
-
     def get(self):
         ns = {'fb': 'http://www.gribuser.ru/xml/fictionbook/2.0'}
         for title_info in self.tree.xpath('//fb:description/fb:title-info', namespaces=ns):
-            for elem in title_info:                
+            for elem in title_info:
                 if QName(elem).localname == 'genre':
                     self.genre.append(elem.text)
                 elif QName(elem).localname == 'author':
@@ -170,7 +138,7 @@ class Fb2Meta():
                 elif QName(elem).localname == 'coverpage':
                     for e in elem:
                         if QName(e).localname == 'image':
-                            for attrib in e.attrib:                                
+                            for attrib in e.attrib:
                                 if QName(attrib).localname == 'href':
                                     self.coverpage = e.attrib[attrib][1:]
                                     self.coverpage_href = attrib
@@ -179,7 +147,7 @@ class Fb2Meta():
                 elif QName(elem).localname == 'src-lang':
                     self.src_lang = elem.text
                 elif QName(elem).localname == 'translator':
-                    self.translator.append(elem)                    
+                    self.translator.append(elem)
                 elif QName(elem).localname == 'sequence':
                     seq = Sequence()
                     for a in elem.attrib:
@@ -192,16 +160,15 @@ class Fb2Meta():
         if self.coverpage:
             for tag in self.tree.xpath('//fb:binary[@id="{0}"]'.format(self.coverpage), namespaces=ns):
                 self.coverdata = base64.b64decode(tag.text.encode('ascii'))
-        
 
     def _create_title_info(self):
         ns = {'fb': 'http://www.gribuser.ru/xml/fictionbook/2.0'}
 
         title_info = etree.Element('title-info')
-        
+
         for genre in self.genre:
             etree.SubElement(title_info, 'genre').text = genre
-        
+
         for author in self.author:
             author_elem = etree.Element('author')
             if author.first_name:
@@ -217,7 +184,7 @@ class Fb2Meta():
                 elem.text = author.last_name
                 author_elem.append(elem)
             title_info.append(author_elem)
-        
+
         etree.SubElement(title_info, 'book-title').text = self.book_title
         if self.annotation is not None:
             title_info.append(self.annotation)
@@ -252,42 +219,18 @@ class Fb2Meta():
             if image_elem is None:
                 image_elem = etree.SubElement(self.tree.getroot(), 'binary')
                 image_elem.attrib['id'] = self.coverpage
-                image_elem.attrib['content-type']='image/jpeg'
+                image_elem.attrib['content-type'] = 'image/jpeg'
 
             image_elem.text = base64.encodebytes(self.coverdata)
 
-
     def write(self):
-        ns = {'fb': 'http://www.gribuser.ru/xml/fictionbook/2.0'}
-
         self._create_title_info()
-        indent(self.tree.getroot())
-
         if self.is_zip:
-            zipped_file_name = ''
-            temp_dir = tempfile.mkdtemp()
-            try:
-                zip_file = zipfile.ZipFile(self.file, 'r', zipfile.ZIP_DEFLATED)
-                zip_file.extractall(temp_dir)
-                zip_file.close()
-
-                file_list = os.listdir(temp_dir)
-                if len(file_list) == 1:
-                    for file in file_list:
-                        if file.lower().endswith('.fb2'):
-                            zipped_file_name = file
-                            break
-                shutil.rmtree(temp_dir)
-            except:
-                shutil.rmtree(temp_dir)
-
-            if zipped_file_name:            
-                zip_file = zipfile.ZipFile(self.file, 'w', zipfile.ZIP_DEFLATED)
-                zip_file.writestr(zipped_file_name, etree.tostring(self.tree, encoding=self.encoding, 
-                                                                  method='xml', xml_declaration=True))
-                zip_file.close()
+            with ZipFile(self.file, 'w') as myzip:
+                myzip.writestr(self.zip_info, etree.tostring(self.tree, encoding=self.encoding, method='xml', xml_declaration=True, pretty_print=True))
         else:
-            self.tree.write(self.file, encoding=self.encoding, method='xml', xml_declaration=True, pretty_print=False)
+            self.tree.write(self.file, encoding=self.encoding, method='xml', xml_declaration=True, pretty_print=True)
+
 
 if __name__ == '__main__':
     # meta = Fb2Meta('Судья Ди 01. Золото Будды.fb2.zip')
@@ -297,5 +240,10 @@ if __name__ == '__main__':
     # meta.get()
     # meta.write()
 
-    meta = Fb2Meta('Судья Ди 01. Золото Будды.fb2.zip')
+    meta = Fb2Meta('E:/test/Луна_суровая+хозяйка.zip')
     meta.set_authors('Роберт ван Гулик, Гулик Ван Роберт')
+    meta.write()
+
+    meta = Fb2Meta('E:/test/Не отпускай меня.fb2.zip')
+    meta.set_authors('Роберт ван Гулик, Гулик Ван Роберт')
+    meta.write()
