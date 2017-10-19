@@ -1,0 +1,7 @@
+cssutils==1.0.2
+cx-Freeze==5.0.2
+lxml==4.1.0
+Pillow==4.3.0
+psutil==5.4.0
+PyHyphen==2.0.6
+PyQt5==5.9
