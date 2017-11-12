@@ -10,7 +10,6 @@ import cssutils
 import base64
 import hashlib
 import html
-import imghdr
 
 from copy import deepcopy
 from lxml import etree, objectify
@@ -250,9 +249,18 @@ class Fb2XHTML:
             config.log.info('Applying XSLT transformations "{0}"'.format(config.current_profile['xslt']))
             self.transform = etree.XSLT(etree.parse(config.current_profile['xslt']),
                                         extensions={('fb2mobi_ns', 'katz_tr'): MyExtElement()})
-            self.tree = self.transform(self.tree)
+            transformed = self.transform(self.tree)
             for entry in self.transform.error_log:
                 self.log.warning(entry)
+
+            # Make parser re-read XML - in case transformation changed document structure
+            transformed_file_name = os.path.join(tempdir, os.path.split(fb2file)[1])
+            transformed.write(transformed_file_name, encoding='utf-8', method='xml', xml_declaration=True, pretty_print=False)
+            self.tree = etree.parse(transformed_file_name, parser=etree.XMLParser(recover=True))
+            try:
+                os.remove(transformed_file_name)
+            except:
+                config.log.info('Unable to remove transformed file "{0}".'.format(transformed_file_name))
 
         self.root = self.tree.getroot()
 
@@ -376,14 +384,14 @@ class Fb2XHTML:
         xhtml = etree.parse(io.StringIO(self.get_buff()), parser)
         xhtml.write(filename, encoding='utf-8', method='xml', xml_declaration=True, pretty_print=True)
 
-    def write_buff_debug(self, dname='', fname=''):
-        if len(fname) == 0:
-            dirname = self.temp_content_dir
-            filename = os.path.join(self.temp_content_dir, self.current_file)
-        else:
-            dirname = dname
-            filename = os.path.join(dname, fname)
-        write_file(self.get_buff(), filename)
+    # def write_buff_debug(self, dname='', fname=''):
+    #     if len(fname) == 0:
+    #         dirname = self.temp_content_dir
+    #         filename = os.path.join(self.temp_content_dir, self.current_file)
+    #     else:
+    #         dirname = dname
+    #         filename = os.path.join(dname, fname)
+    #     write_file(self.get_buff(), filename)
 
     def write_debug(self, dname):
         self.tree.write(os.path.join(dname, os.path.split(self.orig_file_name)[1]), encoding='utf-8', method='xml', xml_declaration=True, pretty_print=False)

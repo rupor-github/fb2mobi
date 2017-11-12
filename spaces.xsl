@@ -13,12 +13,6 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<!--xsl:template match="@name[parent::fb:body and . = 'notes']">
-		<xsl:attribute name="name">
-            <xsl:value-of select="'Примечания'"/>
-        </xsl:attribute>
-	</xsl:template-->
-
 	<xsl:template match="fb:p[starts-with(.,'‐') or starts-with(.,'‑') or starts-with(.,'−') or starts-with(.,'–') or starts-with(.,'—') or starts-with(.,'―') or starts-with(.,'…')]">
 		<rupor:katz_tr>—&#8198;</rupor:katz_tr>
 	</xsl:template>
