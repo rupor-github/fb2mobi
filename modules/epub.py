@@ -26,9 +26,11 @@ class EpubProc:
         self.book_series_num = ''  # Номер в книжной серии
 
         self.book_lang = 'ru'
-        self.hyphenator = MyHyphen(self.book_lang)
+
         self.hyphenate = config.current_profile['hyphens']
-        self.replaceNBSP = config.current_profile['hyphensReplaceNBSP']
+        if self.hyphenate:
+            self.replaceNBSP = config.current_profile['hyphensReplaceNBSP']
+            self.hyphenator = MyHyphen(self.book_lang)
 
         self.opffile = opffile
         self.path = os.path.dirname(opffile)
@@ -81,8 +83,17 @@ class EpubProc:
                 node.text = title
 
         for node in self.root.iter('{*}language'):
-            self.book_lang = node.text
-        self.hyphenator.set_language(self.book_lang)
+            self.book_lang = node.text if len(node.text) > 2 else node.text.lower()
+
+        if self.book_lang in ('rus'):
+            self.book_lang = 'ru'
+
+        if self.hyphenate and self.hyphenator:
+            try:
+                self.hyphenator.set_language(self.book_lang.replace("-", "_"))
+            except:
+                self.log.warning('Unable to set hyphenation dictionary for language code "{}" - turning hyphenation off'.format(self.book_lang))
+                self.hyphenate = False
 
         self.tree.write(self.opffile, encoding='utf-8', method='xml', xml_declaration=True, pretty_print=True)
 
