@@ -50,10 +50,12 @@ def sanitize_id(string):
     else:
         return ''
 
+
 def make_dir(filename):
     d = os.path.dirname(filename)
     if not os.path.exists(d):
         os.makedirs(d)
+
 
 def write_file(buff, filename):
     make_dir(filename)
@@ -195,7 +197,7 @@ class Fb2XHTML:
         # Для включения сносок и комментариев в текст книги
         self.notes_dict = {}  # Словарь со сносками и комментариями
         self.notes_order = []  # Notes in order of discovery
-        self.notes_titles = {} # Dictionary of note body titles
+        self.notes_titles = {}  # Dictionary of note body titles
         self.notes_mode = config.current_profile['notesMode']  # Режим отображения сносок: inline, block
         self.notes_bodies = config.current_profile['notesBodies']
         self.current_notes = []  # Переменная для хранения текущей сноски
@@ -289,6 +291,7 @@ class Fb2XHTML:
                 self.parse_body(child)
 
         self.correct_links()
+        self.correct_cover_images()
 
         if self.generate_toc_page:
             self.generate_toc()
@@ -364,10 +367,24 @@ class Fb2XHTML:
                     except:
                         pass
 
-            self.buff = str.replace(str(etree.tostring(root, encoding='utf-8', method='xml', xml_declaration=True), 'utf-8'),' encoding=\'utf-8\'', '', 1)
+            self.buff = str.replace(str(etree.tostring(root, encoding='utf-8', method='xml', xml_declaration=True), 'utf-8'), ' encoding=\'utf-8\'', '', 1)
 
             self.current_file = fl
             self.write_buff()
+
+    def correct_cover_images(self):
+        # Leave only first cover - drop the rest
+        if self.book_cover:
+            have_cover = False
+            covers = []
+            for id, type, file in self.image_file_list:
+                if id == self.book_cover:
+                    if have_cover:
+                        covers.append((id, type, file))
+                    else:
+                        have_cover = True
+            for item in covers:
+                self.image_file_list.remove(item)
 
     def write_buff(self, dname='', fname=''):
         if len(fname) == 0:
@@ -404,7 +421,7 @@ class Fb2XHTML:
             # this is essetially a hack to preserve notes title (if any) for floating notes
 
             toc_title = etree.tostring(elem, method='text', encoding='utf-8').decode('utf-8').strip()
-            toc_title = re.compile('[\[{].*[\]}]').sub('', toc_title) # Удалим остатки ссылок
+            toc_title = re.compile('[\[{].*[\]}]').sub('', toc_title)  # Удалим остатки ссылок
             if toc_title:
                 # Do real title parsing (notes file is not in pages_list anyways)
                 save_buff = self.buff
@@ -578,7 +595,7 @@ class Fb2XHTML:
                 img = Image.open(io.BytesIO(buff))
                 real_type = Image.MIME[img.format]
                 format = img.format.lower()
-                filename = "bin{0:08}.{1}".format(self.image_count,format.lower().replace('jpeg','jpg'))
+                filename = "bin{0:08}.{1}".format(self.image_count, format.lower().replace('jpeg', 'jpg'))
                 full_name = os.path.join(os.path.join(self.temp_content_dir, 'images'), filename)
                 make_dir(full_name)
 
@@ -646,7 +663,7 @@ class Fb2XHTML:
     def parse_title(self, elem):
         toc_ref_id = 'tocref{0}'.format(self.toc_index)
         toc_title = etree.tostring(elem, method='text', encoding='utf-8').decode('utf-8').strip()
-        toc_title = re.compile('[\[{].*[\]}]').sub('', toc_title) # Удалим остатки ссылок
+        toc_title = re.compile('[\[{].*[\]}]').sub('', toc_title)  # Удалим остатки ссылок
 
         if not self.body_name or self.first_header_in_body:
             self.header = True
@@ -1134,7 +1151,9 @@ class Fb2XHTML:
                             back_ref = self.links_location[id_b]
                         except:
                             pass
-                        self.buff.append('<p class="floatnote"><a href="{0}#{1}" id="{2}">{3}).</a>&#160;{4}</p>'.format(back_ref, id_b, id, save_html(note[0]) if len(note[0]) > 0 else '***', save_html(note[1])))
+                        self.buff.append(
+                            '<p class="floatnote"><a href="{0}#{1}" id="{2}">{3}).</a>&#160;{4}</p>'.format(back_ref, id_b, id, save_html(note[0]) if len(note[0]) > 0 else '***',
+                                                                                                            save_html(note[1])))
                     else:
                         continue
         else:
@@ -1287,7 +1306,9 @@ class Fb2XHTML:
 
             self.buff = []
             self.buff.append(HTMLHEAD)
-            self.buff.append('<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0 0 {0} {1}" preserveAspectRatio="xMidYMid meet">'.format(self.screen_width, self.screen_height))
+            self.buff.append(
+                '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0 0 {0} {1}" preserveAspectRatio="xMidYMid meet">'.format(
+                    self.screen_width, self.screen_height))
             self.buff.append('<image width="{0}" height="{1}" xlink:href="images/{2}" />'.format(self.screen_width, self.screen_height, filename))
             self.buff.append('</svg>')
             self.buff.append(HTMLFOOT)
