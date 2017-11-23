@@ -25,7 +25,7 @@ from ui.SettingsDialog import Ui_SettingsDialog
 from ui.gui_config import GuiConfig
 import ui.images_rc
 import ui.ui_version
-from ui.fb2meta import Fb2Meta
+from ui.ebookmeta import EbookMeta
 from ui.fontdb import FontDb
 
 from modules.config import ConverterConfig
@@ -816,7 +816,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             QApplication.setOverrideCursor(Qt.BusyCursor)
 
             item = selected_items[0]
-            meta = Fb2Meta(item.text(2))
+            meta = EbookMeta(item.text(2))
             meta.get()
 
             if self.book_cover:
@@ -851,7 +851,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 QApplication.setOverrideCursor(Qt.BusyCursor)
                 
                 for item in selected_items:
-                    meta = Fb2Meta(item.text(2))
+                    meta = EbookMeta(item.text(2))
                     meta.get()
                     (series, series_number) = meta.get_first_series()
                     authors = meta.get_autors()
@@ -895,7 +895,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.editTitle.setEnabled(True)
             self.editSeriesNumber.setEnabled(True)
 
-            meta = Fb2Meta(selected_items[0].text(2))
+            meta = EbookMeta(selected_items[0].text(2))
             meta.get()
 
             self.editAuthor.setText(meta.get_autors())
@@ -909,14 +909,35 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 self.book_cover = QPixmap()
                 self.book_cover.loadFromData(meta.coverdata)
                 self.displayCoverThumbmail(self.book_cover)
+
+            if meta.book_type == 'fb2':
+                self.editAuthor.setEnabled(True)
+                self.editTitle.setEnabled(True)
+                self.editSeries.setEnabled(True)
+                self.editSeriesNumber.setEnabled(True)
+                self.editBookLanguage.setEnabled(True)
+                self.buttonSaveBookInfo.setEnabled(True)
+            else:
+                self.editAuthor.setEnabled(False)
+                self.editTitle.setEnabled(False)
+                self.editSeries.setEnabled(False)
+                self.editSeriesNumber.setEnabled(False)
+                self.editBookLanguage.setEnabled(False)
+                self.buttonSaveBookInfo.setEnabled(False)
+
         elif len(selected_items) > 1:
+            self.editAuthor.setEnabled(True)
             self.editTitle.setEnabled(False)
             self.editSeriesNumber.setEnabled(False)
+            self.editSeries.setEnabled(True)
+            self.editSeriesNumber.setEnabled(True)
+            self.editBookLanguage.setEnabled(True)
+            self.buttonSaveBookInfo.setEnabled(True)
                 
        
 
     def addFile(self, file):
-        if not file.lower().endswith((".fb2", ".fb2.zip", ".zip")):
+        if not file.lower().endswith(('.fb2', '.fb2.zip', '.zip', '.epub')):
             return
 
         found = False
@@ -929,7 +950,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 break
 
         if not found:
-            meta = Fb2Meta(file)
+            meta = EbookMeta(file)
             meta.get()
 
             item = QTreeWidgetItem(0)
@@ -963,7 +984,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         fileDialog = QFileDialog(self, _translate('fb2mobi-gui', 'Select files'), self.gui_config.lastUsedPath)
         fileDialog.setFileMode(QFileDialog.ExistingFiles)
-        fileDialog.setNameFilters([_translate('fb2mobi-gui', 'Fb2 files (*.fb2 *.fb2.zip *.zip)'), 
+        fileDialog.setNameFilters([_translate('fb2mobi-gui', 'Ebook files (*.fb2 *.fb2.zip *.zip *.epub)'), 
                                   _translate('fb2mobi-gui', 'All files (*.*)')])
 
         if fileDialog.exec_():
