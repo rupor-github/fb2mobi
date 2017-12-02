@@ -1,0 +1,200 @@
+{
+  "af": {
+    "file": "hyph_af_ZA.dic"
+  },
+  "af_ZA": {
+    "file": "hyph_af_ZA.dic"
+  },
+  "bg": {
+    "file": "hyph_bg_BG.dic"
+  },
+  "bg_BG": {
+    "file": "hyph_bg_BG.dic"
+  },
+  "ca": {
+    "file": "hyph_ca.dic"
+  },
+  "cs": {
+    "file": "hyph_cs_CZ.dic"
+  },
+  "cs_CZ": {
+    "file": "hyph_cs_CZ.dic"
+  },
+  "da": {
+    "file": "hyph_da_DK.dic"
+  },
+  "da_DK": {
+    "file": "hyph_da_DK.dic"
+  },
+  "de": {
+    "file": "hyph_de_DE.dic"
+  },
+  "de_DE": {
+    "file": "hyph_de_DE.dic"
+  },
+  "de_AT": {
+    "file": "hyph_de_AT.dic"
+  },
+  "de_CH": {
+    "file": "hyph_de_CH.dic"
+  },
+  "el": {
+    "file": "hyph_el_GR.dic"
+  },
+  "el_GR": {
+    "file": "hyph_el_GR.dic"
+  },
+  "en": {
+    "file": "hyph_en_US.dic"
+  },
+  "en_US": {
+    "file": "hyph_en_US.dic"
+  },
+  "en_Latn_US": {
+    "file": "hyph_en_US.dic"
+  },
+  "en_GB": {
+    "file": "hyph_en_GB.dic"
+  },
+  "en_Latin_GB": {
+    "file": "hyph_en_GB.dic"
+  },
+  "es": {
+    "file": "hyph_es.dic"
+  },
+  "et": {
+    "file": "hyph_et_EE.dic"
+  },
+  "et_EE": {
+    "file": "hyph_et_EE.dic"
+  },
+  "fr": {
+    "file": "hyph_fr.dic"
+  },
+  "gl": {
+    "file": "hyph_gl.dic"
+  },
+  "hr": {
+    "file": "hyph_hr_HR.dic"
+  },
+  "hr_HR": {
+    "file": "hyph_hr_HR.dic"
+  },
+  "hu": {
+    "file": "hyph_hu_HU.dic"
+  },
+  "hu_HU": {
+    "file": "hyph_hu_HU.dic"
+  },
+  "is": {
+    "file": "hyph_is.dic"
+  },
+  "it": {
+    "file": "hyph_it_IT.dic"
+  },
+  "it_IT": {
+    "file": "hyph_it_IT.dic"
+  },
+  "lt": {
+    "file": "hyph_lt_LT.dic"
+  },
+  "lt_LT": {
+    "file": "hyph_lt_LT.dic"
+  },
+  "lv": {
+    "file": "hyph_lv_LV.dic"
+  },
+  "lv_LV": {
+    "file": "hyph_lv_LV.dic"
+  },
+  "nb": {
+    "file": "hyph_nb_NO.dic"
+  },
+  "nb_NO": {
+    "file": "hyph_nb_NO.dic"
+  },
+  "nl": {
+    "file": "hyph_nl_NL.dic"
+  },
+  "nl_NL": {
+    "file": "hyph_nl_NL.dic"
+  },
+  "nn": {
+    "file": "hyph_nn_NO.dic"
+  },
+  "nn_NO": {
+    "file": "hyph_nn_NO.dic"
+  },
+  "pl": {
+    "file": "hyph_pl_PL.dic"
+  },
+  "pl_PL": {
+    "file": "hyph_pl_PL.dic"
+  },
+  "pt": {
+    "file": "hyph_pt_PT.dic"
+  },
+  "pt_PT": {
+    "file": "hyph_pt_PT.dic"
+  },
+  "pt_Latin_PT": {
+    "file": "hyph_pt_PT.dic"
+  },
+  "pt_BR": {
+    "file": "hyph_pt_BR.dic"
+  },
+  "pt_Latin_BR": {
+    "file": "hyph_pt_BR.dic"
+  },
+  "ro": {
+    "file": "hyph_ro_RO.dic"
+  },
+  "ro_RO": {
+    "file": "hyph_ro_RO.dic"
+  },
+  "ru": {
+    "file": "hyph_ru_RU.dic"
+  },
+  "ru_RU": {
+    "file": "hyph_ru_RU.dic"
+  },
+  "sk": {
+    "file": "hyph_sk_SK.dic"
+  },
+  "sk_BG": {
+    "file": "hyph_sk_SK.dic"
+  },
+  "sl": {
+    "file": "hyph_sl_SI.dic"
+  },
+  "sl_SI": {
+    "file": "hyph_sl_SI.dic"
+  },
+  "sr": {
+    "file": "hyph_sr.dic"
+  },
+  "sr_Latin": {
+    "file": "hyph_sr_Latin.dic"
+  },
+  "sv": {
+    "file": "hyph_sv.dic"
+  },
+  "te": {
+    "file": "hyph_te_IN.dic"
+  },
+  "te_IN": {
+    "file": "hyph_te_IN.dic"
+  },
+  "uk": {
+    "file": "hyph_uk_UA.dic"
+  },
+  "uk_UA": {
+    "file": "hyph_uk_UA.dic"
+  },
+  "zu": {
+    "file": "hyph_zu_ZA.dic"
+  },
+  "zu_BG": {
+    "file": "hyph_zu_ZA.dic"
+  }
+}
