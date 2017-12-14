@@ -55,19 +55,22 @@ class EbookMeta():
         if os.path.splitext(self.file)[1].lower() == '.zip':
             self.is_zip = True
 
-        if self.book_type == 'fb2':
-            if self.is_zip:
-                with ZipFile(self.file) as myzip:
-                    # TODO - warn here if len(myzip.infolist) > 1?
-                    self.zip_info = myzip.infolist()[0]
-                    with myzip.open(self.zip_info, 'r') as myfile:
-                        self.tree = etree.parse(BytesIO(myfile.read()), parser=etree.XMLParser(recover=True))
-                        self.encoding = self.tree.docinfo.encoding
-            else:
-                self.tree = etree.parse(self.file, parser=etree.XMLParser(recover=True))
-                self.encoding = self.tree.docinfo.encoding
-        elif self.book_type == 'epub':
-            pass
+        try:
+            if self.book_type == 'fb2':
+                if self.is_zip:
+                    with ZipFile(self.file) as myzip:
+                        # TODO - warn here if len(myzip.infolist) > 1?
+                        self.zip_info = myzip.infolist()[0]
+                        with myzip.open(self.zip_info, 'r') as myfile:
+                            self.tree = etree.parse(BytesIO(myfile.read()), parser=etree.XMLParser(recover=True))
+                            self.encoding = self.tree.docinfo.encoding
+                else:
+                    self.tree = etree.parse(self.file, parser=etree.XMLParser(recover=True))
+                    self.encoding = self.tree.docinfo.encoding
+            elif self.book_type == 'epub':
+                pass
+        except:
+            self.book_type = ''
 
     def get_first_series(self):
         series_name = ''
@@ -129,10 +132,13 @@ class EbookMeta():
 
 
     def get(self):
-        if self.book_type == 'fb2':
-            self._get_fb2_metadata()
-        elif self.book_type == 'epub':
-            self._get_epub_metadata()
+        try:
+            if self.book_type == 'fb2':
+                self._get_fb2_metadata()
+            elif self.book_type == 'epub':
+                self._get_epub_metadata()
+        except:
+            self.book_type = ''
 
 
     def _get_epub_metadata(self):

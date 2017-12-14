@@ -416,17 +416,17 @@
         <translation type="obsolete">Обработка файла: {0}</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="974"/>
+        <location filename="fb2mobi-gui.py" line="995"/>
         <source>Select files</source>
         <translation>Выберите файлы</translation>
     </message>
     <message>
         <location filename="fb2mobi-gui.py" line="976"/>
         <source>Fb2 files (*.fb2 *.fb2.zip *.zip)</source>
-        <translation>Файлы fb2 (*.fb2 *.fb2.zip *.zip)</translation>
+        <translation type="obsolete">Файлы fb2 (*.fb2 *.fb2.zip *.zip)</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="976"/>
+        <location filename="fb2mobi-gui.py" line="997"/>
         <source>All files (*.*)</source>
         <translation>Все файлы (*.*)</translation>
     </message>
@@ -509,6 +509,16 @@
         <location filename="fb2mobi-gui.py" line="632"/>
         <source>Kindle connected to {0}</source>
         <translation>Kindle подключен как {0}</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="472"/>
+        <source>Error while converting file(s). Check log for details.</source>
+        <translation type="unfinished">Возникла ошибка при конвертации файлов. Детали смотрите в лог-файле.</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="997"/>
+        <source>Ebook files (*.fb2 *.fb2.zip *.zip *.epub)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
