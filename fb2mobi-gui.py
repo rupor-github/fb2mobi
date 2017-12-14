@@ -466,7 +466,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 i += 1
 
             if errors > 0:
-                QMessageBox.warning(self, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui', 'Error while sending file(s). Check log for details.'))
+                QMessageBox.warning(self, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui', 'Error while converting file(s). Check log for details.'))
 
 
             if mode == PROCESS_MODE_KINDLE:                
