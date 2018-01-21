@@ -52,7 +52,7 @@ setup(
 #            'build_exe': 'dist',
             'zip_exclude_packages': '',
             'zip_include_packages': '*',
-            'packages': 'lxml,PIL',
+            'packages': 'json,lxml,PIL',
             'include_files': data_files,
             'includes': includes,
             'excludes': excludes,
