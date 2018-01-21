@@ -19,10 +19,7 @@ class FontDb(object):
 				if os.path.splitext(file)[1].lower() in ['.ttf', '.otf']:
 					font_file = os.path.join(self.fonts_path, file)
 					try:
-						if sys.platform == 'win32':
-							font = ImageFont.truetype(font_file.encode('cp1251'), 10)
-						else:	
-							font = ImageFont.truetype(font_file, 10)
+						font = ImageFont.truetype(font_file, 10)
 						if font.font.family not in self.families:
 							self.families[font.font.family] = {}
 						self.families[font.font.family][font.font.style] = file
