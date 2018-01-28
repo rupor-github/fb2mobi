@@ -30,8 +30,7 @@ class SendToKindle:
             fname = os.path.basename(file_path)
             msg.attach(MIMEApplication(open(file_path, 'rb').read(), Content_Disposition='attachment; filename="%s"' % fname, Name=fname))
 
-        mail_server = smtplib.SMTP(host=self.smtp_server, port=self.smtp_port)
-        mail_server.starttls()
+        mail_server = smtplib.SMTP_SSL(host=self.smtp_server, port=self.smtp_port)
         mail_server.login(self.smtp_login, self.smtp_password)
         mail_server.sendmail(self.user_email, self.kindle_email, msg.as_string())
         mail_server.quit()
