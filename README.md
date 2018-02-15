@@ -40,7 +40,7 @@ Program uses source code (modified) from following projects released under GPL:
 
 * [KindleUnpack](https://github.com/kevinhendricks/KindleUnpack)
 
-In order to build [releases](https://github.com/rupor-github/fb2mobi/releases) we are using Python 3.6.1 with [following modules](https://github.com/rupor-github/fb2mobi/blob/master/requirements.txt).
+In order to build [releases](https://github.com/rupor-github/fb2mobi/releases) we are using Python 3.6.3 with [following modules](https://github.com/rupor-github/fb2mobi/blob/master/requirements.txt).
 
 If you are not using "frozen" distribution you would need to download [Amazon's KindleGen](https://www.amazon.com/gp/feature.html?docId=1000765211).
 
