@@ -13,7 +13,9 @@ import html
 
 from copy import deepcopy
 from lxml import etree, objectify
-from PIL import Image
+from PIL import Image, ImageFile
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 from modules.utils import transliterate
 from modules.myhyphen import MyHyphen
