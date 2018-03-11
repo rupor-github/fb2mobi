@@ -31,14 +31,17 @@ Here is brief list of changes to the original project (in addition to bug fixes)
 * Added new `<chapterLevel>` configuration tag and `---chapter-level` parameter along with new style `.titleblock_nobreak`. When parsing sections this style will be generated
   if nesting level is greater or equal to specified value. This allows better control of page breaks on sections boundaries.
 * Supported `<openBookFromCover>` configuration tag and `---open-book-from-cover` parameter for compatibility with fb2conv.
-* Changed how book title and book author are formatted - added processing of conditional blocks ex: `<bookTitleFormat>{(#abbrseries{ #padnumber}) }#title</bookTitleFormat>`. To output curly braces escape them with backslash.
+* Changed how book title and book author are formatted - added processing of conditional blocks, for example: `<bookTitleFormat>{(#abbrseries{ #padnumber}) }#title</bookTitleFormat>`. To output curly braces escape them with backslash.
 * Added new css style `.linkanchor` - this is style for all href links which are NOT pointing to the note bodies. This allows for flexible formatting of hyperlinks in the text.
+* Added "default" cover for fb2 which do not have it (APG 2018.1) - `<coverDefault>` in profile configuration.
+* Added cover "stamping" with book title, series and author name(s) - `<coverFont>` and `<coverStamp>` in profile configuration or `--stamp-cover` on command line.
 
 More info can be found on [russian forum](http://www.the-ebook.org/forum/viewtopic.php?t=30380).
 
 Program uses source code (modified) from following projects released under GPL:
 
 * [KindleUnpack](https://github.com/kevinhendricks/KindleUnpack)
+* [Image Utils](https://gist.github.com/drcongo/8521040)
 
 In order to build [releases](https://github.com/rupor-github/fb2mobi/releases) we are using Python 3.6.3 with [following modules](https://github.com/rupor-github/fb2mobi/blob/master/requirements.txt).
 
