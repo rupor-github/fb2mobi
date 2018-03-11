@@ -1,0 +1,15 @@
+[MASTER]
+unsafe-load-any-extensions=yes
+
+[MESSAGES CONTROL]
+disable=
+	R,
+	line-too-long,
+	too-many-lines,
+	no-member,
+	missing-docstring,
+	invalid-name,
+	bare-except,
+	multiple-imports,
+	too-many-public-methods,
+	no-name-in-module,

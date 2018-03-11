@@ -35,9 +35,9 @@ def get_executable_path():
 
 def get_executable_name():
     if getattr(sys, 'frozen', False):
-        name, ext = os.path.splitext(os.path.basename((sys.executable)))
+        name, _ = os.path.splitext(os.path.basename((sys.executable)))
     else:
-        name, ext = os.path.splitext(os.path.basename((sys.argv[0])))
+        name, _ = os.path.splitext(os.path.basename((sys.argv[0])))
 
     return name
 
@@ -46,7 +46,7 @@ def create_epub(rootdir, epubname):
     epub = zipfile.ZipFile(epubname, "w")
     epub.write(os.path.join(rootdir, 'mimetype'), 'mimetype', zipfile.ZIP_STORED)
 
-    for root, dirs, files in os.walk(rootdir):
+    for root, _, files in os.walk(rootdir):
         relpath = os.path.relpath(root, rootdir)
         if relpath != '.':
             epub.write(root, relpath)
@@ -75,7 +75,7 @@ def unzip(filename, tempdir):
 
     zfile = zipfile.ZipFile(filename)
     zname = zfile.namelist()[0]
-    zdirname, zfilename = os.path.split(zname)
+    _, zfilename = os.path.split(zname)
     if zfilename:
         unzipped_file = os.path.join(tempdir, '_unzipped.fb2')
         with open(unzipped_file, 'wb') as f:
@@ -100,15 +100,15 @@ def unzip_epub(filename, tempdir):
     return unzipped_file
 
 
-def rm_tmp_files(dir, deleteroot=True):
-    for root, dirs, files in os.walk(dir, topdown=False):
+def rm_tmp_files(dest, deleteroot=True):
+    for root, dirs, files in os.walk(dest, topdown=False):
         for name in files:
             os.remove(os.path.join(root, name))
         for name in dirs:
             os.rmdir(os.path.join(root, name))
 
     if deleteroot:
-        os.rmdir(dir)
+        os.rmdir(dest)
 
 
 def process_file(config, infile, outfile=None):
@@ -310,11 +310,11 @@ def process_file(config, infile, outfile=None):
                         base = os.path.splitext(outfile)[0]
                         reader = mobi_read(base + '.' + ext)
                         pagedata = reader.getPageData()
-                        if len(pagedata) > 0:
+                        if pagedata:
                             config.log.info('Generating page index (APNX)...')
                             pages = PageMapProcessor(pagedata, config.log)
                             asin = reader.getCdeContentKey()
-                            if len(asin) == 0:
+                            if not asin:
                                 asin = reader.getASIN()
                             apnx = pages.generateAPNX(
                                 {'contentGuid': str(uuid.uuid4()).replace('-', '')[:8],
@@ -384,7 +384,7 @@ def process_folder(config, inputdir, outputdir=None):
             os.makedirs(outputdir)
 
     if os.path.isdir(inputdir):
-        for root, dirs, files in os.walk(inputdir):
+        for root, _, files in os.walk(inputdir):
             for file in files:
                 try:
                     if file.lower().endswith(('.fb2', '.fb2.zip', '.zip', '.epub')):
@@ -427,9 +427,9 @@ def get_log_level(log_level):
         return logging.INFO
 
 
-def process(args):
-    infile = args.infile
-    outfile = args.outfile
+def process(myargs):
+    infile = myargs.infile
+    outfile = myargs.outfile
     config_file_name = "{0}.config".format(get_executable_name())
     application_path = get_executable_path()
 
@@ -443,7 +443,7 @@ def process(args):
 
     config = ConverterConfig(config_file)
 
-    if args.profilelist:
+    if myargs.profilelist:
 
         print('Profile list in {0}:'.format(config.config_file))
         for p in config.profiles:
@@ -451,18 +451,18 @@ def process(args):
         sys.exit(0)
 
     # Если указаны параметры в командной строке, переопределяем дефолтные параметры 1
-    if args:
-        if args.debug:
-            config.debug = args.debug
-        if args.log:
-            config.log_file = args.log
-        if args.loglevel:
-            config.log_level = args.loglevel
-        if args.consolelevel:
-            config.console_level = args.consolelevel
-        if args.recursive:
+    if myargs:
+        if myargs.debug:
+            config.debug = myargs.debug
+        if myargs.log:
+            config.log_file = myargs.log
+        if myargs.loglevel:
+            config.log_level = myargs.loglevel
+        if myargs.consolelevel:
+            config.console_level = myargs.consolelevel
+        if myargs.recursive:
             config.recursive = True
-        if args.nc:
+        if myargs.nc:
             config.mhl = True
 
     log = logging.getLogger('fb2mobi')
@@ -481,90 +481,92 @@ def process(args):
 
     config.log = log
 
-    if args.profile:
-        config.setCurrentProfile(args.profile)
+    if myargs.profile:
+        config.setCurrentProfile(myargs.profile)
     else:
         config.setCurrentProfile(config.default_profile)
 
     # Если указаны параметры в командной строке, переопределяем дефолтные параметры 2
-    if args:
-        if args.apnx:
-            config.apnx = args.apnx.lower()
-        if args.outputformat:
-            config.output_format = args.outputformat
-        if args.hyphenate is not None:
-            config.current_profile['hyphens'] = args.hyphenate
-        if args.transliterate is not None:
-            config.transliterate = args.transliterate
-        if args.screen_width is not None:
-            config.screen_width = args.screen_width
-        if args.screen_height is not None:
-            config.screen_height = args.screen_height
-        if args.kindlecompressionlevel:
-            config.kindle_compression_level = args.kindlecompressionlevel
-        if args.css:
-            config.current_profile['css'] = args.css
-        if args.xslt:
-            config.current_profile['xslt'] = args.xslt
-        if args.dropcaps is not None:
-            config.current_profile['dropcaps'] = args.dropcaps
-        if args.toctype:
-            config.current_profile['tocType'] = args.toctype.lower()
-        if args.tocmaxlevel:
-            config.current_profile['tocMaxLevel'] = args.tocmaxlevel
-        if args.tockindlelevel:
-            config.current_profile['tocKindleLevel'] = args.tockindlelevel
-        if args.tocbeforebody is not None:
-            config.current_profile['tocBeforeBody'] = args.tocbeforebody
-        if args.notesmode:
-            config.current_profile['notesMode'] = args.notesmode
-        if args.notesbodies:
-            config.current_profile['notesBodies'] = args.notesbodies
-        if args.annotationtitle:
-            config.current_profile['annotationTitle'] = args.annotationtitle
-        if args.toctitle:
-            config.current_profile['tocTitle'] = args.toctitle
-        if args.chapteronnewpage is not None:
-            config.current_profile['chapterOnNewPage'] = args.chapteronnewpage
-        if args.chapterlevel is not None:
-            config.current_profile['chapterLevel'] = args.chapterlevel
-        if args.seriespositions is not None:
-            config.current_profile['seriesPositions'] = args.seriespositions
-        if args.removepngtransparency is not None:
-            config.current_profile['removePngTransparency'] = args.removepngtransparency
-        if args.noMOBIoptimization:
-            config.noMOBIoptimization = args.noMOBIoptimization
-        if args.sendtokindle is not None:
-            config.send_to_kindle['send'] = args.sendtokindle
-        if args.inputdir:
-            config.input_dir = args.inputdir
-        if args.outputdir:
-            config.output_dir = args.outputdir
-        if args.deletesourcefile:
-            config.delete_source_file = args.deletesourcefile
-        if args.savestructure:
-            config.save_structure = args.savestructure
-        if args.openbookfromcover is not None:
-            config.current_profile['openBookFromCover'] = args.openbookfromcover
+    if myargs:
+        if myargs.apnx:
+            config.apnx = myargs.apnx.lower()
+        if myargs.outputformat:
+            config.output_format = myargs.outputformat
+        if myargs.hyphenate is not None:
+            config.current_profile['hyphens'] = myargs.hyphenate
+        if myargs.transliterate is not None:
+            config.transliterate = myargs.transliterate
+        if myargs.screen_width is not None:
+            config.screen_width = myargs.screen_width
+        if myargs.screen_height is not None:
+            config.screen_height = myargs.screen_height
+        if myargs.kindlecompressionlevel:
+            config.kindle_compression_level = myargs.kindlecompressionlevel
+        if myargs.css:
+            config.current_profile['css'] = myargs.css
+        if myargs.xslt:
+            config.current_profile['xslt'] = myargs.xslt
+        if myargs.dropcaps is not None:
+            config.current_profile['dropcaps'] = myargs.dropcaps
+        if myargs.toctype:
+            config.current_profile['tocType'] = myargs.toctype.lower()
+        if myargs.tocmaxlevel:
+            config.current_profile['tocMaxLevel'] = myargs.tocmaxlevel
+        if myargs.tockindlelevel:
+            config.current_profile['tocKindleLevel'] = myargs.tockindlelevel
+        if myargs.tocbeforebody is not None:
+            config.current_profile['tocBeforeBody'] = myargs.tocbeforebody
+        if myargs.notesmode:
+            config.current_profile['notesMode'] = myargs.notesmode
+        if myargs.notesbodies:
+            config.current_profile['notesBodies'] = myargs.notesbodies
+        if myargs.annotationtitle:
+            config.current_profile['annotationTitle'] = myargs.annotationtitle
+        if myargs.toctitle:
+            config.current_profile['tocTitle'] = myargs.toctitle
+        if myargs.chapteronnewpage is not None:
+            config.current_profile['chapterOnNewPage'] = myargs.chapteronnewpage
+        if myargs.chapterlevel is not None:
+            config.current_profile['chapterLevel'] = myargs.chapterlevel
+        if myargs.seriespositions is not None:
+            config.current_profile['seriesPositions'] = myargs.seriespositions
+        if myargs.removepngtransparency is not None:
+            config.current_profile['removePngTransparency'] = myargs.removepngtransparency
+        if myargs.noMOBIoptimization:
+            config.noMOBIoptimization = myargs.noMOBIoptimization
+        if myargs.sendtokindle is not None:
+            config.send_to_kindle['send'] = myargs.sendtokindle
+        if myargs.inputdir:
+            config.input_dir = myargs.inputdir
+        if myargs.outputdir:
+            config.output_dir = myargs.outputdir
+        if myargs.deletesourcefile:
+            config.delete_source_file = myargs.deletesourcefile
+        if myargs.savestructure:
+            config.save_structure = myargs.savestructure
+        if myargs.openbookfromcover is not None:
+            config.current_profile['openBookFromCover'] = myargs.openbookfromcover
+        if myargs.coverStamp is not None:
+            config.current_profile['coverStamp'] = myargs.coverStamp
 
-        if args.transliterateauthorandtitle is not None:
-            config.transliterate_author_and_title = args.transliterateauthorandtitle
+        if myargs.transliterateauthorandtitle is not None:
+            config.transliterate_author_and_title = myargs.transliterateauthorandtitle
 
-    if args.inputdir:
-        process_folder(config, args.inputdir, args.outputdir)
-        if args.deleteinputdir:
+    if myargs.inputdir:
+        process_folder(config, myargs.inputdir, myargs.outputdir)
+        if myargs.deleteinputdir:
             try:
-                rm_tmp_files(args.inputdir, False)
+                rm_tmp_files(myargs.inputdir, False)
             except:
-                log.error('Unable to remove directory "{0}"'.format(args.inputdir))
+                config.log.error('Unable to remove directory "%s"', myargs.inputdir)
 
     elif infile:
         process_file(config, infile, outfile)
-        if args.deletesourcefile:
+        if myargs.deletesourcefile:
             try:
                 os.remove(infile)
             except:
-                log.error('Unable to remove file "{0}"'.format(infile))
+                config.log.error('Unable to remove file "%s"', infile)
     else:
         print(argparser.description)
         argparser.print_usage()
@@ -663,6 +665,8 @@ if __name__ == '__main__':
     pngtransparency_group.add_argument('--no-remove-png-transparency', dest='removepngtransparency', action='store_false', default=None,
                                        help='Do not remove transparency in PNG images')
 
+    argparser.add_argument('--stamp-cover', dest='coverStamp', type=str, default=None, choices=['Top', 'Bottom', 'None'],
+                           help='Place stamp on cover image (Top, Bottom, None)')
 
     # Для совместимости с MyHomeLib добавляем аргументы, которые передает MHL в fb2mobi.exe
     argparser.add_argument('-nc', action='store_true', default=False, help='For MyHomeLib compatibility')

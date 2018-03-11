@@ -1,24 +1,27 @@
 # -*- coding: utf-8 -*-
 
-import os, sys
+import os, os.path, sys
 import re
 import shutil
 import io
 import codecs
 import uuid
-import cssutils
 import base64
 import hashlib
 import html
-
 from copy import deepcopy
+from typing import Tuple
+
+from modules.image_utils import ImageText
+from modules.utils import transliterate
+from modules.myhyphen import MyHyphen
+
+import cssutils
+
 from lxml import etree, objectify
 from PIL import Image, ImageFile
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
-
-from modules.utils import transliterate
-from modules.myhyphen import MyHyphen
 
 HTMLHEAD = ('<html xmlns="http://www.w3.org/1999/xhtml">'
             '<head>'
@@ -95,12 +98,12 @@ def format_title(s, seq):
     p_c = -1
 
     # Hack - I do not want to write real parser
-    pps = s.replace('\{', chr(1)).replace('\}', chr(2))
+    pps = s.replace(r'\{', chr(1)).replace(r'\}', chr(2))
 
-    for i in range(len(pps)):
-        if pps[i] == '{':
+    for i, sym in enumerate(pps):
+        if sym == '{':
             p_o = i
-        elif pps[i] == '}':
+        elif sym == '}':
             p_c = i
             break
 
@@ -162,6 +165,9 @@ class Fb2XHTML:
         self.parse_css = config.current_profile['parse_css']
 
         self.open_book_from_cover = config.current_profile['openBookFromCover']
+        if self.open_book_from_cover and self.kindle:
+            self.open_book_from_cover = False
+            self.log.warning('For "kindle" books (mobi, azw3) option "open book from cover" is ignored')
 
         self.annotation = None
 
@@ -217,6 +223,15 @@ class Fb2XHTML:
 
         self.characters_per_page = config.characters_per_page
 
+        # Additional cover processiing
+
+        # when set to Top or Bottom cover will be stamped
+        self.cover_stamp = config.current_profile['coverStamp']
+        # when book has no cover image this file will be used instead
+        self.cover_default = config.current_profile['coverDefault']
+        # if it ponts to font file and cover_stamp is not 'None' cover will be stamped
+        self.cover_font = config.current_profile['coverTextFont']
+
         self.genres = []
 
         self.mobi_file = mobifile
@@ -226,7 +241,7 @@ class Fb2XHTML:
 
             # rupor - this allows for smaller xsl, quicker replacement and allows handling of tags in the paragraphs
             class MyExtElement(etree.XSLTExtension):
-                def execute(self, context, self_node, input_node, output_parent):
+                def execute(self, _, self_node, input_node, output_parent):
                     child = deepcopy(input_node)
                     found = False
                     for elem in child.getiterator():
@@ -363,7 +378,7 @@ class Fb2XHTML:
 
             for elem in root.xpath('//xhtml:a', namespaces={'xhtml': 'http://www.w3.org/1999/xhtml'}):
                 link = elem.get('href', '')
-                if len(link) > 0 and link.startswith('#'):
+                if link and link.startswith('#'):
                     try:
                         elem.set('href', self.links_location[link[1:]] + link)
                     except:
@@ -375,21 +390,31 @@ class Fb2XHTML:
             self.write_buff()
 
     def correct_cover_images(self):
-        # Leave only first cover - drop the rest
         if self.book_cover:
+            # Leave only first cover - drop the rest
             have_cover = False
             covers = []
-            for id, type, file in self.image_file_list:
-                if id == self.book_cover:
+            for imgid, imgtype, file in self.image_file_list:
+                if imgid == self.book_cover:
                     if have_cover:
-                        covers.append((id, type, file))
+                        covers.append((imgid, imgtype, file))
                     else:
                         have_cover = True
             for item in covers:
                 self.image_file_list.remove(item)
+        elif self.kindle and self.cover_default:
+            # no cover - if "kindle" provide basic dummy one
+            try:
+                dst_name = "cover{0:08}.jpg".format(self.image_count)
+                copy_file(self.cover_default, os.path.join(os.path.join(self.temp_content_dir, 'images'), dst_name))
+                self.image_file_list.append(("dummycover.jpg", "image/jpeg", dst_name))
+                self.image_count += 1
+                self.book_cover = "dummycover.jpg"
+            except:
+                self.log.warning('Default cover {} not found.'.format(self.cover_default))
 
     def write_buff(self, dname='', fname=''):
-        if len(fname) == 0:
+        if not fname:
             dirname = self.temp_content_dir
             filename = os.path.join(self.temp_content_dir, self.current_file)
         else:
@@ -423,7 +448,7 @@ class Fb2XHTML:
             # this is essetially a hack to preserve notes title (if any) for floating notes
 
             toc_title = etree.tostring(elem, method='text', encoding='utf-8').decode('utf-8').strip()
-            toc_title = re.compile('[\[{].*[\]}]').sub('', toc_title)  # Удалим остатки ссылок
+            toc_title = re.compile(r'[\[{].*[\]}]').sub('', toc_title)  # Удалим остатки ссылок
             if toc_title:
                 # Do real title parsing (notes file is not in pages_list anyways)
                 save_buff = self.buff
@@ -435,7 +460,7 @@ class Fb2XHTML:
                 self.buff = save_buff
 
         elif ns_tag(elem.tag) == 'section' and 'id' in elem.attrib:
-            id = elem.attrib['id']
+            elid = elem.attrib['id']
             notetext = []
             self.buff = []
 
@@ -445,8 +470,8 @@ class Fb2XHTML:
                 else:
                     notetext.append(etree.tostring(e, method='text', encoding='utf-8').decode('utf-8').strip())
 
-            self.notes_dict[id] = (note_title, ' '.join(notetext))
-            self.notes_order.append((id, body_name))
+            self.notes_dict[elid] = (note_title, ' '.join(notetext))
+            self.notes_order.append((elid, body_name))
         else:
             for e in elem:
                 self.parse_note_elem(e, body_name)
@@ -517,7 +542,7 @@ class Fb2XHTML:
                         else:
                             self.book_lang = 'ru'
 
-                        if self.book_lang in ('rus'):
+                        if self.book_lang in 'rus':
                             self.book_lang = 'ru'
 
                         if self.hyphenate and self.hyphenator:
@@ -590,28 +615,28 @@ class Fb2XHTML:
         if elem.attrib['id'] and elem.attrib['content-type']:
             have_file = False
             self.log.debug('Parsing binary {0}'.format(elem.attrib))
-            id = elem.attrib['id']
+            elid = elem.attrib['id']
             decl_type = elem.attrib['content-type'].lower()
             buff = base64.b64decode(elem.text.encode('ascii'))
             try:
                 img = Image.open(io.BytesIO(buff))
                 real_type = Image.MIME[img.format]
-                format = img.format.lower()
-                filename = "bin{0:08}.{1}".format(self.image_count, format.lower().replace('jpeg', 'jpg'))
+                imgfmt = img.format.lower()
+                filename = "bin{0:08}.{1}".format(self.image_count, imgfmt.lower().replace('jpeg', 'jpg'))
                 full_name = os.path.join(os.path.join(self.temp_content_dir, 'images'), filename)
                 make_dir(full_name)
 
-                if self.kindle and not format in ('gif', 'jpeg', 'png', 'bmp'):
-                    self.log.warning('Image type "{0}" for ref-id "{1} is not supported by your device. Ignoring...'.format(real_type, id))
+                if self.kindle and not imgfmt in ('gif', 'jpeg', 'png', 'bmp'):
+                    self.log.warning('Image type "{0}" for ref-id "{1} is not supported by your device. Ignoring...'.format(real_type, elid))
                     return
 
                 if real_type != decl_type:
-                    self.log.warning('Declared and detected image types for ref-id "{0}" do not match: "{1}" is not "{2}". Using detected type...'.format(id, decl_type, real_type))
+                    self.log.warning('Declared and detected image types for ref-id "{0}" do not match: "{1}" is not "{2}". Using detected type...'.format(elid, decl_type, real_type))
 
-                if self.removepngtransparency and format == 'png' and (img.mode in ('RGBA', 'LA') or (img.mode in ('RGB', 'L', 'P') and 'transparency' in img.info)):
+                if self.removepngtransparency and imgfmt == 'png' and (img.mode in ('RGBA', 'LA') or (img.mode in ('RGB', 'L', 'P') and 'transparency' in img.info)):
                     try:
-                        self.log.debug('Removing image transparency for ref-id "{0}" in file "{1}"'.format(id, filename))
-                        if img.mode == "P" and type(img.info.get("transparency")) is bytes:
+                        self.log.debug('Removing image transparency for ref-id "{0}" in file "{1}"'.format(elid, filename))
+                        if img.mode == "P" and isinstance(img.info.get("transparency"), bytes):
                             img = img.convert("RGBA")
                         if img.mode in ("L", "LA"):
                             bg = Image.new("L", img.size, 255)
@@ -622,7 +647,7 @@ class Fb2XHTML:
                         bg.save(full_name, dpi=img.info.get("dpi"))
                         have_file = True
                     except:
-                        self.log.warning('Unable to remove transparency for ref-id "{0}" in file "{1}"'.format(id, filename))
+                        self.log.warning('Unable to remove transparency for ref-id "{0}" in file "{1}"'.format(elid, filename))
                         self.log.debug('Getting details:', exc_info=True)
 
                 self.image_count += 1
@@ -635,14 +660,14 @@ class Fb2XHTML:
                     full_name = os.path.join(os.path.join(self.temp_content_dir, 'images'), filename)
                     self.image_count += 1
                 else:
-                    self.log.error('Unable to process binary for ref-id "{0}". Skipping...'.format(id))
+                    self.log.error('Unable to process binary for ref-id "{0}". Skipping...'.format(elid))
                     # self.log.debug('Getting details:', exc_info=True)
                     return
 
             if not have_file:
                 write_file_bin(buff, full_name)
 
-            self.image_file_list.append((id, real_type, filename))
+            self.image_file_list.append((elid, real_type, filename))
 
     def parse_span(self, span, elem):
         self.parse_format(elem, 'span', span)
@@ -665,7 +690,7 @@ class Fb2XHTML:
     def parse_title(self, elem):
         toc_ref_id = 'tocref{0}'.format(self.toc_index)
         toc_title = etree.tostring(elem, method='text', encoding='utf-8').decode('utf-8').strip()
-        toc_title = re.compile('[\[{].*[\]}]').sub('', toc_title)  # Удалим остатки ссылок
+        toc_title = re.compile(r'[\[{].*[\]}]').sub('', toc_title)  # Удалим остатки ссылок
 
         if not self.body_name or self.first_header_in_body:
             self.header = True
@@ -736,8 +761,8 @@ class Fb2XHTML:
             return
 
         filename = None
-        for id, type, file in self.image_file_list:
-            if id == int_id:
+        for imgid, _, file in self.image_file_list:
+            if imgid == int_id:
                 filename = file
                 break
         if not filename:
@@ -972,7 +997,7 @@ class Fb2XHTML:
                         self.page_length = 0
 
                 self.page_length = len(text)
-                if len(text) > 0:
+                if text:
                     hs = self.insert_hyphenation(text)
                     if dodropcaps > 0:
                         self.buff.append('<span class="dropcaps">{}</span>{}'.format(save_html(hs[0:dodropcaps]), save_html(hs[dodropcaps:])))
@@ -1115,7 +1140,7 @@ class Fb2XHTML:
 
                 # To satisfy Amazon's requirements for floating notes I have to create notes body on the fly here, removing most of the formatting
 
-                if len(self.notes_order) > 0:
+                if self.notes_order:
                     if self.body_name in self.notes_titles:
                         toc_title = self.notes_titles[self.body_name][0]
                         title = ''.join(self.notes_titles[self.body_name][1])
@@ -1142,19 +1167,19 @@ class Fb2XHTML:
                     self.buff.append('</div>')
                     self.toc_index += 1
 
-                for id, body_name in self.notes_order:
+                for noteid, body_name in self.notes_order:
                     if body_name == self.body_name:
-                        note = self.notes_dict[id]
-                        id_b = 'back_' + id
-                        self.links_location[id] = self.current_file
+                        note = self.notes_dict[noteid]
+                        noteid_b = 'back_' + noteid
+                        self.links_location[noteid] = self.current_file
                         # Sometimes due to an error document does not have a reference to note and numbers are all messed up
                         back_ref = 'nowhere'
                         try:
-                            back_ref = self.links_location[id_b]
+                            back_ref = self.links_location[noteid_b]
                         except:
                             pass
                         self.buff.append(
-                            '<p class="floatnote"><a href="{0}#{1}" id="{2}">{3}).</a>&#160;{4}</p>'.format(back_ref, id_b, id, save_html(note[0]) if len(note[0]) > 0 else '***',
+                            '<p class="floatnote"><a href="{0}#{1}" id="{2}">{3}).</a>&#160;{4}</p>'.format(back_ref, noteid_b, noteid, save_html(note[0]) if note[0] else '***',
                                                                                                             save_html(note[1])))
                     else:
                         continue
@@ -1171,7 +1196,7 @@ class Fb2XHTML:
 
         self.buff.append('<div class="toc">')
         self.buff.append('<div class="h1" id="toc">{0}</div>'.format(self.toc_title))
-        for (idx, item) in self.toc.items():
+        for (_, item) in self.toc.items():
 
             if item[2] <= self.toc_max_level:  # Ограничение уровня вложенности секций для TOC
                 if item[3] == '':
@@ -1216,7 +1241,7 @@ class Fb2XHTML:
         i = 1
 
         # Включим содержание в навигацию, если содержание помещается в начале книги
-        if self.tocbeforebody and len(self.toc.items()) > 0 and self.generate_toc_page:
+        if self.tocbeforebody and self.toc.items() and self.generate_toc_page:
             self.ncx_navp_beg(i, self.toc_title, 'toc.xhtml')
             self.ncx_navp_end()
             i += 1
@@ -1234,9 +1259,9 @@ class Fb2XHTML:
             ncx_barrier = 1
 
         history = []
-        prev_item = None
-        for (idx, item) in self.toc.items():
-            if prev_item is None:  # first time
+        prev_item: Tuple[int, str] = ()
+        for (_, item) in self.toc.items():
+            if prev_item is ():  # first time
                 self.ncx_navp_beg(i, save_html(' '.join(item[1].split())), item[0])
                 history.append(item[2])
                 i += 1
@@ -1267,7 +1292,7 @@ class Fb2XHTML:
             history.pop()
 
         # Включим содержание в навигацию, если содержание помещается в конце книги
-        if not self.tocbeforebody and len(self.toc.items()) > 0 and self.generate_toc_page:
+        if not self.tocbeforebody and self.toc.items() and self.generate_toc_page:
             self.ncx_navp_beg(i, self.toc_title, 'toc.xhtml')
             self.ncx_navp_end()
 
@@ -1288,11 +1313,47 @@ class Fb2XHTML:
                          '</container>')
         self.write_buff(self.temp_inf_dir, 'container.xml')
 
+    def stamp_cover(self, img):
+
+        if self.cover_stamp == 'None' or not os.path.isfile(self.cover_font):
+            return
+
+        title = '' if not self.book_title else self.book_title.strip()
+        series = '' if not self.book_series else self.book_series.strip()
+        if self.book_series_num:
+            series = '{0}: {1}'.format(series, self.book_series_num.strip())
+        author = self.book_author
+
+        # tuning
+        h = img.height // 4
+        fh = min(35, h // 7)
+        fh = max(10, fh)
+        off = fh // 3
+
+        if self.cover_stamp == 'Top':
+            pos = (0, h)
+        else:
+            pos = (0, img.height - h)
+
+        overlay = Image.new('RGBA', (img.width, h), color=(0, 0, 0, 200))
+
+        step = off
+        if title:
+            _, h = ImageText(overlay).write_text_box((off, step), title, box_width=img.width-off, font_filename=self.cover_font, font_size=fh, color=(255, 255, 255))
+            step += h
+        if series:
+            _, h = ImageText(overlay).write_text_box((off, step + off), series, box_width=img.width-off, font_filename=self.cover_font, font_size=fh, color=(255, 255, 255))
+            step += h
+        if author:
+            ImageText(overlay).write_text_box((off, step + off), author, box_width=img.width-off, font_filename=self.cover_font, font_size=fh, color=(255, 255, 255))
+
+        img.paste(overlay, pos)
+
     def generate_cover(self):
         filename = None
         if self.book_cover:
-            for id, type, file in self.image_file_list:
-                if id == self.book_cover:
+            for imgid, _, file in self.image_file_list:
+                if imgid == self.book_cover:
                     filename = file
                     break
             if not filename:
@@ -1304,19 +1365,23 @@ class Fb2XHTML:
             full_name = os.path.join(self.temp_content_dir, 'images', filename)
             im = Image.open(full_name)
             if im.height < self.screen_height:
-                im.resize((int(self.screen_height * im.width / im.height), self.screen_height), Image.LANCZOS).save(full_name)
+                im.resize((int(self.screen_height * im.width / im.height), self.screen_height), Image.LANCZOS)
 
-            self.buff = []
-            self.buff.append(HTMLHEAD)
-            self.buff.append(
-                '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0 0 {0} {1}" preserveAspectRatio="xMidYMid meet">'.format(
-                    self.screen_width, self.screen_height))
-            self.buff.append('<image width="{0}" height="{1}" xlink:href="images/{2}" />'.format(self.screen_width, self.screen_height, filename))
-            self.buff.append('</svg>')
-            self.buff.append(HTMLFOOT)
-            self.current_file = 'cover.xhtml'
+            self.stamp_cover(im)
+            im.save(full_name)
 
-            self.write_buff()
+            if not self.kindle:
+                self.buff = []
+                self.buff.append(HTMLHEAD)
+                self.buff.append(
+                    '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0 0 {0} {1}" preserveAspectRatio="xMidYMid meet">'.format(
+                        self.screen_width, self.screen_height))
+                self.buff.append('<image width="{0}" height="{1}" xlink:href="images/{2}" />'.format(self.screen_width, self.screen_height, filename))
+                self.buff.append('</svg>')
+                self.buff.append(HTMLFOOT)
+                self.current_file = 'cover.xhtml'
+
+                self.write_buff()
 
     def generate_pagemap(self):
         page = 1
@@ -1324,7 +1389,7 @@ class Fb2XHTML:
         self.buff.append('<?xml version = "1.0" ?>'
                          '<page-map xmlns = "http://www.idpf.org/2007/opf">')
 
-        if self.book_cover:
+        if self.book_cover and not self.kindle:
             self.buff.append('<page name="{0}" href="cover.xhtml"/>'.format(page))
             page += 1
         if self.tocbeforebody and self.generate_toc_page:
@@ -1398,12 +1463,13 @@ class Fb2XHTML:
             self.buff.append('<item id="{0}" media-type="application/xhtml+xml" href="{1}"/>'.format(item.split('.')[0], item))
 
         item_id = 0
-        for id, type, filename in self.image_file_list:
-            if id == self.book_cover:
-                self.buff.append('<item id="cover-image" media-type="{0}" href="images/{1}"/>'.format(type, filename))
-                self.buff.append('<item id="cover-page" href="cover.xhtml" media-type="application/xhtml+xml"/>')
+        for imgid, imgtype, filename in self.image_file_list:
+            if imgid == self.book_cover:
+                self.buff.append('<item id="cover-image" media-type="{0}" href="images/{1}"/>'.format(imgtype, filename))
+                if not self.kindle:
+                    self.buff.append('<item id="cover-page" href="cover.xhtml" media-type="application/xhtml+xml"/>')
             else:
-                self.buff.append('<item id="image{0}" media-type="{1}" href="images/{2}"/>'.format(item_id, type, filename))
+                self.buff.append('<item id="image{0}" media-type="{1}" href="images/{2}"/>'.format(item_id, imgtype, filename))
 
             item_id += 1
 
@@ -1431,7 +1497,7 @@ class Fb2XHTML:
         self.buff.append('</manifest>'
                          '<spine page-map="map" toc="ncx">')
 
-        if self.book_cover:
+        if self.book_cover and not self.kindle:
             self.buff.append('<itemref idref="cover-page" linear="no"/>')
         if self.tocbeforebody and self.generate_toc_page:
             self.buff.append('<itemref idref="toc"/>')
@@ -1447,7 +1513,7 @@ class Fb2XHTML:
 
         if self.generate_opf_guide:
             self.buff.append('<guide>')
-            if self.book_cover:
+            if self.book_cover and not self.kindle:
                 self.buff.append('<reference type="cover-page" href="cover.xhtml"/>')
 
             if self.open_book_from_cover and self.book_cover:

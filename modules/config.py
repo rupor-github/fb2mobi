@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from importlib import import_module
+import os, codecs
+
 from lxml import etree
 from lxml.builder import E
-from importlib import import_module
-
-import os, codecs
 
 
 class ConverterConfig:
@@ -188,6 +188,9 @@ class ConverterConfig:
                     self.profiles[prof_name]['seriesPositions'] = 2
                     self.profiles[prof_name]['chapterLevel'] = 100
                     self.profiles[prof_name]['openBookFromCover'] = False
+                    self.profiles[prof_name]['coverDefault'] = 'default_cover.jpg'
+                    self.profiles[prof_name]['coverStamp'] = 'None'
+                    self.profiles[prof_name]['coverTextFont'] = None
 
                     for p in prof:
                         if p.tag == 'hyphens':
@@ -309,6 +312,16 @@ class ConverterConfig:
                         elif p.tag == 'openBookFromCover':
                             self.profiles[prof_name]['openBookFromCover'] = p.text.lower() == 'true'
 
+                        elif p.tag == 'coverStamp':
+                            self.profiles[prof_name]['coverStamp'] = p.text
+
+                        elif p.tag == 'coverDefault':
+                            self.profiles[prof_name]['coverDefault'] = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), p.text))
+
+                        elif p.tag == 'coverTextFont':
+                            self.profiles[prof_name]['coverTextFont'] = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), p.text))
+
+
     def _getVignette(self, vignette_arr):
         for v in vignette_arr:
             print(v)
@@ -323,7 +336,7 @@ class ConverterConfig:
                                 E('afterTitle', self.profiles[profile]['vignettes_save'][v]['afterTitle'] if self.profiles[profile]['vignettes_save'][v]['afterTitle'] else 'None'),
                                 E('chapterEnd', self.profiles[profile]['vignettes_save'][v]['chapterEnd'] if self.profiles[profile]['vignettes_save'][v]['chapterEnd'] else 'None'),
                                 level=v
-                                ))
+                               ))
 
         except:
             pass
@@ -358,6 +371,8 @@ class ConverterConfig:
                             E('charactersPerPage', str(self.profiles[p]['charactersPerPage'])),
                             E('seriesPositions', str(self.profiles[p]['seriesPositions'])),
                             E('openBookFromCover', str(self.profiles[p]['openBookFromCover'])),
+                            E('coverDefault', str(self.profiles[p]['coverDefault'])),
+                            E('coverStamp', str(self.profiles[p]['coverStamp'])),
                             E('vignettes', *self._getVignettes(p)), name=p, description=self.profiles[p]['description']))
 
         return result
@@ -406,7 +421,7 @@ class ConverterConfig:
                    E('noMOBIoptimization', str(self.noMOBIoptimization)),
                    E('profiles',
                      *self._getProfiles()
-                     ),
+                    ),
                    E('sendToKindle',
                      E('send', str(self.send_to_kindle['send'])),
                      E('deleteSendedBook', str(self.send_to_kindle['deleteSendedBook'])),
@@ -416,8 +431,8 @@ class ConverterConfig:
                      E('smtpPassword', self.send_to_kindle['smtpPassword']) if self.send_to_kindle['smtpPassword'] else E('smtpPassword'),
                      E('fromUserEmail', self.send_to_kindle['fromUserEmail']),
                      E('toKindleEmail', self.send_to_kindle['toKindleEmail'])
-                     ),
-                   )
+                    ),
+                  )
 
         config_dir = os.path.dirname(self.config_file)
         if not os.path.exists(config_dir):

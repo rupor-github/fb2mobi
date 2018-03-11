@@ -36,6 +36,7 @@ data_files = [
     (os.path.join(base_dir, 'modules', 'dictionaries'), 'dictionaries'),
     (os.path.join(base_dir, 'profiles'), 'profiles'),
     (os.path.join(base_dir, 'fb2mobi.config'), 'fb2mobi.config'),
+    (os.path.join(base_dir, 'default_cover.jpg'), 'default_cover.jpg'),
     (os.path.join(base_dir, 'spaces.xsl'), 'spaces.xsl'),
     (os.path.join(base_dir, 'kindlegen'), 'kindlegen'),
     (os.path.join(PIL.__path__[0], '.libs'), 'lib/python3.6/.libs'),
