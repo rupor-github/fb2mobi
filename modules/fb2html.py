@@ -1315,7 +1315,11 @@ class Fb2XHTML:
 
     def stamp_cover(self, img):
 
-        if self.cover_stamp == 'None' or not os.path.isfile(self.cover_font):
+        if self.cover_stamp == 'None':
+            return
+
+        if not self.cover_font or not os.path.isfile(self.cover_font):
+            self.log.warn('Unable to place stamp on cover - coverFont is not specified')
             return
 
         title = '' if not self.book_title else self.book_title.strip()
