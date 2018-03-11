@@ -188,7 +188,7 @@ class ConverterConfig:
                     self.profiles[prof_name]['seriesPositions'] = 2
                     self.profiles[prof_name]['chapterLevel'] = 100
                     self.profiles[prof_name]['openBookFromCover'] = False
-                    self.profiles[prof_name]['coverDefault'] = 'default_cover.jpg'
+                    self.profiles[prof_name]['coverDefault'] = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), 'default_cover.jpg'))
                     self.profiles[prof_name]['coverStamp'] = 'None'
                     self.profiles[prof_name]['coverTextFont'] = None
 
