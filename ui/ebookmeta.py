@@ -176,11 +176,11 @@ class EbookMeta():
         for e in p:
             if QName(e).localname == 'item':
                 if 'id' in e.attrib:
-                    if e.attrib['id'] in ['cover.jpg', 'cover-image']:
+                    if e.attrib['id'] in ['cover.jpg', 'cover-image', 'coverimage']:
                         if 'href' in e.attrib:
                             cover_file = e.attrib['href']
                             try:
-                                self.coverdata = zip.read(os.path.split(cfname)[0]+'/'+cover_file)
+                                self.coverdata = zip.read(os.path.join(os.path.split(cfname)[0], cover_file))
                             except:
                                 null
                             break
