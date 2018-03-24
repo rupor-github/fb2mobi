@@ -225,7 +225,7 @@ class Fb2XHTML:
 
         # Additional cover processiing
 
-        # when set to Top or Bottom cover will be stamped
+        # when set to Top, Center or Bottom cover will be stamped
         self.cover_stamp = config.current_profile['coverStamp']
         # when book has no cover image this file will be used instead
         self.cover_default = config.current_profile['coverDefault']
@@ -410,6 +410,8 @@ class Fb2XHTML:
                 self.image_file_list.append(("dummycover.jpg", "image/jpeg", dst_name))
                 self.image_count += 1
                 self.book_cover = "dummycover.jpg"
+                # default cover will always be stamped
+                self.cover_stamp = 'Center'
             except:
                 self.log.warning('Default cover {} not found.'.format(self.cover_default))
 
@@ -966,13 +968,13 @@ class Fb2XHTML:
                 self.links_location[new_id] = self.current_file
             if href:
                 self.buff.append(' href="{}"'.format(save_html(href)))
+            if tag == 'p':
+                # Для inline-картинок
+                self.inline_image_mode = True
             if css == 'section':
                 self.buff.append(' />')
             else:
                 self.buff.append('>')
-            # Для inline-картинок
-            if tag == 'p':
-                self.inline_image_mode = True
 
         if elem.text:
             if self.current_file in self.pages_list and self.page_length + len(elem.text) >= self.characters_per_page:
@@ -1335,9 +1337,11 @@ class Fb2XHTML:
         off = fh // 3
 
         if self.cover_stamp == 'Top':
-            pos = (0, h)
-        else:
+            pos = (0, 0)
+        elif self.cover_stamp == 'Bottom':
             pos = (0, img.height - h)
+        else:
+            pos = (0, (img.height - h)//2)
 
         overlay = Image.new('RGBA', (img.width, h), color=(0, 0, 0, 200))
 

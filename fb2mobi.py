@@ -665,8 +665,8 @@ if __name__ == '__main__':
     pngtransparency_group.add_argument('--no-remove-png-transparency', dest='removepngtransparency', action='store_false', default=None,
                                        help='Do not remove transparency in PNG images')
 
-    argparser.add_argument('--stamp-cover', dest='coverStamp', type=str, default=None, choices=['Top', 'Bottom', 'None'],
-                           help='Place stamp on cover image (Top, Bottom, None)')
+    argparser.add_argument('--stamp-cover', dest='coverStamp', type=str, default=None, choices=['Top', 'Center', 'Bottom', 'None'],
+                           help='Place stamp on cover image (Top, Center, Bottom, None)')
 
     # Для совместимости с MyHomeLib добавляем аргументы, которые передает MHL в fb2mobi.exe
     argparser.add_argument('-nc', action='store_true', default=False, help='For MyHomeLib compatibility')
