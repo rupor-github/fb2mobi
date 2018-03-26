@@ -1373,7 +1373,7 @@ class Fb2XHTML:
             full_name = os.path.join(self.temp_content_dir, 'images', filename)
             im = Image.open(full_name)
             if im.height < self.screen_height:
-                im.resize((int(self.screen_height * im.width / im.height), self.screen_height), Image.LANCZOS)
+                im = im.resize((int(self.screen_height * im.width / im.height), self.screen_height), Image.LANCZOS)
 
             self.stamp_cover(im)
             im.save(full_name)
