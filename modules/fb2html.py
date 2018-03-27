@@ -1376,6 +1376,7 @@ class Fb2XHTML:
                 im = im.resize((int(self.screen_height * im.width / im.height), self.screen_height), Image.LANCZOS)
 
             self.stamp_cover(im)
+            # im.save(full_name, optimize=True, quality=50)
             im.save(full_name)
 
             if not self.kindle:

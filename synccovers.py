@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os, sys, traceback
+import os, sys
 
 import argparse
 import version
@@ -40,8 +40,8 @@ def process_file(infile, kindle_dir, width, height, stretch, verbose):
         else:
             if verbose: print("Skipping - no ASIN")
     except:
-        print('ERROR: processing file.')
-        traceback.print_exc()
+        print('ERROR: processing file "{}".'.format(infile))
+        # traceback.print_exc()
 
     return
 
