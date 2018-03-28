@@ -73,6 +73,10 @@ for _mingw in ${ARCH_INSTALLS}; do
 		if [ -z ${_msystem} ]; then
 			${_python} setup-cli.linux.cx_freeze.py build_exe -b ${_dist}
 			if [ $? -eq 0 ]; then
+				# some PIL files are copied twice
+				for file in ${_dist}/lib/.libs/*; do
+					rm ${_dist}/lib/`basename $file`
+				done
 				[ -f fb2mobi_cli_${_arch}_glibc_${_glibc}.tar.xz ] && rm fb2mobi_cli_${_arch}_glibc_${_glibc}.tar.xz
 				tar --directory ${_dist} --create --xz --file fb2mobi_cli_${_arch}_glibc_${_glibc}.tar.xz .
 			fi

@@ -39,9 +39,7 @@ data_files = [
     (os.path.join(base_dir, 'default_cover.jpg'), 'default_cover.jpg'),
     (os.path.join(base_dir, 'spaces.xsl'), 'spaces.xsl'),
     (os.path.join(base_dir, 'kindlegen'), 'kindlegen'),
-    (os.path.join(PIL.__path__[0], '.libs'), 'lib/python3.6/.libs'),
-#    (os.path.join(base_dir, 'ui/locale/qtbase_ru.qm'), 'ui/locale/qtbase_ru.qm'),
-#    (os.path.join(base_dir, 'ui/locale/fb2mobi_ru.qm'), 'ui/locale/fb2mobi_ru.qm')
+    (os.path.join(PIL.__path__[0], '.libs'), 'lib/.libs'),
 ]
 
 setup(
@@ -49,14 +47,13 @@ setup(
     version = version.VERSION,
     options={
         'build_exe': {
-#            'silent': 1,
-#            'build_exe': 'dist',
             'zip_exclude_packages': '',
             'zip_include_packages': '*',
             'packages': 'json,lxml,PIL',
             'include_files': data_files,
             'includes': includes,
             'excludes': excludes,
+            'replace_paths': [('*','library.zip/')],
         }
     },
     executables = [
