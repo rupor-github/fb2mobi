@@ -864,7 +864,7 @@ class Fb2XHTML:
             # We encountered main body without a title - need to add it forcefully, otherwise toc and books structure would be wrong
 
             toc_ref_id = 'tocref{0}'.format(self.toc_index)
-            toc_title = self.book_author + self.book_title
+            toc_title = self.book_author + " " + self.book_title
 
             if self.current_header_level < self.chapterlevel:
                 self.buff.append('<div class="titleblock" id="{0}">'.format(toc_ref_id))
