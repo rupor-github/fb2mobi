@@ -418,13 +418,24 @@ class Fb2XHTML:
             # if requested - resample all images but cover
             for imgid, _, file in self.image_file_list:
                 if imgid != self.book_cover:
+                    full_name = os.path.join(self.temp_content_dir, 'images', file)
+                    temp_name = os.path.join(self.temp_content_dir, 'images', "image.tmp")
                     try:
-                        full_name = os.path.join(self.temp_content_dir, 'images', file)
                         im = Image.open(full_name)
+
+                        imgfmt = im.format
+                        if not imgfmt.lower() in ('jpeg', 'png'):
+                            continue
+
                         dpi = im.info.get("dpi")
+                        if not dpi:
+                            dpi = (300, 300)
+
                         im = im.resize((int(im.width * self.images_scale), int(im.height * self.images_scale)), Image.LANCZOS)
-                        im.save(full_name, dpi=dpi)
+                        im.save(temp_name, format=imgfmt, dpi=dpi)
+                        os.replace(temp_name, full_name)
                     except:
+                        os.remove(temp_name)
                         self.log.warning('Unable to resample image {}. Skipping...'.format(file))
 
     def write_buff(self, dname='', fname=''):
