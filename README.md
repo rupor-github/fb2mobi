@@ -1,6 +1,6 @@
 This program is based on fb2conv program published by [dnkorpushov](https://github.com/dnkorpushov) on [the-ebook.org](http://www.the-ebook.org/forum/viewtopic.php?t=28447) site.
 
-Original program (being Python 2) did not work well under Windows when non-russian system codepage was selected for non-Unicode programs. 
+Original program (being Python 2) did not work well under Windows when non-russian system codepage was selected for non-Unicode programs.
 In order to improve the situation I had to port it to Python 3. Later author of original converter re-joined the project and ported GUI UI here.
 He also added binary releases for MAC.
 
@@ -21,10 +21,10 @@ Here is brief list of changes to the original project (in addition to bug fixes)
 * Added simple tool to generate thumbnails on Kindle devices
 * Added synchronous logging to file and console (console logging level is set independently by `--console-level` key or `<consoleLevel>` config tag)
 * Added an option to make PNG images non-transparent to prevent "ghostly images" on Kindle (`--remove-png-transparency` key or `<removePngTransparency>` config tag)
-* Added support for auto-generation of PageMaps - now it is possible to have APNX files (`--apnx=eInk|PC` key or `<generateAPNX>` profile tag). Number of uncompessed 
+* Added support for auto-generation of PageMaps - now it is possible to have APNX files (`--apnx=eInk|PC` key or `<generateAPNX>` profile tag). Number of uncompessed
   text characters per page is (approximately) controlled by `charactersPerPage` profile tag and by default is equal to 2300 (Calibre default setting)
 * Removed `<flatTOC>` support. New config tag `<tocType>` and command line parameter `--toc-type` could be used instead with values `Flat|Kindle|Normal`.
-  This introduces special support for eInk Kindle devices with 2-level TOC views. Additional tag `<tocKindleLevel>` and parameter `--toc-kindle-level` allow for precise 
+  This introduces special support for eInk Kindle devices with 2-level TOC views. Additional tag `<tocKindleLevel>` and parameter `--toc-kindle-level` allow for precise
   tuning of generated NCX for eInk devices.
 * Expanded book title generation: added `#padnumber` to generate number in series padded with zeros (use `<seriesPositions>` or `--series-positions` to specify how many
   digits overall will be generated) and `#date` to add proper date from `<title-info>` if availabe.
@@ -34,7 +34,7 @@ Here is brief list of changes to the original project (in addition to bug fixes)
 * Changed how book title and book author are formatted - added processing of conditional blocks, for example: `<bookTitleFormat>{(#abbrseries{ #padnumber}) }#title</bookTitleFormat>`. To output curly braces escape them with backslash.
 * Added new css style `.linkanchor` - this is style for all href links which are NOT pointing to the note bodies. This allows for flexible formatting of hyperlinks in the text.
 * Added "default" cover for fb2 which do not have it (APG 2018.1) - `<coverDefault>` in profile configuration.
-* Added cover "stamping" with book title, series and author name(s) - `<coverFont>` and `<coverStamp>` in profile configuration or `--stamp-cover` on command line.
+* Added image re-sampling - `<scaleImages>` in profile configuration or `--scale-images` on command line (Should be positive non-zero float number, cover image is exempt from this). DPI is preserved.
 
 More info can be found on [russian forum](http://www.the-ebook.org/forum/viewtopic.php?t=30380).
 
