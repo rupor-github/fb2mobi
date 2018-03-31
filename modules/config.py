@@ -8,6 +8,7 @@ from lxml.builder import E
 
 
 class ConverterConfig:
+
     def __init__(self, config_file):
         self.config_file = config_file
 
@@ -74,6 +75,7 @@ class ConverterConfig:
         self.profiles['default']['charactersPerPage'] = 2300
         self.profiles['default']['seriesPositions'] = 2
         self.profiles['default']['openBookFromCover'] = False
+        self.profiles['default']['scaleImages'] = 0.0
 
         self.current_profile = {}
         self.mhl = False
@@ -191,6 +193,7 @@ class ConverterConfig:
                     self.profiles[prof_name]['coverDefault'] = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), 'default_cover.jpg'))
                     self.profiles[prof_name]['coverStamp'] = 'None'
                     self.profiles[prof_name]['coverTextFont'] = None
+                    self.profiles[prof_name]['scaleImages'] = 0.0
 
                     for p in prof:
                         if p.tag == 'hyphens':
@@ -321,6 +324,8 @@ class ConverterConfig:
                         elif p.tag == 'coverTextFont':
                             self.profiles[prof_name]['coverTextFont'] = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), p.text))
 
+                        elif p.tag == 'scaleImages':
+                            self.profiles[prof_name]['scaleImages'] = float(p.text)
 
     def _getVignette(self, vignette_arr):
         for v in vignette_arr:
@@ -331,12 +336,12 @@ class ConverterConfig:
 
         try:
             for v in self.profiles[profile]['vignettes_save']:
-                result.append(E('vignette',
-                                E('beforeTitle', self.profiles[profile]['vignettes_save'][v]['beforeTitle'] if self.profiles[profile]['vignettes_save'][v]['beforeTitle'] else 'None'),
-                                E('afterTitle', self.profiles[profile]['vignettes_save'][v]['afterTitle'] if self.profiles[profile]['vignettes_save'][v]['afterTitle'] else 'None'),
-                                E('chapterEnd', self.profiles[profile]['vignettes_save'][v]['chapterEnd'] if self.profiles[profile]['vignettes_save'][v]['chapterEnd'] else 'None'),
-                                level=v
-                               ))
+                result.append(
+                    E('vignette',
+                      E('beforeTitle', self.profiles[profile]['vignettes_save'][v]['beforeTitle'] if self.profiles[profile]['vignettes_save'][v]['beforeTitle'] else 'None'),
+                      E('afterTitle', self.profiles[profile]['vignettes_save'][v]['afterTitle'] if self.profiles[profile]['vignettes_save'][v]['afterTitle'] else 'None'),
+                      E('chapterEnd', self.profiles[profile]['vignettes_save'][v]['chapterEnd'] if self.profiles[profile]['vignettes_save'][v]['chapterEnd'] else 'None'),
+                      level=v))
 
         except:
             pass
@@ -346,34 +351,37 @@ class ConverterConfig:
     def _getProfiles(self):
         result = []
         for p in self.profiles:
-            result.append(E('profile',
-                            E('hyphens', str(self.profiles[p]['hyphens'])),
-                            E('hyphensReplaceNBSP', str(self.profiles[p]['hyphensReplaceNBSP'])),
-                            E('dropcaps', str(self.profiles[p]['dropcaps'])),
-                            E('tocMaxLevel', str(self.profiles[p]['tocMaxLevel'])),
-                            E('tocKindleLevel', str(self.profiles[p]['tocKindleLevel'])),
-                            E('tocBeforeBody', str(self.profiles[p]['tocBeforeBody'])),
-                            E('tocType', str(self.profiles[p]['tocType'])),
-                            E('css', self.profiles[p]['originalcss'], parse=str(self.profiles[p]['parse_css'])),
-                            E('chapterOnNewPage', str(self.profiles[p]['chapterOnNewPage'])),
-                            E('chapterLevel', str(self.profiles[p]['chapterLevel'])),
-                            E('authorFormat', self.profiles[p]['authorFormat']),
-                            E('bookTitleFormat', self.profiles[p]['bookTitleFormat']),
-                            E('annotationTitle', self.profiles[p]['annotationTitle']),
-                            E('tocTitle', self.profiles[p]['tocTitle']),
-                            E('notesMode', self.profiles[p]['notesMode']),
-                            E('notesBodies', self.profiles[p]['notesBodies']),
-                            E('generateTOCPage', str(self.profiles[p]['generateTOCPage'])),
-                            E('generateAnnotationPage', str(self.profiles[p]['generateAnnotationPage'])),
-                            E('generateOPFGuide', str(self.profiles[p]['generateOPFGuide'])),
-                            E('kindleRemovePersonalLabel', str(self.profiles[p]['kindleRemovePersonalLabel'])),
-                            E('removePngTransparency', str(self.profiles[p]['removePngTransparency'])),
-                            E('charactersPerPage', str(self.profiles[p]['charactersPerPage'])),
-                            E('seriesPositions', str(self.profiles[p]['seriesPositions'])),
-                            E('openBookFromCover', str(self.profiles[p]['openBookFromCover'])),
-                            E('coverDefault', str(self.profiles[p]['coverDefault'])),
-                            E('coverStamp', str(self.profiles[p]['coverStamp'])),
-                            E('vignettes', *self._getVignettes(p)), name=p, description=self.profiles[p]['description']))
+            result.append(
+                E('profile',
+                  E('hyphens', str(self.profiles[p]['hyphens'])),
+                  E('hyphensReplaceNBSP', str(self.profiles[p]['hyphensReplaceNBSP'])),
+                  E('dropcaps', str(self.profiles[p]['dropcaps'])),
+                  E('tocMaxLevel', str(self.profiles[p]['tocMaxLevel'])),
+                  E('tocKindleLevel', str(self.profiles[p]['tocKindleLevel'])),
+                  E('tocBeforeBody', str(self.profiles[p]['tocBeforeBody'])),
+                  E('tocType', str(self.profiles[p]['tocType'])),
+                  E('css', self.profiles[p]['originalcss'], parse=str(self.profiles[p]['parse_css'])),
+                  E('chapterOnNewPage', str(self.profiles[p]['chapterOnNewPage'])),
+                  E('chapterLevel', str(self.profiles[p]['chapterLevel'])),
+                  E('authorFormat', self.profiles[p]['authorFormat']),
+                  E('bookTitleFormat', self.profiles[p]['bookTitleFormat']),
+                  E('annotationTitle', self.profiles[p]['annotationTitle']),
+                  E('tocTitle', self.profiles[p]['tocTitle']),
+                  E('notesMode', self.profiles[p]['notesMode']),
+                  E('notesBodies', self.profiles[p]['notesBodies']),
+                  E('generateTOCPage', str(self.profiles[p]['generateTOCPage'])),
+                  E('generateAnnotationPage', str(self.profiles[p]['generateAnnotationPage'])),
+                  E('generateOPFGuide', str(self.profiles[p]['generateOPFGuide'])),
+                  E('kindleRemovePersonalLabel', str(self.profiles[p]['kindleRemovePersonalLabel'])),
+                  E('removePngTransparency', str(self.profiles[p]['removePngTransparency'])),
+                  E('charactersPerPage', str(self.profiles[p]['charactersPerPage'])),
+                  E('seriesPositions', str(self.profiles[p]['seriesPositions'])),
+                  E('openBookFromCover', str(self.profiles[p]['openBookFromCover'])),
+                  E('coverDefault', str(self.profiles[p]['coverDefault'])),
+                  E('coverStamp', str(self.profiles[p]['coverStamp'])),
+                  E('vignettes', *self._getVignettes(p)),
+                  name=p,
+                  description=self.profiles[p]['description']))
 
         return result
 
@@ -406,33 +414,25 @@ class ConverterConfig:
             self.characters_per_page = self.current_profile['charactersPerPage']
 
     def write(self):
-        config = E('settings',
-                   E('debug', str(self.debug)),
-                   E('logFile', self.original_log_file) if self.original_log_file else E('logFile'),
-                   E('logLevel', self.log_level),
-                   E('consoleLevel', self.console_level),
-                   E('outputFormat', self.output_format),
-                   E('kindleCompressionLevel', str(self.kindle_compression_level)),
-                   E('noDropcapsSymbols', self.no_dropcaps_symbols),
-                   E('transliterate', str(self.transliterate)),
-                   E('screenWidth', str(self.screen_width)),
-                   E('screenHeight', str(self.screen_height)),
-                   E('defaultProfile', self.default_profile),
-                   E('noMOBIoptimization', str(self.noMOBIoptimization)),
-                   E('profiles',
-                     *self._getProfiles()
-                    ),
-                   E('sendToKindle',
-                     E('send', str(self.send_to_kindle['send'])),
-                     E('deleteSendedBook', str(self.send_to_kindle['deleteSendedBook'])),
-                     E('smtpServer', self.send_to_kindle['smtpServer']),
-                     E('smtpPort', str(self.send_to_kindle['smtpPort'])),
-                     E('smtpLogin', self.send_to_kindle['smtpLogin']),
-                     E('smtpPassword', self.send_to_kindle['smtpPassword']) if self.send_to_kindle['smtpPassword'] else E('smtpPassword'),
-                     E('fromUserEmail', self.send_to_kindle['fromUserEmail']),
-                     E('toKindleEmail', self.send_to_kindle['toKindleEmail'])
-                    ),
-                  )
+        config = E(
+            'settings',
+            E('debug', str(self.debug)),
+            E('logFile', self.original_log_file) if self.original_log_file else E('logFile'),
+            E('logLevel', self.log_level),
+            E('consoleLevel', self.console_level),
+            E('outputFormat', self.output_format),
+            E('kindleCompressionLevel', str(self.kindle_compression_level)),
+            E('noDropcapsSymbols', self.no_dropcaps_symbols),
+            E('transliterate', str(self.transliterate)),
+            E('screenWidth', str(self.screen_width)),
+            E('screenHeight', str(self.screen_height)),
+            E('defaultProfile', self.default_profile),
+            E('noMOBIoptimization', str(self.noMOBIoptimization)),
+            E('profiles', *self._getProfiles()),
+            E('sendToKindle', E('send', str(self.send_to_kindle['send'])), E('deleteSendedBook', str(self.send_to_kindle['deleteSendedBook'])), E('smtpServer', self.send_to_kindle['smtpServer']), E('smtpPort', str(self.send_to_kindle['smtpPort'])),
+              E('smtpLogin', self.send_to_kindle['smtpLogin']),
+              E('smtpPassword', self.send_to_kindle['smtpPassword']) if self.send_to_kindle['smtpPassword'] else E('smtpPassword'), E('fromUserEmail', self.send_to_kindle['fromUserEmail']), E('toKindleEmail', self.send_to_kindle['toKindleEmail'])),
+        )
 
         config_dir = os.path.dirname(self.config_file)
         if not os.path.exists(config_dir):

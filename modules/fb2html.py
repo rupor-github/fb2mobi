@@ -23,16 +23,9 @@ from PIL import Image, ImageFile
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-HTMLHEAD = ('<html xmlns="http://www.w3.org/1999/xhtml">'
-            '<head>'
-            '<title>fb2mobi.py</title>'
-            '<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>'
-            '<link rel="stylesheet" type="text/css" href="stylesheet.css"/>'
-            '</head>'
-            '<body>')
+HTMLHEAD = ('<html xmlns="http://www.w3.org/1999/xhtml">' '<head>' '<title>fb2mobi.py</title>' '<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>' '<link rel="stylesheet" type="text/css" href="stylesheet.css"/>' '</head>' '<body>')
 
-HTMLFOOT = ('</body>'
-            '</html>')
+HTMLFOOT = ('</body>' '</html>')
 
 
 def ns_tag(tag):
@@ -80,6 +73,7 @@ def copy_file(src, dest):
 
 
 def format_title(s, seq):
+
     def replace_keyword(pict, k, v):
         if pict.count(k) > 0:
             return pict.replace(k, v), True if v else False
@@ -116,6 +110,7 @@ def format_title(s, seq):
 
 
 class Fb2XHTML:
+
     def __init__(self, fb2file, mobifile, tempdir, config):
 
         self.log = config.log
@@ -232,6 +227,9 @@ class Fb2XHTML:
         # if it ponts to font file and cover_stamp is not 'None' cover will be stamped
         self.cover_font = config.current_profile['coverTextFont']
 
+        # if not 0 - scale all images but cover
+        self.images_scale = config.current_profile['scaleImages']
+
         self.genres = []
 
         self.mobi_file = mobifile
@@ -241,6 +239,7 @@ class Fb2XHTML:
 
             # rupor - this allows for smaller xsl, quicker replacement and allows handling of tags in the paragraphs
             class MyExtElement(etree.XSLTExtension):
+
                 def execute(self, _, self_node, input_node, output_parent):
                     child = deepcopy(input_node)
                     found = False
@@ -266,8 +265,7 @@ class Fb2XHTML:
                     output_parent.append(child)
 
             config.log.info('Applying XSLT transformations "{0}"'.format(config.current_profile['xslt']))
-            self.transform = etree.XSLT(etree.parse(config.current_profile['xslt']),
-                                        extensions={('fb2mobi_ns', 'katz_tr'): MyExtElement()})
+            self.transform = etree.XSLT(etree.parse(config.current_profile['xslt']), extensions={('fb2mobi_ns', 'katz_tr'): MyExtElement()})
             transformed = self.transform(self.tree)
             for entry in self.transform.error_log:
                 self.log.warning(entry)
@@ -308,7 +306,7 @@ class Fb2XHTML:
                 self.parse_body(child)
 
         self.correct_links()
-        self.correct_cover_images()
+        self.correct_images()
 
         if self.generate_toc_page:
             self.generate_toc()
@@ -341,8 +339,7 @@ class Fb2XHTML:
                 new_url = 'fonts/' + os.path.basename(url)
                 self.font_list.append(new_url)
             else:
-                dest_file = os.path.abspath(
-                    os.path.join(self.temp_content_dir, 'images', 'css_' + os.path.basename(source_file)))
+                dest_file = os.path.abspath(os.path.join(self.temp_content_dir, 'images', 'css_' + os.path.basename(source_file)))
                 new_url = 'images/css_' + os.path.basename(url)
 
             try:
@@ -355,15 +352,17 @@ class Fb2XHTML:
         if self.parse_css:
 
             # Note, macros are temporary, until CSS3 module is fixed and starts to recognize "rem" units
-            cssutils.profile.addProfile('CSS extentions',
-                                        {'-webkit-hyphens': 'none',
-                                         'adobe-hyphenate': 'none',
-                                         '-moz-hyphens': 'none',
-                                         '-ms-hyphens': 'none',
-                                         'hyphens': 'none|manual|auto'},
-                                        {'length': r'0|{num}(em|ex|px|in|cm|mm|pt|pc|q|ch|rem|vw|vh|vmin|vmax)',
-                                         'positivelength': r'0|{positivenum}(em|ex|px|in|cm|mm|pt|pc|q|ch|rem|vw|vh|vmin|vmax)',
-                                         'angle': r'0|{num}(deg|grad|rad|turn)'})
+            cssutils.profile.addProfile('CSS extentions', {
+                '-webkit-hyphens': 'none',
+                'adobe-hyphenate': 'none',
+                '-moz-hyphens': 'none',
+                '-ms-hyphens': 'none',
+                'hyphens': 'none|manual|auto'
+            }, {
+                'length': r'0|{num}(em|ex|px|in|cm|mm|pt|pc|q|ch|rem|vw|vh|vmin|vmax)',
+                'positivelength': r'0|{positivenum}(em|ex|px|in|cm|mm|pt|pc|q|ch|rem|vw|vh|vmin|vmax)',
+                'angle': r'0|{num}(deg|grad|rad|turn)'
+            })
 
             stylesheet = cssutils.parseFile(self.css_file)
             cssutils.replaceUrls(stylesheet, replace_url)
@@ -389,7 +388,7 @@ class Fb2XHTML:
             self.current_file = fl
             self.write_buff()
 
-    def correct_cover_images(self):
+    def correct_images(self):
         if self.book_cover:
             # Leave only first cover - drop the rest
             have_cover = False
@@ -414,6 +413,19 @@ class Fb2XHTML:
                 self.cover_stamp = 'Center'
             except:
                 self.log.warning('Default cover {} not found.'.format(self.cover_default))
+
+        if self.images_scale > 0.0:
+            # if requested - resample all images but cover
+            for imgid, _, file in self.image_file_list:
+                if imgid != self.book_cover:
+                    try:
+                        full_name = os.path.join(self.temp_content_dir, 'images', file)
+                        im = Image.open(full_name)
+                        dpi = im.info.get("dpi")
+                        im = im.resize((int(im.width * self.images_scale), int(im.height * self.images_scale)), Image.LANCZOS)
+                        im.save(full_name, dpi=dpi)
+                    except:
+                        self.log.warning('Unable to resample image {}. Skipping...'.format(file))
 
     def write_buff(self, dname='', fname=''):
         if not fname:
@@ -579,12 +591,8 @@ class Fb2XHTML:
                                 elif ns_tag(a.tag) == 'last-name':
                                     lastname = a.text
 
-                            self.book_author = format_title(self.authorformat,
-                                                            [('#fi', '' if not firstname else firstname[0] + '.'),
-                                                             ('#mi', '' if not middlename else middlename[0] + '.'),
-                                                             ('#f', '' if not firstname else firstname.strip()),
-                                                             ('#m', '' if not middlename else middlename.strip()),
-                                                             ('#l', '' if not lastname else lastname.strip())])
+                            self.book_author = format_title(self.authorformat, [('#fi', '' if not firstname else firstname[0] + '.'), ('#mi', '' if not middlename else middlename[0] + '.'), ('#f', '' if not firstname else firstname.strip()),
+                                                                                ('#m', '' if not middlename else middlename.strip()), ('#l', '' if not lastname else lastname.strip())])
 
                             self.book_author = self.book_author.strip()
 
@@ -1155,8 +1163,7 @@ class Fb2XHTML:
 
                     vignette = self.get_vignette('h0', 'beforeTitle')
                     if vignette:
-                        self.buff.append(
-                            '<div class="vignette_title_before"><img src="vignettes/{0}" /></div>'.format(vignette))
+                        self.buff.append('<div class="vignette_title_before"><img src="vignettes/{0}" /></div>'.format(vignette))
 
                     self.buff.append(title)
 
@@ -1180,9 +1187,7 @@ class Fb2XHTML:
                             back_ref = self.links_location[noteid_b]
                         except:
                             pass
-                        self.buff.append(
-                            '<p class="floatnote"><a href="{0}#{1}" id="{2}">{3}).</a>&#160;{4}</p>'.format(back_ref, noteid_b, noteid, save_html(note[0]) if note[0] else '***',
-                                                                                                            save_html(note[1])))
+                        self.buff.append('<p class="floatnote"><a href="{0}#{1}" id="{2}">{3}).</a>&#160;{4}</p>'.format(back_ref, noteid_b, noteid, save_html(note[0]) if note[0] else '***', save_html(note[1])))
                     else:
                         continue
         else:
@@ -1231,15 +1236,9 @@ class Fb2XHTML:
 
     def generate_ncx(self):
         self.buff = []
-        self.buff.append('<?xml version="1.0"?>'
-                         '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1" xml:lang="en-US">'
-                         '<head>')
+        self.buff.append('<?xml version="1.0"?>' '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1" xml:lang="en-US">' '<head>')
         self.buff.append('<meta name="dtb:uid" content="urn:uuid:{0}"/>'.format(self.book_uuid))
-        self.buff.append('</head>'
-                         '<docTitle>'
-                         '<text>fb2mobi.py</text>'
-                         '</docTitle>'
-                         '<navMap>')
+        self.buff.append('</head>' '<docTitle>' '<text>fb2mobi.py</text>' '</docTitle>' '<navMap>')
         i = 1
 
         # Включим содержание в навигацию, если содержание помещается в начале книги
@@ -1341,19 +1340,19 @@ class Fb2XHTML:
         elif self.cover_stamp == 'Bottom':
             pos = (0, img.height - h)
         else:
-            pos = (0, (img.height - h)//2)
+            pos = (0, (img.height - h) // 2)
 
         overlay = Image.new('RGBA', (img.width, h), color=(0, 0, 0, 200))
 
         step = off
         if title:
-            _, h = ImageText(overlay).write_text_box((off, step), title, box_width=img.width-off, font_filename=self.cover_font, font_size=fh, color=(255, 255, 255))
+            _, h = ImageText(overlay).write_text_box((off, step), title, box_width=img.width - off, font_filename=self.cover_font, font_size=fh, color=(255, 255, 255))
             step += h
         if series:
-            _, h = ImageText(overlay).write_text_box((off, step + off), series, box_width=img.width-off, font_filename=self.cover_font, font_size=fh, color=(255, 255, 255))
+            _, h = ImageText(overlay).write_text_box((off, step + off), series, box_width=img.width - off, font_filename=self.cover_font, font_size=fh, color=(255, 255, 255))
             step += h
         if author:
-            ImageText(overlay).write_text_box((off, step + off), author, box_width=img.width-off, font_filename=self.cover_font, font_size=fh, color=(255, 255, 255))
+            ImageText(overlay).write_text_box((off, step + off), author, box_width=img.width - off, font_filename=self.cover_font, font_size=fh, color=(255, 255, 255))
 
         img.paste(overlay, pos)
 
@@ -1382,9 +1381,8 @@ class Fb2XHTML:
             if not self.kindle:
                 self.buff = []
                 self.buff.append(HTMLHEAD)
-                self.buff.append(
-                    '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0 0 {0} {1}" preserveAspectRatio="xMidYMid meet">'.format(
-                        self.screen_width, self.screen_height))
+                self.buff.append('<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0 0 {0} {1}" preserveAspectRatio="xMidYMid meet">'.format(
+                    self.screen_width, self.screen_height))
                 self.buff.append('<image width="{0}" height="{1}" xlink:href="images/{2}" />'.format(self.screen_width, self.screen_height, filename))
                 self.buff.append('</svg>')
                 self.buff.append(HTMLFOOT)
@@ -1395,8 +1393,7 @@ class Fb2XHTML:
     def generate_pagemap(self):
         page = 1
         self.buff = []
-        self.buff.append('<?xml version = "1.0" ?>'
-                         '<page-map xmlns = "http://www.idpf.org/2007/opf">')
+        self.buff.append('<?xml version = "1.0" ?>' '<page-map xmlns = "http://www.idpf.org/2007/opf">')
 
         if self.book_cover and not self.kindle:
             self.buff.append('<page name="{0}" href="cover.xhtml"/>'.format(page))
@@ -1423,20 +1420,14 @@ class Fb2XHTML:
 
     def generate_opf(self):
         self.buff = []
-        self.buff.append('<?xml version="1.0" ?>'
-                         '<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">'
-                         '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">')
+        self.buff.append('<?xml version="1.0" ?>' '<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">' '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">')
 
         title = self.book_title
 
         if self.booktitleformat:
-            title = format_title(self.booktitleformat,
-                                 [('#title', '' if not self.book_title else self.book_title.strip()),
-                                  ('#series', '' if not self.book_series else self.book_series.strip()),
-                                  ('#abbrseries', ''.join(word[0] for word in self.book_series.split()).lower() if self.book_series else ''),
-                                  ('#number', '' if not self.book_series_num else self.book_series_num.strip()),
-                                  ('#padnumber', '' if not self.book_series_num else self.book_series_num.strip().zfill(self.seriespositions)),
-                                  ('#date', '' if not self.book_date else self.book_date.strip())])
+            title = format_title(self.booktitleformat, [('#title', '' if not self.book_title else self.book_title.strip()), ('#series', '' if not self.book_series else self.book_series.strip()),
+                                                        ('#abbrseries', ''.join(word[0] for word in self.book_series.split()).lower() if self.book_series else ''), ('#number', '' if not self.book_series_num else self.book_series_num.strip()),
+                                                        ('#padnumber', '' if not self.book_series_num else self.book_series_num.strip().zfill(self.seriespositions)), ('#date', '' if not self.book_date else self.book_date.strip())])
             if not title:
                 title = self.book_title
 
@@ -1464,9 +1455,7 @@ class Fb2XHTML:
             self.buff.append('<meta name="cover" content="cover-image" />')
 
         self.buff.append('</metadata>')
-        self.buff.append('<manifest>'
-                         '<item id="ncx" media-type="application/x-dtbncx+xml" href="toc.ncx"/>'
-                         '<item id = "map" media-type="application/oebps-page-map+xml" href="page-map.xml"/>')
+        self.buff.append('<manifest>' '<item id="ncx" media-type="application/x-dtbncx+xml" href="toc.ncx"/>' '<item id = "map" media-type="application/oebps-page-map+xml" href="page-map.xml"/>')
 
         for item in self.html_file_list:
             self.buff.append('<item id="{0}" media-type="application/xhtml+xml" href="{1}"/>'.format(item.split('.')[0], item))
@@ -1503,8 +1492,7 @@ class Fb2XHTML:
                 self.buff.append('<item id="font{0}" href="{1}" media-type="application/x-font-ttf"/>'.format(font_id, f))
             font_id += 1
 
-        self.buff.append('</manifest>'
-                         '<spine page-map="map" toc="ncx">')
+        self.buff.append('</manifest>' '<spine page-map="map" toc="ncx">')
 
         if self.book_cover and not self.kindle:
             self.buff.append('<itemref idref="cover-page" linear="no"/>')

@@ -251,8 +251,7 @@ def process_file(config, infile, outfile=None):
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
-            with subprocess.Popen([kindlegen_cmd, infile, kindlegen_cmd_pars, '-locale', 'en'], stdout=subprocess.PIPE,
-                                  stderr=subprocess.STDOUT, startupinfo=startupinfo) as result:
+            with subprocess.Popen([kindlegen_cmd, infile, kindlegen_cmd_pars, '-locale', 'en'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=startupinfo) as result:
                 config.log.debug(str(result.stdout.read(), 'utf-8', errors='replace'))
 
         except OSError as e:
@@ -316,13 +315,14 @@ def process_file(config, infile, outfile=None):
                             asin = reader.getCdeContentKey()
                             if not asin:
                                 asin = reader.getASIN()
-                            apnx = pages.generateAPNX(
-                                {'contentGuid': str(uuid.uuid4()).replace('-', '')[:8],
-                                 'asin': asin,
-                                 'cdeType': reader.getCdeType(),
-                                 'format': 'MOBI_8' if ext in 'azw3' else 'MOBI_7',
-                                 'pageMap': pages.getPageMap(),
-                                 'acr': reader.getACR()})
+                            apnx = pages.generateAPNX({
+                                'contentGuid': str(uuid.uuid4()).replace('-', '')[:8],
+                                'asin': asin,
+                                'cdeType': reader.getCdeType(),
+                                'format': 'MOBI_8' if ext in 'azw3' else 'MOBI_7',
+                                'pageMap': pages.getPageMap(),
+                                'acr': reader.getACR()
+                            })
                             if config.apnx == 'eink':
                                 basename = os.path.basename(base)
                                 sdr = base + '.sdr'
@@ -548,6 +548,8 @@ def process(myargs):
             config.current_profile['openBookFromCover'] = myargs.openbookfromcover
         if myargs.coverStamp is not None:
             config.current_profile['coverStamp'] = myargs.coverStamp
+        if myargs.imageScale is not None:
+            config.current_profile['scaleImages'] = myargs.imageScale
 
         if myargs.transliterateauthorandtitle is not None:
             config.transliterate_author_and_title = myargs.transliterateauthorandtitle
@@ -575,9 +577,7 @@ def process(myargs):
 if __name__ == '__main__':
 
     # Настройка парсера аргументов
-    argparser = argparse.ArgumentParser(
-        description='Converter of fb2 and epub ebooks to mobi, azw3 and epub formats. Version {0}'.format(
-            version.VERSION))
+    argparser = argparse.ArgumentParser(description='Converter of fb2 and epub ebooks to mobi, azw3 and epub formats. Version {0}'.format(version.VERSION))
 
     input_args_group = argparser.add_mutually_exclusive_group()
     input_args_group.add_argument('infile', type=str, nargs='?', default=None, help='Source file name (fb2, fb2.zip, zip or epub)')
@@ -589,8 +589,7 @@ if __name__ == '__main__':
 
     argparser.add_argument('-f', '--output-format', dest='outputformat', type=str, default=None, help='Output format: mobi, azw3 or epub')
     argparser.add_argument('-r', dest='recursive', action='store_true', default=False, help='Perform recursive processing of files in source directory')
-    argparser.add_argument('-s', '--save-structure', dest='savestructure', action='store_true', default=False,
-                           help='Keep directory structure during batch processing')
+    argparser.add_argument('-s', '--save-structure', dest='savestructure', action='store_true', default=False, help='Keep directory structure during batch processing')
     argparser.add_argument('--delete-source-file', dest='deletesourcefile', action='store_true', default=False, help='In case of success remove source file')
     argparser.add_argument('--delete-input-dir', dest='deleteinputdir', action='store_true', default=False, help='Remove source directory')
 
@@ -607,31 +606,25 @@ if __name__ == '__main__':
 
     transliterate_group = argparser.add_mutually_exclusive_group()
     transliterate_group.add_argument('--transliterate', dest='transliterate', action='store_true', default=None, help='Transliterate destination file name')
-    transliterate_group.add_argument('--no-transliterate', dest='transliterate', action='store_false', default=None,
-                                     help='Do not transliterate destination file name')
+    transliterate_group.add_argument('--no-transliterate', dest='transliterate', action='store_false', default=None, help='Do not transliterate destination file name')
 
     transliterate_author_group = argparser.add_mutually_exclusive_group()
-    transliterate_author_group.add_argument('--transliterate-author-and-title', dest='transliterateauthorandtitle', action='store_true', default=None,
-                                            help='Transliterate book title and author(s)')
-    transliterate_author_group.add_argument('--no-transliterate-author-and-title', dest='transliterateauthorandtitle', action='store_false', default=None,
-                                            help='Do not transliterate book title and author(s)')
+    transliterate_author_group.add_argument('--transliterate-author-and-title', dest='transliterateauthorandtitle', action='store_true', default=None, help='Transliterate book title and author(s)')
+    transliterate_author_group.add_argument('--no-transliterate-author-and-title', dest='transliterateauthorandtitle', action='store_false', default=None, help='Do not transliterate book title and author(s)')
 
-    screen_group = argparser.add_argument_group('Target device screen dimensions', 'default 800x573')
+    screen_group = argparser.add_argument_group('Target device screen dimensions for calculating proper cover size', 'default 800x573')
     screen_group.add_argument('--screen-width', dest='screen_width', type=int, default=None, help='Target screen width')
     screen_group.add_argument('--screen-height', dest='screen_height', type=int, default=None, help='Target screen height')
 
     argparser.add_argument('--kindle-compression-level', dest='kindlecompressionlevel', type=int, default=None, help='Kindlegen compression level - 0, 1, 2')
     argparser.add_argument('-p', '--profile', type=str, default=None, help='Profile name from configuration')
-    argparser.add_argument('--no-MOBI-optimization', dest='noMOBIoptimization', action='store_true', default=False,
-                           help='Do not do anything with resulting mobi file (Old behavior)')
+    argparser.add_argument('--no-MOBI-optimization', dest='noMOBIoptimization', action='store_true', default=False, help='Do not do anything with resulting mobi file (Old behavior)')
     argparser.add_argument('--css', type=str, default=None, help='css file name')
     argparser.add_argument('--xslt', type=str, default=None, help='xslt file name')
-    argparser.add_argument('--dropcaps', dest='dropcaps', type=str, default=None, choices=['Simple', 'Smart', 'None'],
-                           help='Control dropcaps processing (Simple, Smart, None)')
+    argparser.add_argument('--dropcaps', dest='dropcaps', type=str, default=None, choices=['Simple', 'Smart', 'None'], help='Control dropcaps processing (Simple, Smart, None)')
     argparser.add_argument('-l', '--profile-list', dest='profilelist', action='store_true', default=False, help='Show list of available profiles')
 
-    argparser.add_argument('--notes-mode', dest='notesmode', type=str, default=None, choices=['default', 'inline', 'block', 'float'],
-                           help='How to show footnotes: default, inline, block or float')
+    argparser.add_argument('--notes-mode', dest='notesmode', type=str, default=None, choices=['default', 'inline', 'block', 'float'], help='How to show footnotes: default, inline, block or float')
     argparser.add_argument('--notes-bodies', dest='notesbodies', type=str, default=None, help='List of fb2 part names (body) with footnotes (comma separated)')
     argparser.add_argument('--annotation-title', dest='annotationtitle', type=str, default=None, help='Annotations title')
 
@@ -643,10 +636,8 @@ if __name__ == '__main__':
     chapter_group.add_argument('--no-chapter-on-new-page', dest='chapteronnewpage', action='store_false', default=None, help='Do not start chapter from the new page')
 
     sendtokindle_group = argparser.add_mutually_exclusive_group()
-    sendtokindle_group.add_argument('--send-to-kindle', dest='sendtokindle', action='store_true', default=None,
-                                    help='Use Kindle Personal Documents Service to send book to device (<sendToKindle> in configuration file must have proper values!)')
-    sendtokindle_group.add_argument('--no-send-to-kindle', dest='sendtokindle', action='store_false', default=None,
-                                    help='Do not use Kindle Personal Documents Service to send book to device')
+    sendtokindle_group.add_argument('--send-to-kindle', dest='sendtokindle', action='store_true', default=None, help='Use Kindle Personal Documents Service to send book to device (<sendToKindle> in configuration file must have proper values!)')
+    sendtokindle_group.add_argument('--no-send-to-kindle', dest='sendtokindle', action='store_false', default=None, help='Do not use Kindle Personal Documents Service to send book to device')
 
     argparser.add_argument('--series-positions', dest='seriespositions', type=int, default=None, help='How much zero padding to use for #padnumber')
 
@@ -660,13 +651,12 @@ if __name__ == '__main__':
     argparser.add_argument('--toc-kindle-level', dest='tockindlelevel', type=int, default=None, help='Where to put second level of TOC (NCX) for Kindle')
 
     pngtransparency_group = argparser.add_mutually_exclusive_group()
-    pngtransparency_group.add_argument('--remove-png-transparency', dest='removepngtransparency', action='store_true', default=None,
-                                       help='Remove transparency in PNG images')
-    pngtransparency_group.add_argument('--no-remove-png-transparency', dest='removepngtransparency', action='store_false', default=None,
-                                       help='Do not remove transparency in PNG images')
+    pngtransparency_group.add_argument('--remove-png-transparency', dest='removepngtransparency', action='store_true', default=None, help='Remove transparency in PNG images')
+    pngtransparency_group.add_argument('--no-remove-png-transparency', dest='removepngtransparency', action='store_false', default=None, help='Do not remove transparency in PNG images')
 
-    argparser.add_argument('--stamp-cover', dest='coverStamp', type=str, default=None, choices=['Top', 'Center', 'Bottom', 'None'],
-                           help='Place stamp on cover image (Top, Center, Bottom, None)')
+    argparser.add_argument('--stamp-cover', dest='coverStamp', type=str, default=None, choices=['Top', 'Center', 'Bottom', 'None'], help='Place stamp on cover image (Top, Center, Bottom, None)')
+
+    argparser.add_argument('--scale-images', dest='imageScale', type=float, default=None, help='Resample all embedded images but cover (Positive ratio, 0 - no scaling)')
 
     # Для совместимости с MyHomeLib добавляем аргументы, которые передает MHL в fb2mobi.exe
     argparser.add_argument('-nc', action='store_true', default=False, help='For MyHomeLib compatibility')

@@ -19,26 +19,31 @@ def process_file(infile, kindle_dir, width, height, stretch, verbose):
 
     count_files += 1
     if not os.path.exists(infile):
-        if verbose: print('WARNING: File {0} not found'.format(infile))
+        if verbose:
+            print('WARNING: File {0} not found'.format(infile))
         return
 
     count_located += 1
-    if verbose: print('Processing file {}'.format(infile))
+    if verbose:
+        print('Processing file {}'.format(infile))
     try:
         reader = mobi_read(infile, width, height, stretch)
         asin = reader.getCdeContentKey()
-        if len(asin) == 0:
+        if not asin:
             asin = reader.getASIN()
-        if len(asin) > 0:
+        if asin:
             thumb = reader.getThumbnail()
             if thumb != None:
                 thumb.convert('RGB').save(os.path.join(kindle_dir, 'thumbnail_' + asin + '_' + reader.getCdeType() + '_portrait.jpg'), 'JPEG')
                 count_processed += 1
-                if verbose: print('Written thumbnail for {}'.format(asin))
+                if verbose:
+                    print('Written thumbnail for {}'.format(asin))
             else:
-                if verbose: print("Skipping - no cover or thumbnail")
+                if verbose:
+                    print("Skipping - no cover or thumbnail")
         else:
-            if verbose: print("Skipping - no ASIN")
+            if verbose:
+                print("Skipping - no ASIN")
     except:
         print('ERROR: processing file "{}".'.format(infile))
         # traceback.print_exc()
@@ -54,7 +59,7 @@ def process_folder(inputdir, width, height, stretch, verbose):
         while tail:
             head, tail = os.path.split(head)
             if tail:
-                kindle_dir = os.path.join(head, 'system', 'thumbnails')
+                kindle_dir = os.path.join(head, 'system', 'Fmbnails')
                 if os.path.isdir(kindle_dir):
                     print('Found Kindle thumbnails directory "{}"'.format(kindle_dir))
                     break
@@ -82,6 +87,7 @@ def process_folder(inputdir, width, height, stretch, verbose):
         print('ERROR: unable to find input directory "{0}"'.format(inputdir))
         sys.exit(-1)
 
+
 def read_thumbsize(s):
     w, h = 0, 0
     param = s.lower()
@@ -108,12 +114,13 @@ def read_thumbsize(s):
 
     return w, h
 
+
 if __name__ == '__main__':
 
     argparser = argparse.ArgumentParser(description='Synchronize covers for side-loaded books on Kindle. Version {0}'.format(version.VERSION))
-    argparser.add_argument('inputdir', type=str, nargs='?', default=None,  help='Directory on mounted device to look for books.')
+    argparser.add_argument('inputdir', type=str, nargs='?', default=None, help='Directory on mounted device to look for books.')
     argparser.add_argument('-v', '--verbose', dest='verbose', action='store_true', default=False, help='Produce verbose output')
-    argparser.add_argument('-s', '--thumbsize', dest='thumbsize', type=read_thumbsize, default='330x470',  help='Size of resulting thumbnail (330x470)')
+    argparser.add_argument('-s', '--thumbsize', dest='thumbsize', type=read_thumbsize, default='330x470', help='Size of resulting thumbnail (330x470)')
     argparser.add_argument('--stretch', dest='stretch', action='store_true', default=False, help='Do not preserve thumbnail aspect ratio')
 
     args = argparser.parse_args()
