@@ -9,6 +9,9 @@ import site
 base_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
 sys.argv.append('build_exe')
 
+os.environ['TCL_LIBRARY'] = os.path.join(base_dir, 'tcl', 'tcl8.6')
+os.environ['TK_LIBRARY'] = os.path.join(base_dir, 'tcl', 'tk8.6')
+
 try:
     shutil.rmtree(os.path.join(base_dir, 'build'))
 except:
@@ -20,18 +23,17 @@ except:
     pass
 
 includes = [
-    'lxml._elementpath',
+    'atexit',
     'modules.default_css',
-    'PyQt5.QtCore',
-    'PyQt5.QtGui',
-    'PyQt5.QtWidgets'
 ]
 
 excludes = [
+    'olefile',
+    'distutils',
     'pywin',
-    'Tkconstants',
-    'Tkinter',
-    'tcl'
+    'tkconstants',
+    'tkinter',
+    'tcl',
 ]
 
 data_files = [
@@ -44,7 +46,6 @@ data_files = [
     (os.path.join(base_dir, 'kindlegen.exe'), 'kindlegen.exe'),
     (os.path.join(base_dir, 'ui/locale/qtbase_ru.qm'), 'ui/locale/qtbase_ru.qm'),
     (os.path.join(base_dir, 'ui/locale/fb2mobi_ru.qm'), 'ui/locale/fb2mobi_ru.qm'),
-    (os.path.join(site.getsitepackages()[1], 'PyQt5/Qt/plugins/platforms/qwindows.dll'), "platforms/qwindows.dll")
 ]
 
 setup(
@@ -52,11 +53,10 @@ setup(
     version = version.VERSION,
     options={
         'build_exe': {
-#            'silent': 1,
-#            'build_exe': 'dist',
             'zip_exclude_packages': '',
             'zip_include_packages': '*',
             'include_files': data_files,
+            'packages': 'json,lxml,PIL',
             'includes': includes,
             'excludes': excludes,
         }
@@ -65,6 +65,6 @@ setup(
         Executable('fb2mobi.py'),
         Executable('fb2mobi.py',targetName='fb2epub.exe'),
         Executable('synccovers.py'),
-        Executable('fb2mobi-gui.py', base='Win32GUI', icon='ui/fb2mobi.ico')
+        Executable('fb2mobi-gui.py', base='Win32GUI', icon='ui/fb2mobi.ico'),
     ]
 )

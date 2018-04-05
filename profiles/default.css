@@ -1,12 +1,11 @@
-
 @page {
     margin-left: 20px;
-    margin-right:20px;
-    margin-top:20px;
-    margin-bottom:5px;
+    margin-right: 20px;
+    margin-top: 20px;
+    margin-bottom: 5px;
 }
 
-.h0 {   
+.h0 {
     font-size: 140%;
     font-weight: bold;
     margin-bottom: 1em;
@@ -74,16 +73,43 @@
 
 .titlenotes p {
     text-indent: 0;
-    text-align: center;    
+    text-align: center;
 }
 
-.indent0 { margin-left: 0pt; text-align: left; }
-.indent1 { margin-left: 10pt; text-align: left; }
-.indent2 { margin-left: 20pt; text-align: left; }
-.indent3 { margin-left: 30pt; text-align: left; }
-.indent4 { margin-left: 40pt; text-align: left; }
-.indent5 { margin-left: 40pt; text-align: left; }
-.indent6 { margin-left: 40pt; text-align: left; }
+.indent0 {
+    margin-left: 0pt;
+    text-align: left;
+}
+
+.indent1 {
+    margin-left: 10pt;
+    text-align: left;
+}
+
+.indent2 {
+    margin-left: 20pt;
+    text-align: left;
+}
+
+.indent3 {
+    margin-left: 30pt;
+    text-align: left;
+}
+
+.indent4 {
+    margin-left: 40pt;
+    text-align: left;
+}
+
+.indent5 {
+    margin-left: 40pt;
+    text-align: left;
+}
+
+.indent6 {
+    margin-left: 40pt;
+    text-align: left;
+}
 
 .anchor {
     vertical-align: super;
@@ -114,6 +140,7 @@
 .strong {
     font-weight: bold;
 }
+
 .strike {
     text-decoration: line-through;
 }
@@ -125,6 +152,7 @@
     margin-bottom: 0.2em;
     font-style: italic;
 }
+
 .text-author {
     page-break-before: avoid;
     text-align: right;
@@ -148,7 +176,7 @@ p {
     margin-bottom: 0pt;
     margin-top: 0pt;
     text-align: justify;
-    padding-bottom: 0.5em; 
+    padding-bottom: 0.5em;
 }
 
 p.title {
@@ -169,9 +197,11 @@ p.title {
 }
 
 .image img {
-    max-width:100%; 
-    max-height:100%;
+    max-width: 100%;
+    max-height: 100%;
 }
+
+.inlineimage {}
 
 .poem {
     text-indent: 0em;
@@ -210,29 +240,27 @@ p.title {
     margin-top: 0em;
 }
 
-.inlineimage {}
-
 .inlinenote {
     font-style: italic;
     font-size: 80%;
     color: #6e6e6e;
 }
 
-.inlinenote::before { 
-    content: "["; 
-} 
+.inlinenote::before {
+    content: "[";
+}
 
-.inlinenote::after { 
-    content: "]"; 
+.inlinenote::after {
+    content: "]";
 }
 
 .blocknote {
     font-style: italic;
     font-size: 80%;
-    border-radius: 4px; 
-    background: #e6e6fa; 
-    padding: 2px; 
-    border: 1px #505050 solid;  
+    border-radius: 4px;
+    background: #e6e6fa;
+    padding: 2px;
+    border: 1px #505050 solid;
 }
 
 .floatnote {

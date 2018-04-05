@@ -73,7 +73,7 @@ for _mingw in ${ARCH_INSTALLS}; do
 		if [ -z ${_msystem} ]; then
 			${_python} setup-cli.linux.cx_freeze.py build_exe -b ${_dist}
 			if [ $? -eq 0 ]; then
-				# some PIL files are copied twice
+				# clean after cx_Freeze
 				for file in ${_dist}/lib/.libs/*; do
 					rm ${_dist}/lib/`basename $file`
 				done
@@ -105,6 +105,18 @@ EOF
 			if [ -d ${u_work_dir}/${_dist} ]; then
 				cp -R ${u_work_dir}/${_dist} ${_dist}
 				rm -rf ${u_work_dir}
+
+				# clean after cx_Freeze
+				mv ${_dist}/imageformats/Qt5* ${_dist}/lib/.
+				rm ${_dist}/imageformats/VCRUNTIME140.dll
+				rm ${_dist}/imageformats/MSVCP140.dll
+
+				mv ${_dist}/platforms/Qt5*  ${_dist}/lib/.
+				rm ${_dist}/platforms/VCRUNTIME140.dll
+				rm ${_dist}/platforms/MSVCP140.dll
+
+				mv ${_dist}/lib/VCRUNTIME140.dll ${_dist}/.
+   			        mv ${_dist}/lib/MSVCP140.dll ${_dist}/.
 
 				cd ${_dist}
 				7z a -r ../fb2mobi_all_${_arch}
