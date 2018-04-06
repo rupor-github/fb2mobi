@@ -107,14 +107,12 @@ EOF
 				rm -rf ${u_work_dir}
 
 				# clean after cx_Freeze
-				mv ${_dist}/imageformats/Qt5* ${_dist}/lib/.
-				rm ${_dist}/imageformats/VCRUNTIME140.dll
-				rm ${_dist}/imageformats/MSVCP140.dll
-
-				mv ${_dist}/platforms/Qt5*  ${_dist}/lib/.
-				rm ${_dist}/platforms/VCRUNTIME140.dll
-				rm ${_dist}/platforms/MSVCP140.dll
-
+				_dirs=(imageformats platforms styles)
+				for _d in ${_dirs[@]}; do
+					mv ${_dist}/${_d}/Qt5* ${_dist}/lib/.
+					rm ${_dist}/${_d}/VCRUNTIME140.dll
+					rm ${_dist}/${_d}/MSVCP140.dll
+				done
 				mv ${_dist}/lib/VCRUNTIME140.dll ${_dist}/.
   			        mv ${_dist}/lib/MSVCP140.dll ${_dist}/.
 
