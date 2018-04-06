@@ -46,6 +46,7 @@ data_files = [
     (os.path.join(base_dir, 'kindlegen.exe'), 'kindlegen.exe'),
     (os.path.join(base_dir, 'ui/locale/qtbase_ru.qm'), 'ui/locale/qtbase_ru.qm'),
     (os.path.join(base_dir, 'ui/locale/fb2mobi_ru.qm'), 'ui/locale/fb2mobi_ru.qm'),
+    (os.path.join(site.getsitepackages()[1], 'PyQt5/Qt/plugins/styles/qwindowsvistastyle.dll'), "styles/qwindowsvistastyle.dll"),
 ]
 
 setup(

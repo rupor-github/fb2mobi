@@ -59,7 +59,7 @@ def process_folder(inputdir, width, height, stretch, verbose):
         while tail:
             head, tail = os.path.split(head)
             if tail:
-                kindle_dir = os.path.join(head, 'system', 'Fmbnails')
+                kindle_dir = os.path.join(head, 'system', 'thumbnails')
                 if os.path.isdir(kindle_dir):
                     print('Found Kindle thumbnails directory "{}"'.format(kindle_dir))
                     break

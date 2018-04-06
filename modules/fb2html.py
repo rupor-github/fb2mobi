@@ -1342,9 +1342,8 @@ class Fb2XHTML:
 
         # tuning
         h = img.height // 4
-        fh = min(35, h // 7)
-        fh = max(10, fh)
-        off = fh // 3
+        fh = max(10, h // 6)
+        off = fh // 4
 
         if self.cover_stamp == 'Top':
             pos = (0, 0)

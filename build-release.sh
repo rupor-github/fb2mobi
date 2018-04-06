@@ -116,7 +116,7 @@ EOF
 				rm ${_dist}/platforms/MSVCP140.dll
 
 				mv ${_dist}/lib/VCRUNTIME140.dll ${_dist}/.
-   			        mv ${_dist}/lib/MSVCP140.dll ${_dist}/.
+  			        mv ${_dist}/lib/MSVCP140.dll ${_dist}/.
 
 				cd ${_dist}
 				7z a -r ../fb2mobi_all_${_arch}
