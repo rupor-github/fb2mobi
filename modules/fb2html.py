@@ -410,7 +410,8 @@ class Fb2XHTML:
                 self.image_count += 1
                 self.book_cover = "dummycover.jpg"
                 # default cover will always be stamped
-                self.cover_stamp = 'Center'
+                if self.cover_stamp == 'None':
+                    self.cover_stamp = 'Center'
             except:
                 self.log.warning('Default cover {} not found.'.format(self.cover_default))
 
