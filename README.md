@@ -35,6 +35,7 @@ Here is brief list of changes to the original project (in addition to bug fixes)
 * Added new css style `.linkanchor` - this is style for all href links which are NOT pointing to the note bodies. This allows for flexible formatting of hyperlinks in the text.
 * Added "default" cover for fb2 which do not have it (APG 2018.1) - `<coverDefault>` in profile configuration.
 * Added image re-sampling - `<scaleImages>` in profile configuration or `--scale-images` on command line (Should be positive non-zero float number, cover image is exempt from this). DPI is preserved.
+* Added `--config` parameter and changed the way program looks for configuration file. Now, unless --config is provided files in user HOME directory have precedence over distribution files.
 
 More info can be found on [russian forum](http://www.the-ebook.org/forum/viewtopic.php?t=30380).
 
