@@ -1,5 +1,39 @@
 # -*- coding: utf-8 -*-
 
+import os
+import sys
+import shutil
+
+
+def make_dir(filename):
+    d = os.path.dirname(filename)
+    if not os.path.exists(d):
+        os.makedirs(d)
+
+
+def copy_file(src, dest):
+    make_dir(dest)
+    shutil.copyfile(src, dest)
+
+
+def get_executable_path():
+    if getattr(sys, 'frozen', False):
+        executable_path = os.path.abspath(os.path.dirname(sys.executable))
+    else:
+        executable_path = os.path.abspath(os.path.dirname(sys.argv[0]))
+
+    return executable_path
+
+
+def get_executable_name():
+    if getattr(sys, 'frozen', False):
+        name, _ = os.path.splitext(os.path.basename((sys.executable)))
+    else:
+        name, _ = os.path.splitext(os.path.basename((sys.argv[0])))
+
+    return name
+
+
 def transliterate(string):
     '''Транслитерация строки'''
 
@@ -37,7 +71,6 @@ def transliterate(string):
         'э': 'e',
         'ю': '',
         'я': 'ya',
-
         'А': 'A',
         'Б': 'B',
         'В': 'V',

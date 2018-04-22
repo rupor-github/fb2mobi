@@ -15,31 +15,13 @@ import uuid
 
 import version
 
-from modules.utils import transliterate
+from modules.utils import transliterate, get_executable_name, get_executable_path
 from modules.fb2html import Fb2XHTML
 from modules.epub import EpubProc
 from modules.config import ConverterConfig
 from modules.sendtokindle import SendToKindle
 from modules.mobi_split import mobi_split, mobi_read
 from modules.mobi_pagemap import PageMapProcessor
-
-
-def get_executable_path():
-    if getattr(sys, 'frozen', False):
-        executable_path = os.path.abspath(os.path.dirname(sys.executable))
-    else:
-        executable_path = os.path.abspath(os.path.dirname(sys.argv[0]))
-
-    return executable_path
-
-
-def get_executable_name():
-    if getattr(sys, 'frozen', False):
-        name, _ = os.path.splitext(os.path.basename((sys.executable)))
-    else:
-        name, _ = os.path.splitext(os.path.basename((sys.argv[0])))
-
-    return name
 
 
 def create_epub(rootdir, epubname):
@@ -231,16 +213,10 @@ def process_file(config, infile, outfile=None):
     if config.output_format.lower() in ('mobi', 'azw3'):
         # Запускаем kindlegen
         application_path = get_executable_path()
-        if sys.platform == 'win32':
-            if os.path.exists(os.path.join(application_path, 'kindlegen.exe')):
-                kindlegen_cmd = os.path.join(application_path, 'kindlegen.exe')
-            else:
-                kindlegen_cmd = 'kindlegen.exe'
-        else:
-            if os.path.exists(os.path.join(application_path, 'kindlegen')):
-                kindlegen_cmd = os.path.join(application_path, 'kindlegen')
-            else:
-                kindlegen_cmd = 'kindlegen'
+
+        kindlegen_cmd = 'kindlegen.exe' if version.WINDOWS else 'kindlegen'
+        if os.path.exists(os.path.join(application_path, kindlegen_cmd)):
+            kindlegen_cmd = os.path.join(application_path, kindlegen_cmd)
 
         try:
             config.log.info('Running kindlegen...')
@@ -259,7 +235,7 @@ def process_file(config, infile, outfile=None):
                 config.log.critical('{0} not found'.format(kindlegen_cmd))
                 critical_error = True
             else:
-                if sys.platform == 'win32':
+                if version.WINDOWS:
                     config.log.critical(e.winerror)
                 config.log.critical(e.strerror)
                 config.log.debug('Getting details', exc_info=True, stack_info=True)
@@ -430,17 +406,25 @@ def get_log_level(log_level):
 def process(myargs):
     infile = myargs.infile
     outfile = myargs.outfile
-    config_file_name = "{0}.config".format(get_executable_name())
+
     application_path = get_executable_path()
+    config_file_name = "{0}.config".format(get_executable_name())
 
-    if os.path.exists(os.path.join(application_path, config_file_name)):
-        config_file = os.path.join(application_path, config_file_name)
+    if myargs.config_file:
+        if os.path.exists(myargs.config_file):
+            # full path is given
+            config_file = myargs.config_file
+        elif os.path.exists(os.path.join(application_path, myargs.config_file)):
+            # found relative to program directory
+            config_file = os.path.join(application_path, myargs.config_file)
     else:
-        if sys.platform == 'win32':
-            config_file = os.path.join(os.path.expanduser('~'), 'fb2mobi', config_file_name)
-        else:
-            config_file = os.path.join(os.path.expanduser('~'), '.fb2mobi', config_file_name)
+        config_file = os.path.join(os.path.expanduser('~'), 'fb2mobi' if version.WINDOWS else '.fb2mobi', config_file_name)
+        if not os.path.exists(config_file):
+            # last resort - see if we have default config in program directory
+            if os.path.exists(os.path.join(application_path, config_file_name)):
+                config_file = os.path.join(application_path, config_file_name)
 
+    # if configuration does not exist - it will be created in user HOME directory
     config = ConverterConfig(config_file)
 
     if myargs.profilelist:
@@ -577,11 +561,14 @@ def process(myargs):
 if __name__ == '__main__':
 
     # Настройка парсера аргументов
+    # yapf: disable
     argparser = argparse.ArgumentParser(description='Converter of fb2 and epub ebooks to mobi, azw3 and epub formats. Version {0}'.format(version.VERSION))
+
+    argparser.add_argument('-c', '--config', dest='config_file', type=str, default=None, help='Configuration file name (full path or relative of the program directory). if not present {0}.config in program directory or home directory is assumed'.format(get_executable_name()))
 
     input_args_group = argparser.add_mutually_exclusive_group()
     input_args_group.add_argument('infile', type=str, nargs='?', default=None, help='Source file name (fb2, fb2.zip, zip or epub)')
-    input_args_group.add_argument('-i', '--input-dir', dest='inputdir', type=str, default=None, help='Source directory for batch conversion.')
+    input_args_group.add_argument('-i', '--input-dir', dest='inputdir', type=str, default=None, help='Source directory for batch conversion')
 
     output_args_group = argparser.add_mutually_exclusive_group()
     output_args_group.add_argument('outfile', type=str, nargs='?', default=None, help='Destination file name (mobi, azw3 or epub)')
@@ -655,7 +642,6 @@ if __name__ == '__main__':
     pngtransparency_group.add_argument('--no-remove-png-transparency', dest='removepngtransparency', action='store_false', default=None, help='Do not remove transparency in PNG images')
 
     argparser.add_argument('--stamp-cover', dest='coverStamp', type=str, default=None, choices=['Top', 'Center', 'Bottom', 'None'], help='Place stamp on cover image (Top, Center, Bottom, None)')
-
     argparser.add_argument('--scale-images', dest='imageScale', type=float, default=None, help='Resample all embedded images but cover (Positive ratio, 0 - no scaling)')
 
     # Для совместимости с MyHomeLib добавляем аргументы, которые передает MHL в fb2mobi.exe
@@ -663,6 +649,7 @@ if __name__ == '__main__':
     argparser.add_argument('-cl', action='store_true', help='For MyHomeLib compatibility')
     argparser.add_argument('-us', action='store_true', help='For MyHomeLib compatibility')
     argparser.add_argument('-nt', action='store_true', help='For MyHomeLib compatibility')
+    # yapf: enable
 
     # Парсим аргументы командной строки
     args = argparser.parse_args()

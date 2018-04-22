@@ -6,6 +6,7 @@ import os, codecs
 from lxml import etree
 from lxml.builder import E
 
+from modules.utils import get_executable_path, make_dir, copy_file
 
 class ConverterConfig:
 
@@ -14,7 +15,9 @@ class ConverterConfig:
 
         self.debug = False
         self.log_file = None
+        # self.log_file = 'aaaa.log'
         self.original_log_file = None
+        # self.log_level = 'Debug'
         self.log_level = 'Info'
         self.console_level = 'Info'
         self.output_format = 'epub'
@@ -76,6 +79,8 @@ class ConverterConfig:
         self.profiles['default']['seriesPositions'] = 2
         self.profiles['default']['openBookFromCover'] = False
         self.profiles['default']['scaleImages'] = 0.0
+        self.profiles['default']['coverDefault'] = 'default_cover.jpg'
+        self.profiles['default']['coverStamp'] = 'None'
 
         self.current_profile = {}
         self.mhl = False
@@ -87,18 +92,28 @@ class ConverterConfig:
         self.send_to_kindle['smtpServer'] = 'smtp.gmail.com'
         self.send_to_kindle['smtpPort'] = 465
         self.send_to_kindle['smtpLogin'] = '[Your Google Email]'
-        self.send_to_kindle['smtpPassword'] = None
+        self.send_to_kindle['smtpPassword'] = '[Your Google Password]'
         self.send_to_kindle['fromUserEmail'] = '[Your Google Email]'
         self.send_to_kindle['toKindleEmail'] = '[Your Kindle Email]'
 
+        # if no configuration - provide minimum defaults
         if not os.path.exists(self.config_file):
-            # Если файл настроек отсутствует, созданим файл по-умолчанию
+
+            # configuration
             self.write()
-            # Создадим умолчательный css
-            default_css = import_module('default_css')
-            with codecs.open(os.path.join(os.path.split(self.config_file)[0], 'default.css'), "w", 'utf-8') as f:
+
+            # default css
+            default_css = import_module('modules.default_css')
+            default_css_path = os.path.abspath(os.path.join(os.path.dirname(self.config_file), 'default.css'))
+            make_dir(default_css_path)
+            with codecs.open(default_css_path, "w", 'utf-8') as f:
                 f.write(default_css.default_css)
                 f.close()
+
+            # default cover
+            default_cover_path = os.path.join(get_executable_path(), 'default_cover.jpg')
+            if os.path.exists(default_cover_path):
+                copy_file(default_cover_path, os.path.abspath(os.path.join(os.path.dirname(self.config_file), 'default_cover.jpg')))
 
         self._load()
 
@@ -111,7 +126,7 @@ class ConverterConfig:
             elif e.tag == 'logFile':
                 if e.text:
                     self.original_log_file = e.text
-                    self.log_file = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), e.text))
+                    self.log_file = os.path.abspath(os.path.join(os.path.dirname(self.config_file), e.text))
 
             elif e.tag == 'logLevel':
                 self.log_level = e.text
@@ -190,10 +205,10 @@ class ConverterConfig:
                     self.profiles[prof_name]['seriesPositions'] = 2
                     self.profiles[prof_name]['chapterLevel'] = 100
                     self.profiles[prof_name]['openBookFromCover'] = False
-                    self.profiles[prof_name]['coverDefault'] = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), 'default_cover.jpg'))
                     self.profiles[prof_name]['coverStamp'] = 'None'
                     self.profiles[prof_name]['coverTextFont'] = None
                     self.profiles[prof_name]['scaleImages'] = 0.0
+                    self.profiles[prof_name]['coverDefault'] = 'default_cover.jpg'
 
                     for p in prof:
                         if p.tag == 'hyphens':
@@ -263,14 +278,14 @@ class ConverterConfig:
 
                         elif p.tag == 'css':
                             self.profiles[prof_name]['originalcss'] = p.text
-                            self.profiles[prof_name]['css'] = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), p.text))
+                            self.profiles[prof_name]['css'] = os.path.abspath(os.path.join(os.path.dirname(self.config_file), p.text))
                             if 'parse' in p.attrib:
                                 self.profiles[prof_name]['parse_css'] = p.attrib['parse'].lower() == 'true'
                             else:
                                 self.profiles[prof_name]['parse_css'] = True
 
                         elif p.tag == 'xslt':
-                            self.profiles[prof_name]['xslt'] = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), p.text))
+                            self.profiles[prof_name]['xslt'] = os.path.abspath(os.path.join(os.path.dirname(self.config_file), p.text))
 
                         elif p.tag == 'chapterOnNewPage':
                             self.profiles[prof_name]['chapterOnNewPage'] = p.text.lower() == 'true'
@@ -306,7 +321,7 @@ class ConverterConfig:
                                 vign_arr_save = {}
 
                                 for v in vignettes:
-                                    vign_arr[v.tag] = None if v.text.lower() == 'none' else os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), v.text))
+                                    vign_arr[v.tag] = None if v.text.lower() == 'none' else os.path.abspath(os.path.join(os.path.dirname(self.config_file), v.text))
                                     vign_arr_save[v.tag] = None if v.text.lower() == 'none' else v.text
 
                                 self.profiles[prof_name]['vignettes'][vignettes_level] = vign_arr
@@ -319,10 +334,10 @@ class ConverterConfig:
                             self.profiles[prof_name]['coverStamp'] = p.text
 
                         elif p.tag == 'coverDefault':
-                            self.profiles[prof_name]['coverDefault'] = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), p.text))
+                            self.profiles[prof_name]['coverDefault'] = os.path.abspath(os.path.join(os.path.dirname(self.config_file), p.text))
 
                         elif p.tag == 'coverTextFont':
-                            self.profiles[prof_name]['coverTextFont'] = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(self.config_file)), p.text))
+                            self.profiles[prof_name]['coverTextFont'] = os.path.abspath(os.path.join(os.path.dirname(self.config_file), p.text))
 
                         elif p.tag == 'scaleImages':
                             self.profiles[prof_name]['scaleImages'] = float(p.text)
@@ -414,8 +429,9 @@ class ConverterConfig:
             self.characters_per_page = self.current_profile['charactersPerPage']
 
     def write(self):
-        config = E(
-            'settings',
+        # yapf: disable
+        config = E('settings',
+            # pylint: disable=C0330
             E('debug', str(self.debug)),
             E('logFile', self.original_log_file) if self.original_log_file else E('logFile'),
             E('logLevel', self.log_level),
@@ -429,10 +445,16 @@ class ConverterConfig:
             E('defaultProfile', self.default_profile),
             E('noMOBIoptimization', str(self.noMOBIoptimization)),
             E('profiles', *self._getProfiles()),
-            E('sendToKindle', E('send', str(self.send_to_kindle['send'])), E('deleteSendedBook', str(self.send_to_kindle['deleteSendedBook'])), E('smtpServer', self.send_to_kindle['smtpServer']), E('smtpPort', str(self.send_to_kindle['smtpPort'])),
-              E('smtpLogin', self.send_to_kindle['smtpLogin']),
-              E('smtpPassword', self.send_to_kindle['smtpPassword']) if self.send_to_kindle['smtpPassword'] else E('smtpPassword'), E('fromUserEmail', self.send_to_kindle['fromUserEmail']), E('toKindleEmail', self.send_to_kindle['toKindleEmail'])),
-        )
+            E('sendToKindle',
+                E('send', str(self.send_to_kindle['send'])),
+                E('deleteSendedBook', str(self.send_to_kindle['deleteSendedBook'])),
+                E('smtpServer', self.send_to_kindle['smtpServer']),
+                E('smtpPort', str(self.send_to_kindle['smtpPort'])),
+                E('smtpLogin', self.send_to_kindle['smtpLogin']),
+                E('smtpPassword', self.send_to_kindle['smtpPassword']) if self.send_to_kindle['smtpPassword'] else E('smtpPassword'),
+                E('fromUserEmail', self.send_to_kindle['fromUserEmail']),
+                E('toKindleEmail', self.send_to_kindle['toKindleEmail'])))
+        # yapf: enable
 
         config_dir = os.path.dirname(self.config_file)
         if not os.path.exists(config_dir):

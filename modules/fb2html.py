@@ -2,7 +2,6 @@
 
 import os, os.path, sys
 import re
-import shutil
 import io
 import codecs
 import uuid
@@ -13,7 +12,7 @@ from copy import deepcopy
 from typing import Tuple
 
 from modules.image_utils import ImageText
-from modules.utils import transliterate
+from modules.utils import transliterate, make_dir, copy_file
 from modules.myhyphen import MyHyphen
 
 import cssutils
@@ -49,12 +48,6 @@ def sanitize_id(string):
         return ''
 
 
-def make_dir(filename):
-    d = os.path.dirname(filename)
-    if not os.path.exists(d):
-        os.makedirs(d)
-
-
 def write_file(buff, filename):
     make_dir(filename)
     with codecs.open(filename, 'w', 'utf-8') as f:
@@ -65,12 +58,6 @@ def write_file_bin(buff, filename):
     make_dir(filename)
     with open(filename, 'wb') as f:
         f.write(buff)
-
-
-def copy_file(src, dest):
-    make_dir(dest)
-    shutil.copyfile(src, dest)
-
 
 def format_title(s, seq):
 

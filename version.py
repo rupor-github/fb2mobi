@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import platform
+import sys
 
-WINDOWS = platform.system().lower() == "windows"
+WINDOWS = sys.platform == 'win32'
 
-VERSION = u'3.6.56'
+VERSION = u'3.6.57'
