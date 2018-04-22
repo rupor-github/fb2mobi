@@ -417,6 +417,9 @@ def process(myargs):
         elif os.path.exists(os.path.join(application_path, myargs.config_file)):
             # found relative to program directory
             config_file = os.path.join(application_path, myargs.config_file)
+        else:
+            print('Unable to locate configuration file "{0}"'.format(myargs.config_file))
+            sys.exit(-1)
     else:
         config_file = os.path.join(os.path.expanduser('~'), 'fb2mobi' if version.WINDOWS else '.fb2mobi', config_file_name)
         if not os.path.exists(config_file):
