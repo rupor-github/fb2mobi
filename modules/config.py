@@ -208,7 +208,7 @@ class ConverterConfig:
                     self.profiles[prof_name]['coverStamp'] = 'None'
                     self.profiles[prof_name]['coverTextFont'] = None
                     self.profiles[prof_name]['scaleImages'] = 0.0
-                    self.profiles[prof_name]['coverDefault'] = 'default_cover.jpg'
+                    self.profiles[prof_name]['coverDefault'] = os.path.abspath(os.path.join(os.path.dirname(self.config_file), 'default_cover.jpg'))
 
                     for p in prof:
                         if p.tag == 'hyphens':
