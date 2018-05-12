@@ -30,12 +30,13 @@ Here is brief list of changes to the original project (in addition to bug fixes)
   digits overall will be generated) and `#date` to add proper date from `<title-info>` if availabe.
 * Added new `<chapterLevel>` configuration tag and `---chapter-level` parameter along with new style `.titleblock_nobreak`. When parsing sections this style will be generated
   if nesting level is greater or equal to specified value. This allows better control of page breaks on sections boundaries.
-* Supported `<openBookFromCover>` configuration tag and `---open-book-from-cover` parameter for compatibility with fb2conv.
+* Supported `<openBookFromCover>` configuration tag and `---open-book-from-cover` parameter for compatibility with fb2conv. Works for `epub` output only.
 * Changed how book title and book author are formatted - added processing of conditional blocks, for example: `<bookTitleFormat>{(#abbrseries{ #padnumber}) }#title</bookTitleFormat>`. To output curly braces escape them with backslash.
 * Added new css style `.linkanchor` - this is style for all href links which are NOT pointing to the note bodies. This allows for flexible formatting of hyperlinks in the text.
 * Added "default" cover for fb2 which do not have it (APG 2018.1) - `<coverDefault>` in profile configuration.
 * Added image re-sampling - `<scaleImages>` in profile configuration or `--scale-images` on command line (Should be positive non-zero float number, cover image is exempt from this). DPI is preserved.
 * Added `--config` parameter and changed the way program looks for configuration file. Now, unless --config is provided files in user HOME directory have precedence over distribution files.
+* For FB2 input files output name could be derived from book metadata using tag `<outputPattern>` and the same rules as for book title.
 
 More info can be found on [russian forum](http://www.the-ebook.org/forum/viewtopic.php?t=30380).
 
