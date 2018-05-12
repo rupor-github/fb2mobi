@@ -275,7 +275,7 @@ def process_file(config, infile, outfile=None):
     elif config.output_format.lower() == 'epub':
         # Собираем epub
         config.log.info('Creating epub...')
-        outputfile = os.path.basename(outputfile) + '.epub'
+        outputfile = os.path.splitext(outputfile)[0] + '.epub'
         create_epub(temp_dir, outputfile)
 
     ext = config.output_format.lower()
