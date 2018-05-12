@@ -60,6 +60,7 @@ setup(
             'packages': 'json,lxml,PIL',
             'includes': includes,
             'excludes': excludes,
+            'replace_paths': [('*','library.zip/')],
         }
     },
     executables = [
