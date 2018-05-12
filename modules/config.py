@@ -32,6 +32,7 @@ class ConverterConfig:
 
         self.input_dir = None
         self.output_dir = None
+        self.output_pattern = None
         self.save_structure = None
         self.delete_source_file = None
 
@@ -81,6 +82,7 @@ class ConverterConfig:
         self.profiles['default']['scaleImages'] = 0.0
         self.profiles['default']['coverDefault'] = 'default_cover.jpg'
         self.profiles['default']['coverStamp'] = 'None'
+        self.profiles['default']['outputPattern'] = None
 
         self.current_profile = {}
         self.mhl = False
@@ -136,6 +138,9 @@ class ConverterConfig:
 
             elif e.tag == 'outputFormat':
                 self.output_format = e.text
+
+            elif e.tag == 'outputPattern':
+                self.output_pattern = e.text
 
             elif e.tag == 'kindleCompressionLevel':
                 self.kindle_compression_level = int(e.text)
@@ -222,6 +227,9 @@ class ConverterConfig:
 
                         elif p.tag == 'outputFormat':
                             self.profiles[prof_name]['outputFormat'] = p.text
+
+                        elif p.tag == 'outputPattern':
+                            self.profiles[prof_name]['outputPattern'] = p.text
 
                         elif p.tag == 'transliterate':
                             self.profiles[prof_name]['transliterate'] = p.text.lower() == 'true'
@@ -409,6 +417,9 @@ class ConverterConfig:
 
         if 'outputFormat' in self.current_profile:
             self.output_format = self.current_profile['outputFormat']
+
+        if 'outputPattern' in self.current_profile:
+            self.output_pattern = self.current_profile['outputPattern']
 
         if 'transliterate' in self.current_profile:
             self.transliterate = self.current_profile['transliterate']

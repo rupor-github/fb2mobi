@@ -4,6 +4,10 @@ import os
 import sys
 import shutil
 
+import version
+
+from slugify import slugify, smart_truncate
+
 
 def make_dir(filename):
     d = os.path.dirname(filename)
@@ -34,80 +38,69 @@ def get_executable_name():
     return name
 
 
-def transliterate(string):
-    '''Транслитерация строки'''
+def format_pattern(s, seq):
 
-    transtable = {
-        'а': 'a',
-        'б': 'b',
-        'в': 'v',
-        'г': 'g',
-        'д': 'd',
-        'е': 'e',
-        'ё': 'e',
-        'ж': 'zh',
-        'з': 'z',
-        'и': 'i',
-        'й': 'i',
-        'к': 'k',
-        'л': 'l',
-        'м': 'm',
-        'н': 'n',
-        'о': 'o',
-        'п': 'p',
-        'р': 'r',
-        'с': 's',
-        'т': 't',
-        'у': 'u',
-        'ф': 'f',
-        'х': 'h',
-        'ц': 'c',
-        'ч': 'ch',
-        'ш': 'sh',
-        'щ': 'csh',
-        'ъ': "'",
-        'ы': 'i',
-        'ь': "'",
-        'э': 'e',
-        'ю': '',
-        'я': 'ya',
-        'А': 'A',
-        'Б': 'B',
-        'В': 'V',
-        'Г': 'G',
-        'Д': 'D',
-        'Е': 'E',
-        'Ё': 'E',
-        'Ж': 'Zh',
-        'З': 'Z',
-        'И': 'I',
-        'Й': 'I',
-        'К': 'K',
-        'Л': 'L',
-        'М': 'M',
-        'Н': 'N',
-        'О': 'O',
-        'П': 'P',
-        'Р': 'R',
-        'С': 'S',
-        'Т': 'T',
-        'У': 'U',
-        'Ф': 'F',
-        'Х': 'H',
-        'Ц': 'C',
-        'Ч': 'Ch',
-        'Ш': 'Sh',
-        'Щ': 'Csh',
-        'Ъ': "'",
-        'Ы': 'I',
-        'Ь': "'",
-        'Э': 'E',
-        'Ю': 'U',
-        'Я': 'YA'
-    }
+    def replace_keyword(pict, k, v):
+        if pict.count(k) > 0:
+            return pict.replace(k, v), True if v else False
+        return pict, False
 
-    translatedstring = []
-    for c in string:
-        translatedstring.append(transtable.setdefault(c, c))
+    def replace_keywords(pict, seq):
+        expanded = False
+        for (k, v) in seq:
+            pict, ok = replace_keyword(pict, k, v)
+            expanded = expanded or ok
+        if not expanded:
+            return ''
+        return pict
 
-    return ''.join(translatedstring)
+    p_o = -1
+    p_c = -1
+
+    # Hack - I do not want to write real parser
+    pps = s.replace(r'\{', chr(1)).replace(r'\}', chr(2))
+
+    for i, sym in enumerate(pps):
+        if sym == '{':
+            p_o = i
+        elif sym == '}':
+            p_c = i
+            break
+
+    if p_o >= 0 and p_c > 0 and p_o < p_c:
+        pps = format_pattern(pps[0:p_o] + replace_keywords(pps[p_o + 1:p_c], seq) + pps[p_c + 1:], seq)
+    else:
+        pps = replace_keywords(pps, seq)
+
+    return pps.replace(chr(1), '{').replace(chr(2), '}')
+
+
+# pylint: disable=C0330
+windows_reserved = str.maketrans({
+    '<': None,
+    '>': None,
+    ':': None,
+    '"': None,
+    '/': None,
+    '\\': None,
+    '|': None,
+    '?': None,
+    '*': None,
+})
+
+
+def clean_file_name(fname):
+
+    if not os.path.supports_unicode_filenames:
+        fname = slugify(fname, separator=' ')
+
+    # Just in case - control path separators
+    fname = fname.replace(os.sep, '')
+
+    if version.WINDOWS:
+        # Just in case
+        fname = fname.translate(windows_reserved)
+        # Seriously, I know that this is OLD Windows only, but...
+        fname = smart_truncate(fname, max_length=260)
+
+    return fname

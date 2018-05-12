@@ -5,9 +5,9 @@ import html
 import uuid
 
 from lxml import etree
-from modules.utils import transliterate
-from modules.myhyphen import MyHyphen
+from slugify import slugify
 
+from modules.myhyphen import MyHyphen
 
 def save_html(string):
     if string:
@@ -79,7 +79,7 @@ class EpubProc:
                 title = title.replace('#title', '' if not self.book_title else self.book_title.strip())
                 title = title.replace('#abbrseries', '' if not abbr else abbr.lower())
                 if self.transliterate_author_and_title:
-                    title = transliterate(title)
+                    title = slugify(title, separator=' ')
                 node.text = title
 
         for node in self.root.iter('{*}language'):
@@ -124,5 +124,5 @@ class EpubProc:
 
                     # TODO: Do we need profile per file extension?
                     # TODO: Replace stylesheets?
-                    # TODO: book_author = transliterate(book_author)
+                    # TODO: book_author = slugify(book_author, separator=' ')
 

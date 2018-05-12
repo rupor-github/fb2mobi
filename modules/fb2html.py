@@ -10,9 +10,10 @@ import hashlib
 import html
 from copy import deepcopy
 from typing import Tuple
+from slugify import slugify
 
 from modules.image_utils import ImageText
-from modules.utils import transliterate, make_dir, copy_file
+from modules.utils import make_dir, copy_file, format_pattern
 from modules.myhyphen import MyHyphen
 
 import cssutils
@@ -59,46 +60,10 @@ def write_file_bin(buff, filename):
     with open(filename, 'wb') as f:
         f.write(buff)
 
-def format_title(s, seq):
-
-    def replace_keyword(pict, k, v):
-        if pict.count(k) > 0:
-            return pict.replace(k, v), True if v else False
-        return pict, False
-
-    def replace_keywords(pict, seq):
-        expanded = False
-        for (k, v) in seq:
-            pict, ok = replace_keyword(pict, k, v)
-            expanded = expanded or ok
-        if not expanded:
-            return ''
-        return pict
-
-    p_o = -1
-    p_c = -1
-
-    # Hack - I do not want to write real parser
-    pps = s.replace(r'\{', chr(1)).replace(r'\}', chr(2))
-
-    for i, sym in enumerate(pps):
-        if sym == '{':
-            p_o = i
-        elif sym == '}':
-            p_c = i
-            break
-
-    if p_o >= 0 and p_c > 0 and p_o < p_c:
-        pps = format_title(pps[0:p_o] + replace_keywords(pps[p_o + 1:p_c], seq) + pps[p_c + 1:], seq)
-    else:
-        pps = replace_keywords(pps, seq)
-
-    return pps.replace(chr(1), '{').replace(chr(2), '}')
-
 
 class Fb2XHTML:
 
-    def __init__(self, fb2file, mobifile, tempdir, config):
+    def __init__(self, fb2file, tempdir, config):
 
         self.log = config.log
 
@@ -218,8 +183,6 @@ class Fb2XHTML:
         self.images_scale = config.current_profile['scaleImages']
 
         self.genres = []
-
-        self.mobi_file = mobifile
 
         self.tree = etree.parse(fb2file, parser=etree.XMLParser(recover=True))
         if 'xslt' in config.current_profile:
@@ -590,8 +553,17 @@ class Fb2XHTML:
                                 elif ns_tag(a.tag) == 'last-name':
                                     lastname = a.text
 
-                            self.book_author = format_title(self.authorformat, [('#fi', '' if not firstname else firstname[0] + '.'), ('#mi', '' if not middlename else middlename[0] + '.'), ('#f', '' if not firstname else firstname.strip()),
-                                                                                ('#m', '' if not middlename else middlename.strip()), ('#l', '' if not lastname else lastname.strip())])
+                            # pylint: disable=C0330
+                            # yapf: disable
+                            self.book_author = format_pattern(self.authorformat,
+                                [
+                                    ('#fi', '' if not firstname else firstname[0] + '.'),
+                                    ('#mi', '' if not middlename else middlename[0] + '.'),
+                                    ('#f', '' if not firstname else firstname.strip()),
+                                    ('#m', '' if not middlename else middlename.strip()),
+                                    ('#l', '' if not lastname else lastname.strip())
+                                ])
+                            # yapf: enable
 
                             self.book_author = self.book_author.strip()
 
@@ -1423,9 +1395,18 @@ class Fb2XHTML:
         title = self.book_title
 
         if self.booktitleformat:
-            title = format_title(self.booktitleformat, [('#title', '' if not self.book_title else self.book_title.strip()), ('#series', '' if not self.book_series else self.book_series.strip()),
-                                                        ('#abbrseries', ''.join(word[0] for word in self.book_series.split()).lower() if self.book_series else ''), ('#number', '' if not self.book_series_num else self.book_series_num.strip()),
-                                                        ('#padnumber', '' if not self.book_series_num else self.book_series_num.strip().zfill(self.seriespositions)), ('#date', '' if not self.book_date else self.book_date.strip())])
+            # pylint: disable=C0330
+            # yapf: disable
+            title = format_pattern(self.booktitleformat,
+                [
+                    ('#title', '' if not self.book_title else self.book_title.strip()),
+                    ('#series', '' if not self.book_series else self.book_series.strip()),
+                    ('#abbrseries', ''.join(word[0] for word in self.book_series.split()).lower() if self.book_series else ''),
+                    ('#number', '' if not self.book_series_num else self.book_series_num.strip()),
+                    ('#padnumber', '' if not self.book_series_num else self.book_series_num.strip().zfill(self.seriespositions)),
+                    ('#date', '' if not self.book_date else self.book_date.strip())
+                ])
+            # yapf: enable
             if not title:
                 title = self.book_title
 
@@ -1434,8 +1415,8 @@ class Fb2XHTML:
         book_author = self.book_author
 
         if self.transliterate_author_and_title:
-            title = transliterate(title)
-            book_author = transliterate(book_author)
+            title = slugify(title, separator=' ')
+            book_author = slugify(book_author, ' ')
 
         self.buff.append('<dc:title>{0}</dc:title>'.format(save_html(title)))
         self.buff.append('<dc:language>{0}</dc:language>'.format(self.book_lang))

@@ -13,9 +13,11 @@ import time
 import shutil
 import uuid
 
+from slugify import slugify
+
 import version
 
-from modules.utils import transliterate, get_executable_name, get_executable_path
+from modules.utils import get_executable_name, get_executable_path, format_pattern, clean_file_name
 from modules.fb2html import Fb2XHTML
 from modules.epub import EpubProc
 from modules.config import ConverterConfig
@@ -41,13 +43,13 @@ def create_epub(rootdir, epubname):
 
 
 def get_mobi_filename(filename, translit=False):
-    out_file = os.path.splitext(filename)[0]
+    out_file, _ = os.path.splitext(filename)
 
-    if os.path.splitext(out_file)[1].lower() == '.fb2':
-        out_file = os.path.splitext(out_file)[0]
+    if out_file.lower().endswith('.fb2'):
+        out_file, _ = os.path.splitext(out_file)
 
     if translit:
-        out_file = transliterate(out_file)
+        out_file = slugify(out_file)
 
     return '{0}.mobi'.format(out_file)
 
@@ -94,8 +96,6 @@ def rm_tmp_files(dest, deleteroot=True):
 
 
 def process_file(config, infile, outfile=None):
-    critical_error = False
-
     start_time = time.clock()
     temp_dir = tempfile.mkdtemp()
 
@@ -103,7 +103,7 @@ def process_file(config, infile, outfile=None):
         config.log.critical('File {0} not found'.format(infile))
         return
 
-    config.log.info('Converting "{0}"...'.format(os.path.split(infile)[1]))
+    config.log.info('Converting "{0}" in "{1}"...'.format(os.path.basename(infile), temp_dir))
     config.log.info('Using profile "{0}".'.format(config.current_profile['name']))
 
     # Проверка корректности параметров
@@ -125,56 +125,37 @@ def process_file(config, infile, outfile=None):
 
     # Если не задано имя выходного файла - вычислим
     if not outfile:
-
         outdir, outputfile = os.path.split(infile)
         outputfile = get_mobi_filename(outputfile, config.transliterate)
-
         if config.output_dir:
             if not os.path.exists(config.output_dir):
                 os.makedirs(config.output_dir)
             if config.input_dir and config.save_structure:
-                rel_path = os.path.join(config.output_dir, os.path.split(os.path.relpath(infile, config.input_dir))[0])
+                rel_path = os.path.join(config.output_dir, os.path.dirname(os.path.relpath(infile, config.input_dir)))
                 if not os.path.exists(rel_path):
                     os.makedirs(rel_path)
-                outfile = os.path.join(rel_path, outputfile)
+                outputfile = os.path.join(rel_path, outputfile)
             else:
-                outfile = os.path.join(config.output_dir, outputfile)
+                outputfile = os.path.join(config.output_dir, outputfile)
         else:
-            outfile = os.path.join(outdir, outputfile)
+            outputfile = os.path.join(outdir, outputfile)
     else:
-        _output_format = os.path.splitext(outfile)[1].lower()[1:]
-        if _output_format not in ('mobi', 'azw3', 'epub'):
-            config.log.critical('Unknown output format: {0}'.format(_output_format))
-            return -1
+        _output_file, _output_format = os.path.splitext(outfile)
+        if _output_format not in ('.mobi', '.azw3', '.epub'):
+            config.log.critical('Output format "{0}" is not supported'.format(_output_format))
+            return
         else:
+            _output_format = _output_format.lower()[1:]
             if not config.mhl:
                 config.output_format = _output_format
-            outfile = '{0}.{1}'.format(os.path.splitext(outfile)[0], config.output_format)
+            outputfile = '{0}.{1}'.format(_output_file, config.output_format)
 
     if config.output_format.lower() == 'epub':
         # Для epub всегда разбиваем по главам
         config.current_profile['chapterOnNewPage'] = True
 
-    debug_dir = os.path.abspath(os.path.splitext(infile)[0])
-    if os.path.splitext(debug_dir)[1].lower() == '.fb2':
-        debug_dir = os.path.splitext(debug_dir)[0]
-
-    input_epub = False
-
-    if os.path.splitext(infile)[1].lower() == '.zip':
-        config.log.info('Unpacking...')
-        tmp_infile = infile
-        try:
-            infile = unzip(infile, temp_dir)
-        except:
-            config.log.critical('Error unpacking file "{0}".'.format(tmp_infile))
-            return
-
-        if not infile:
-            config.log.critical('Error unpacking file "{0}".'.format(tmp_infile))
-            return
-
-    elif os.path.splitext(infile)[1].lower() == '.epub':
+    input_ext = os.path.splitext(infile)[1].lower()
+    if input_ext == '.epub':
         config.log.info('Unpacking epub...')
         tmp_infile = infile
         try:
@@ -187,26 +168,72 @@ def process_file(config, infile, outfile=None):
             config.log.critical('Error unpacking file "{0}".'.format(tmp_infile))
             return
 
-        input_epub = True
-
-    if input_epub:
         # Let's see what we could do
         config.log.info('Processing epub...')
         epubparser = EpubProc(infile, config)
         epubparser.process()
         document_id = epubparser.book_uuid
     else:
+        if input_ext == '.zip':
+            config.log.info('Unpacking...')
+            tmp_infile = infile
+            try:
+                infile = unzip(infile, temp_dir)
+            except:
+                config.log.critical('Error unpacking file "{0}".'.format(tmp_infile))
+                return
+
+            if not infile:
+                config.log.critical('Error unpacking file "{0}".'.format(tmp_infile))
+                return
+
         # Конвертируем в html
         config.log.info('Converting fb2 to html...')
+        interrupted = False
         try:
-            fb2parser = Fb2XHTML(infile, outfile, temp_dir, config)
+            fb2parser = Fb2XHTML(infile, temp_dir, config)
             fb2parser.generate()
             document_id = fb2parser.book_uuid
             infile = os.path.join(temp_dir, 'OEBPS', 'content.opf')
+
+            if not outfile and config.output_pattern:
+                # pylint: disable=C0330
+                # yapf: disable
+                fname = format_pattern(config.output_pattern,
+                    [
+                        ('#title', '' if not fb2parser.book_title else fb2parser.book_title.strip()),
+                        ('#series', '' if not fb2parser.book_series else fb2parser.book_series.strip()),
+                        ('#abbrseries', ''.join(word[0] for word in fb2parser.book_series.split()).lower() if fb2parser.book_series else ''),
+                        ('#number', '' if not fb2parser.book_series_num else fb2parser.book_series_num.strip()),
+                        ('#padnumber', '' if not fb2parser.book_series_num else fb2parser.book_series_num.strip().zfill(fb2parser.seriespositions)),
+                        ('#author', '' if not fb2parser.book_author else fb2parser.book_author.strip())
+                    ])
+                # yapf: enable
+
+                head, tail = os.path.splitext(outputfile)
+                fname = clean_file_name(fname)
+                config.log.info('Re-setting output file name to "{0}"...'.format(fname))
+                outputfile = os.path.join(os.path.dirname(head), fname + tail)
+
         except:
+            interrupted = True
             config.log.critical('Error while converting file "{0}"'.format(infile))
             config.log.debug('Getting details', exc_info=True)
-            return
+        finally:
+            if config.debug:
+                debug_dir, _ = os.path.splitext(outputfile)
+                debug_dir = debug_dir + '.debug'
+                # for debugging
+                config.log.info('Copying intermediate files to "{0}"...'.format(debug_dir))
+                if os.path.exists(debug_dir):
+                    rm_tmp_files(debug_dir)
+                shutil.copytree(temp_dir, debug_dir)
+                if not input_ext == '.epub':
+                    # Store fb2 after xslt transformation for debugging
+                    fb2parser.write_debug(debug_dir)
+            if interrupted:
+                # pylint: disable=W0150
+                return
 
     config.log.info('Processing took {0} sec.'.format(round(time.clock() - start_time, 2)))
 
@@ -218,6 +245,7 @@ def process_file(config, infile, outfile=None):
         if os.path.exists(os.path.join(application_path, kindlegen_cmd)):
             kindlegen_cmd = os.path.join(application_path, kindlegen_cmd)
 
+        interrupted = False
         try:
             config.log.info('Running kindlegen...')
             kindlegen_cmd_pars = '-c{0}'.format(config.kindle_compression_level)
@@ -231,124 +259,118 @@ def process_file(config, infile, outfile=None):
                 config.log.debug(str(result.stdout.read(), 'utf-8', errors='replace'))
 
         except OSError as e:
+            interrupted = True
             if e.errno == os.errno.ENOENT:
                 config.log.critical('{0} not found'.format(kindlegen_cmd))
-                critical_error = True
             else:
                 if version.WINDOWS:
                     config.log.critical(e.winerror)
                 config.log.critical(e.strerror)
                 config.log.debug('Getting details', exc_info=True, stack_info=True)
-                raise e
+        finally:
+            if interrupted:
+                rm_tmp_files(temp_dir)
+                sys.exit(-1)
 
     elif config.output_format.lower() == 'epub':
         # Собираем epub
-        outfile = os.path.splitext(outfile)[0] + '.epub'
         config.log.info('Creating epub...')
-        create_epub(temp_dir, outfile)
+        outputfile = os.path.basename(outputfile) + '.epub'
+        create_epub(temp_dir, outputfile)
 
-    if config.debug:
-        # В режиме отладки копируем получившиеся файлы в выходной каталог
-        config.log.info('Copying intermediate files to {0}...'.format(debug_dir))
-        if os.path.exists(debug_dir):
-            rm_tmp_files(debug_dir)
-        shutil.copytree(temp_dir, debug_dir)
-        if not input_epub:
-            # Store fb2 after xslt transformation for debugging
-            fb2parser.write_debug(debug_dir)
+    ext = config.output_format.lower()
+    if ext in ('mobi', 'azw3'):
+        # Копируем mobi(azw3) из временного в выходной каталог
+        result_book = infile.replace('.opf', '.mobi')
+        if not os.path.isfile(result_book):
+            config.log.critical('kindlegen error, conversion interrupted.')
+            rm_tmp_files(temp_dir)
+            return
+        else:
+            try:
+                remove_personal = config.current_profile['kindleRemovePersonalLabel']
+                if ext in 'mobi' and config.noMOBIoptimization:
+                    config.log.info('Copying resulting file...')
+                    shutil.copyfile(result_book, outputfile)
+                else:
+                    config.log.info('Optimizing resulting file...')
+                    splitter = mobi_split(result_book, document_id, remove_personal, ext)
+                    open(os.path.splitext(outputfile)[0] + '.' + ext, 'wb').write(splitter.getResult() if ext == 'mobi' else splitter.getResult8())
+            except:
+                config.log.critical('Error optimizing file, conversion interrupted.')
+                config.log.debug('Getting details', exc_info=True, stack_info=True)
+                rm_tmp_files(temp_dir)
+                return
 
-    # Копируем mobi(azw3) из временного в выходной каталог
-    if not critical_error:
-        ext = config.output_format.lower()
-        if ext in ('mobi', 'azw3'):
-            result_book = infile.replace('.opf', '.mobi')
-            if not os.path.isfile(result_book):
-                config.log.critical('kindlegen error, conversion interrupted.')
-                critical_error = True
-            else:
+            if config.apnx:
                 try:
-                    remove_personal = config.current_profile['kindleRemovePersonalLabel']
-                    if ext in 'mobi' and config.noMOBIoptimization:
-                        config.log.info('Copying resulting file...')
-                        shutil.copyfile(result_book, outfile)
-                    else:
-                        config.log.info('Optimizing resulting file...')
-                        splitter = mobi_split(result_book, document_id, remove_personal, ext)
-                        open(os.path.splitext(outfile)[0] + '.' + ext, 'wb').write(splitter.getResult() if ext == 'mobi' else splitter.getResult8())
-                except:
-                    config.log.critical('Error optimizing file, conversion interrupted.')
-                    config.log.debug('Getting details', exc_info=True, stack_info=True)
-                    critical_error = True
-
-                if config.apnx:
-                    try:
-                        base = os.path.splitext(outfile)[0]
-                        reader = mobi_read(base + '.' + ext)
-                        pagedata = reader.getPageData()
-                        if pagedata:
-                            config.log.info('Generating page index (APNX)...')
-                            pages = PageMapProcessor(pagedata, config.log)
-                            asin = reader.getCdeContentKey()
-                            if not asin:
-                                asin = reader.getASIN()
-                            apnx = pages.generateAPNX({
-                                'contentGuid': str(uuid.uuid4()).replace('-', '')[:8],
-                                'asin': asin,
-                                'cdeType': reader.getCdeType(),
-                                'format': 'MOBI_8' if ext in 'azw3' else 'MOBI_7',
-                                'pageMap': pages.getPageMap(),
-                                'acr': reader.getACR()
-                            })
-                            if config.apnx == 'eink':
-                                basename = os.path.basename(base)
-                                sdr = base + '.sdr'
-                                if not os.path.exists(sdr):
-                                    os.makedirs(sdr)
-                                apnxfile = os.path.join(sdr, basename + '.apnx')
-                            else:
-                                apnxfile = base + '.apnx'
-                            open(apnxfile, 'wb').write(apnx)
+                    base, _ = os.path.splitext(outputfile)
+                    reader = mobi_read(base + '.' + ext)
+                    pagedata = reader.getPageData()
+                    if pagedata:
+                        config.log.info('Generating page index (APNX)...')
+                        pages = PageMapProcessor(pagedata, config.log)
+                        asin = reader.getCdeContentKey()
+                        if not asin:
+                            asin = reader.getASIN()
+                        apnx = pages.generateAPNX({
+                            'contentGuid': str(uuid.uuid4()).replace('-', '')[:8],
+                            'asin': asin,
+                            'cdeType': reader.getCdeType(),
+                            'format': 'MOBI_8' if ext in 'azw3' else 'MOBI_7',
+                            'pageMap': pages.getPageMap(),
+                            'acr': reader.getACR()
+                        })
+                        if config.apnx == 'eink':
+                            basename = os.path.basename(base)
+                            sdr = base + '.sdr'
+                            if not os.path.exists(sdr):
+                                os.makedirs(sdr)
+                            apnxfile = os.path.join(sdr, basename + '.apnx')
                         else:
-                            config.log.warning('No information to generate page index')
-                    except:
-                        config.log.warning('Unable to generate page index (APNX)')
-                        config.log.debug('Getting details', exc_info=True, stack_info=True)
-
-    if not critical_error:
-        config.log.info('Book conversion completed in {0} sec.\n'.format(round(time.clock() - start_time, 2)))
-
-        if config.send_to_kindle['send']:
-            if config.output_format.lower() != 'mobi':
-                config.log.warning('Kindle Personal Documents Service only accepts personal mobi files')
-            else:
-                config.log.info('Sending book...')
-                try:
-                    kindle = SendToKindle()
-                    kindle.smtp_server = config.send_to_kindle['smtpServer']
-                    kindle.smtp_port = config.send_to_kindle['smtpPort']
-                    kindle.smtp_login = config.send_to_kindle['smtpLogin']
-                    kindle.smtp_password = config.send_to_kindle['smtpPassword']
-                    kindle.user_email = config.send_to_kindle['fromUserEmail']
-                    kindle.kindle_email = config.send_to_kindle['toKindleEmail']
-                    kindle.convert = False
-                    kindle.send_mail([outfile])
-
-                    config.log.info('Book has been sent to "{0}"'.format(config.send_to_kindle['toKindleEmail']))
-
-                    if config.send_to_kindle['deleteSendedBook']:
-                        try:
-                            os.remove(outfile)
-                        except:
-                            config.log.error('Unable to remove file "{0}".'.format(outfile))
-                            return -1
-
-                except KeyboardInterrupt:
-                    print('User interrupt. Exiting...')
-                    sys.exit(-1)
-
+                            apnxfile = base + '.apnx'
+                        open(apnxfile, 'wb').write(apnx)
+                    else:
+                        config.log.warning('No information to generate page index')
                 except:
-                    config.log.error('Error sending file')
+                    config.log.warning('Unable to generate page index (APNX)')
                     config.log.debug('Getting details', exc_info=True, stack_info=True)
+
+    config.log.info('Book conversion completed in {0} sec.\n'.format(round(time.clock() - start_time, 2)))
+
+    if config.send_to_kindle['send']:
+        if config.output_format.lower() != 'mobi':
+            config.log.warning('Kindle Personal Documents Service only accepts personal mobi files')
+        else:
+            config.log.info('Sending book...')
+            try:
+                kindle = SendToKindle()
+                kindle.smtp_server = config.send_to_kindle['smtpServer']
+                kindle.smtp_port = config.send_to_kindle['smtpPort']
+                kindle.smtp_login = config.send_to_kindle['smtpLogin']
+                kindle.smtp_password = config.send_to_kindle['smtpPassword']
+                kindle.user_email = config.send_to_kindle['fromUserEmail']
+                kindle.kindle_email = config.send_to_kindle['toKindleEmail']
+                kindle.convert = False
+                kindle.send_mail([outputfile])
+
+                config.log.info('Book has been sent to "{0}"'.format(config.send_to_kindle['toKindleEmail']))
+
+                if config.send_to_kindle['deleteSendedBook']:
+                    try:
+                        os.remove(outputfile)
+                    except:
+                        config.log.error('Unable to remove file "{0}".'.format(outputfile))
+                        return -1
+
+            except KeyboardInterrupt:
+                print('User interrupt. Exiting...')
+                rm_tmp_files(temp_dir)
+                sys.exit(-1)
+
+            except:
+                config.log.error('Error sending file')
+                config.log.debug('Getting details', exc_info=True, stack_info=True)
 
     # Чистим временные файлы
     rm_tmp_files(temp_dir)
@@ -540,6 +562,8 @@ def process(myargs):
 
         if myargs.transliterateauthorandtitle is not None:
             config.transliterate_author_and_title = myargs.transliterateauthorandtitle
+
+    config.log.info('Using configuration "{0}".'.format(config_file))
 
     if myargs.inputdir:
         process_folder(config, myargs.inputdir, myargs.outputdir)
