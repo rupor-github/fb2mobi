@@ -4,4 +4,4 @@ import sys
 
 WINDOWS = sys.platform == 'win32'
 
-VERSION = u'3.6.59'
+VERSION = u'3.6.60'

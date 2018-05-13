@@ -593,11 +593,11 @@ class Fb2XHTML:
                         self.book_date = etree.tostring(t, method='text', encoding='utf-8').decode('utf-8').strip()
 
     def parse_binary(self, elem):
-        if elem.attrib['id'] and elem.attrib['content-type']:
-            have_file = False
+        if 'id' in elem.attrib:
             self.log.debug('Parsing binary {0}'.format(elem.attrib))
+            have_file = False
             elid = elem.attrib['id']
-            decl_type = elem.attrib['content-type'].lower()
+            decl_type = elem.attrib['content-type'].lower() if 'content-type' in elem.attrib else '---empty---'
             buff = base64.b64decode(elem.text.encode('ascii'))
             try:
                 img = Image.open(io.BytesIO(buff))

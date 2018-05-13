@@ -92,7 +92,10 @@ def rm_tmp_files(dest, deleteroot=True):
             os.rmdir(os.path.join(root, name))
 
     if deleteroot:
-        os.rmdir(dest)
+        try:
+            os.rmdir(dest)
+        except:
+            pass
 
 
 def process_file(config, infile, outfile=None):
@@ -564,6 +567,8 @@ def process(myargs):
         if myargs.transliterateauthorandtitle is not None:
             config.transliterate_author_and_title = myargs.transliterateauthorandtitle
 
+    config.log.info(' ')
+    config.log.info('**********************************************')
     config.log.info('Using configuration "{0}".'.format(config_file))
 
     if myargs.inputdir:
