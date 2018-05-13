@@ -361,7 +361,7 @@ def process_file(config, infile, outfile=None):
                         os.remove(outputfile)
                     except:
                         config.log.error('Unable to remove file "{0}".'.format(outputfile))
-                        return -1
+                        return
 
             except KeyboardInterrupt:
                 print('User interrupt. Exiting...')
@@ -374,6 +374,7 @@ def process_file(config, infile, outfile=None):
 
     # Чистим временные файлы
     rm_tmp_files(temp_dir)
+    return outputfile
 
 
 def process_folder(config, inputdir, outputdir=None):

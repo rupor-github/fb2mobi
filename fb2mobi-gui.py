@@ -12,11 +12,9 @@ import logging
 import tempfile
 import shutil
 
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QTreeWidgetItem, QMessageBox, QDialog, QWidget, 
-                            QLabel, QAbstractItemView, QSizePolicy, QAction, QMenu, QProgressDialog)
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QTreeWidgetItem, QMessageBox, QDialog, QWidget, QLabel, QAbstractItemView, QSizePolicy, QAction, QMenu, QProgressDialog)
 from PyQt5.QtGui import QIcon, QPixmap, QPainter, QFont, QFontMetrics
-from PyQt5.QtCore import (QObject, QThread, pyqtSignal, QEvent, Qt, QTranslator, QLocale, QCoreApplication, QTimer, 
-                          QSize, QRectF, QByteArray, QBuffer, QPoint)
+from PyQt5.QtCore import (QObject, QThread, pyqtSignal, QEvent, Qt, QTranslator, QLocale, QCoreApplication, QTimer, QSize, QRectF, QByteArray, QBuffer, QPoint)
 
 from ui.MainWindow import Ui_MainWindow
 from ui.AboutDialog import Ui_AboutDialog
@@ -35,7 +33,6 @@ import fb2mobi
 import synccovers
 import version
 
-
 TREE_LIST_CSS_ACTIVE = "selection-color: white; selection-background-color: #386CDA; alternate-background-color: #F3F6FA;"
 TREE_LIST_CSS_UNACTIVE = "selection-color: black; selection-background-color: #D4D4D4; alternate-background-color: #F3F6FA;"
 
@@ -50,6 +47,7 @@ _translate = QCoreApplication.translate
 
 
 class SettingsDialog(QDialog, Ui_SettingsDialog):
+
     def __init__(self, parent, config):
         super(SettingsDialog, self).__init__(parent)
         self.setupUi(self)
@@ -63,8 +61,8 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
             self.comboFormat.addItem(f, f)
 
         self.comboProfile.setCurrentIndex(self.comboProfile.findData(self.config.currentProfile))
-        self.comboFormat.setCurrentIndex(self.comboFormat.findData(self.config.currentFormat))     
-        self.lineDestFolder.setText(self.config.outputFolder)   
+        self.comboFormat.setCurrentIndex(self.comboFormat.findData(self.config.currentFormat))
+        self.lineDestFolder.setText(self.config.outputFolder)
         self.checkWriteLog.setChecked(self.config.writeLog)
         self.checkClearLogAfterExit.setChecked(self.config.clearLogAfterExit)
         self.lineKindleDocsSubfolder.setText(self.config.kindleDocsSubfolder)
@@ -143,13 +141,13 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.config.currentProfile = self.comboProfile.currentData()
         self.config.currentFormat = self.comboFormat.currentData()
         if self.radioHypYes.isChecked():
-           self.config.hyphens = 'Yes'
+            self.config.hyphens = 'Yes'
         elif self.radioHypNo.isChecked():
             self.config.hyphens = 'No'
         else:
             self.config.hyphens = 'Profile'
 
-        self.config.kindlePath = os.path.normpath(self.lineKindlePath.text()) if self.lineKindlePath.text()  else ''
+        self.config.kindlePath = os.path.normpath(self.lineKindlePath.text()) if self.lineKindlePath.text() else ''
         self.config.kindleDocsSubfolder = self.lineKindleDocsSubfolder.text()
         self.config.outputFolder = self.lineDestFolder.text()
         self.config.GoogleMail = self.lineGoogleMail.text()
@@ -168,19 +166,21 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
 
 
 class AboutDialog(QDialog, Ui_AboutDialog):
+
     def __init__(self, parent):
         super(AboutDialog, self).__init__(parent)
         self.setupUi(self)
 
-        image  = QPixmap(':/Images/icon128.png')
+        image = QPixmap(':/Images/icon128.png')
         self.labelImage.setPixmap(image)
         self.labelVersion.setText(version.VERSION)
         self.labelUIVersion.setText(ui.ui_version.VERSION)
 
         self.setFixedSize(self.size())
-       
+
 
 class MainAppWindow(QMainWindow, Ui_MainWindow):
+
     def __init__(self):
         super(MainAppWindow, self).__init__()
         self.setupUi(self)
@@ -224,7 +224,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         log_file_name = "fb2mobi.log"
         gui_config_file = 'fb2mobi-gui.config'
 
-        # Определяем, где находится файл конфигурации. 
+        # Определяем, где находится файл конфигурации.
         # Если есть в домашнем каталоге пользователя (для windows ~/f2bmobi, для остальных ~/.fb2mobi),
         # то используется он.
         # Иначе - из каталога программы
@@ -241,7 +241,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.config_file = os.path.normpath(os.path.join(config_path, config_file_name))
         self.log_file = os.path.normpath(os.path.join(config_path, log_file_name))
         self.gui_config_file = os.path.normpath(os.path.join(config_path, gui_config_file))
-        
+
         self.gui_config = GuiConfig(self.gui_config_file)
         self.gui_config.converterConfig = ConverterConfig(self.config_file)
 
@@ -255,8 +255,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         self.log_file_handler = logging.FileHandler(filename=self.log_file, mode='a', encoding='utf-8')
         self.log_file_handler.setLevel(fb2mobi.get_log_level(self.gui_config.converterConfig.log_level))
-        self.log_file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))        
-        if self.gui_config.writeLog:            
+        self.log_file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
+        if self.gui_config.writeLog:
             self.log.addHandler(self.log_file_handler)
 
         self.gui_config.converterConfig.log = self.log
@@ -300,7 +300,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.toolSendToKindle.setEnabled(False)
         self.toolSendMail.setIcon(QIcon(':/toolbar/send.png'))
         self.toolSettings.setIcon(QIcon(':/toolbar/settings.png'))
-        self.toolInfo.setIcon(QIcon(':/toolbar/info_on.png'))      
+        self.toolInfo.setIcon(QIcon(':/toolbar/info_on.png'))
 
         # Немного подстраиваем стили UI для более нативного отображения
         if sys.platform == 'darwin':
@@ -329,7 +329,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.toolBar.addAction(self.toolSendMail)
             spacer = QWidget()
             spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-            self.toolBar.addWidget(spacer)            
+            self.toolBar.addWidget(spacer)
             self.toolBar.addAction(self.toolInfo)
             self.toolBar.addAction(self.toolSettings)
         else:
@@ -346,7 +346,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.toolBar.addAction(self.toolSettings)
             spacer = QWidget()
             spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-            self.toolBar.addWidget(spacer)            
+            self.toolBar.addWidget(spacer)
             self.toolBar.addAction(self.toolInfo)
             self.toolInfo.setPriority(QAction.LowPriority)
 
@@ -356,12 +356,12 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             splitter_sizes = self.gui_config.bookInfoSplitterState.split(',')
             self.bookInfoSplitter.setSizes([int(i) for i in splitter_sizes])
 
-        self.statusBar().addWidget(self.labelStatus, 1) 
+        self.statusBar().addWidget(self.labelStatus, 1)
 
         if self.gui_config.columns['0']:
-            self.treeFileList.setColumnWidth(0, self.gui_config.columns['0']) 
-            self.treeFileList.setColumnWidth(1, self.gui_config.columns['1']) 
-            self.treeFileList.setColumnWidth(2, self.gui_config.columns['2']) 
+            self.treeFileList.setColumnWidth(0, self.gui_config.columns['0'])
+            self.treeFileList.setColumnWidth(1, self.gui_config.columns['1'])
+            self.treeFileList.setColumnWidth(2, self.gui_config.columns['2'])
 
         self.timerKindleStatus = QTimer()
         self.timerKindleStatus.timeout.connect(self.checkKindleStatus)
@@ -369,14 +369,13 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         self.enableSendViaMail()
 
-
     def event(self, event):
         if event.type() == QEvent.WindowActivate:
             if sys.platform == 'darwin':
-                self.treeFileList.setStyleSheet(TREE_LIST_CSS_ACTIVE) 
+                self.treeFileList.setStyleSheet(TREE_LIST_CSS_ACTIVE)
         elif event.type() == QEvent.WindowDeactivate:
             if sys.platform == 'darwin':
-                self.treeFileList.setStyleSheet(TREE_LIST_CSS_UNACTIVE) 
+                self.treeFileList.setStyleSheet(TREE_LIST_CSS_UNACTIVE)
 
         return super(MainAppWindow, self).event(event)
 
@@ -441,26 +440,26 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                     file_name = os.path.splitext(file_name)[0]
 
                 dest_file = '{0}.{1}'.format(file_name, config.output_format)
-                 # Перед конвертацией удалим старый файл
+                # Перед конвертацией попробуем удалить старый файл - если в профиле есть <outputPattern> - это не сработает
                 if os.path.exists(dest_file):
                     os.remove(dest_file)
 
                 config.log.info(' ')
-                fb2mobi.process_file(config, file, None)
+                # on success process_file will return proper new destination name
+                dest_file = fb2mobi.process_file(config, file, None)
 
                 # Отметим результат конвертации
                 item = None
                 for j in range(self.rootFileList.childCount()):
                     if file == self.rootFileList.child(j).text(2):
                         item = self.rootFileList.child(j)
-                        if os.path.exists(dest_file):
+                        if dest_file and os.path.exists(dest_file):
                             dest_files.append(dest_file)
                             item.setIcon(0, self.iconGreen)
                         else:
                             item.setIcon(0, self.iconRed)
                             errors += 1
 
-                
                 if progressDlg.wasCanceled():
                     break
                 i += 1
@@ -468,8 +467,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             if errors > 0:
                 QMessageBox.warning(self, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui', 'Error while converting file(s). Check log for details.'))
 
-
-            if mode == PROCESS_MODE_KINDLE:                
+            if mode == PROCESS_MODE_KINDLE:
                 kindle_doc_path = os.path.join(self.kindle_path, 'documents')
                 if self.gui_config.kindleDocsSubfolder:
                     kindle_doc_path = os.path.join(kindle_doc_path, self.gui_config.kindleDocsSubfolder)
@@ -488,7 +486,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
                 if os.path.exists(kindle_doc_path):
                     progressDlg.setLabelText(_translate('fb2mobi-gui', 'Sending to Kindle...'))
-                    progressDlg.setRange(1, len(dest_files))                    
+                    progressDlg.setRange(1, len(dest_files))
                     i = 1
                     errors = 0
                     for file in dest_files:
@@ -503,7 +501,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                                 shutil.copytree(src_sdr_dir, dest_sdr_dir)
 
                             # Создадим миниатюру обложки, если оперделили путь и установлен признак
-                            if thumbnail_path and self.gui_config.kindleSyncCovers:                                
+                            if thumbnail_path and self.gui_config.kindleSyncCovers:
                                 dest_file = os.path.join(kindle_doc_path, os.path.split(file)[1])
                                 if os.path.exists(dest_file):
                                     synccovers.process_file(dest_file, thumbnail_path, 330, 470, False, False)
@@ -603,7 +601,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         for fs in mounted_fs:
             dir_documents = os.path.join(fs, 'documents')
             dir_system = os.path.join(fs, 'system')
-    
+
             if os.path.exists(dir_documents) and os.path.exists(dir_system):
                 # Kindle Paperwhite, Voyage, Oasis
                 if os.path.exists(os.path.join(fs, 'system', 'thumbnails')) and os.path.exists(os.path.join(fs, 'system', 'version.txt')):
@@ -614,14 +612,13 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         return ''
 
-
     def checkKindleStatus(self):
         if self.gui_config.kindlePath:
             self.kindle_path = self.gui_config.kindlePath
         else:
             self.kindle_path = self.findKindle()
 
-        if self.kindle_path and os.path.isdir(self.kindle_path):            
+        if self.kindle_path and os.path.isdir(self.kindle_path):
             self.toolSendToKindle.setEnabled(True)
             self.actionSendToKindle.setEnabled(True)
             self.labelStatus.setText(_translate('fb2mobi-gui', 'Kindle connected to {0}').format(self.kindle_path))
@@ -652,7 +649,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                     event.ignore()
 
             elif event.type() == QEvent.Drop:
-                file_list = [u.toLocalFile() for u in event.mimeData().urls()]        
+                file_list = [u.toLocalFile() for u in event.mimeData().urls()]
                 self.addFiles(file_list)
                 event.accept()
                 return True
@@ -669,9 +666,9 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                     event.ignore()
 
             elif event.type() == QEvent.Drop:
-                file_list = [u.toLocalFile() for u in event.mimeData().urls()] 
+                file_list = [u.toLocalFile() for u in event.mimeData().urls()]
                 for f in file_list:
-                    self.loadNewCoverFormFile(f)                    
+                    self.loadNewCoverFormFile(f)
                     break
                 event.accept()
                 return True
@@ -683,13 +680,11 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                     self.gui_config.bookInfoSplitterState = ', '.join(str(e) for e in splitter_sizes)
 
         if event.type() == QEvent.KeyPress:
-            if (event.key() == Qt.Key_Delete or (event.key() == Qt.Key_Backspace 
-                and event.modifiers() == Qt.ControlModifier)):
+            if (event.key() == Qt.Key_Delete or (event.key() == Qt.Key_Backspace and event.modifiers() == Qt.ControlModifier)):
                 self.deleteRecAction()
                 return True
-                
-        return QWidget.eventFilter(self, source, event)
 
+        return QWidget.eventFilter(self, source, event)
 
     def contextCoverMenu(self, point):
         if len(self.treeFileList.selectedItems()) == 1:
@@ -716,32 +711,27 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 fileDialog.setNameFilters([_translate('fb2mobi-gui', 'Image files (*.png *.jpg *.bmp)')])
 
                 if fileDialog.exec_():
-                    file_list = fileDialog.selectedFiles()  
-                    self.book_cover.save(file_list[0], os.path.splitext(file_list[0])[1][1:].upper());
+                    file_list = fileDialog.selectedFiles()
+                    self.book_cover.save(file_list[0],
+                                         os.path.splitext(file_list[0])[1][1:].upper())
 
             elif action == actionClear:
                 self.book_cover = None
                 self.imgBookCover.clear()
 
-
     def selectAllAction(self):
         self.treeFileList.selectAll()
-
 
     def deleteRecAction(self):
         for item in self.treeFileList.selectedItems():
             self.rootFileList.removeChild(item)
-     
 
     def openLog(self):
         self.openFile(self.log_file)
 
-
     def generateFontCSS(self):
         # Список стилей для встраивания шрифтов
-        style_rules = ['.titleblock', '.text-author', 'p', 'p.title', '.cite', '.poem', 
-               '.table th', '.table td', '.annotation', 'body']
-
+        style_rules = ['.titleblock', '.text-author', 'p', 'p.title', '.cite', '.poem', '.table th', '.table td', '.annotation', 'body']
 
         css_string = modules.default_css.gui_default_css
         css = cssutils.parseString(css_string)
@@ -783,7 +773,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 if rule.selectorText == 'body':
                     found_body = True
 
-        # Добавим стиль для 
+        # Добавим стиль для
         if not found_body:
             css.add('body {font-family: "para"; line-height: 100%; }')
 
@@ -794,13 +784,11 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         with codecs.open(os.path.join(css_path, '_font.css'), 'w', 'utf-8') as f:
             f.write(str(css.cssText, 'utf-8'))
 
-
     def loadNewCoverFormFile(self, img_file):
         self.book_cover = QPixmap(img_file)
         self.displayCoverThumbmail(self.book_cover)
 
-
-    def clearBookInfo(self):        
+    def clearBookInfo(self):
         self.book_cover = None
         self.imgBookCover.clear()
         self.editAuthor.clear()
@@ -808,7 +796,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.editSeries.clear()
         self.editSeriesNumber.clear()
         self.editBookLanguage.clear()
-
 
     def saveBookInfo(self):
         selected_items = self.treeFileList.selectedItems()
@@ -849,7 +836,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             msg.setStandardButtons(QMessageBox.Save | QMessageBox.Cancel)
             if msg.exec_() == QMessageBox.Save:
                 QApplication.setOverrideCursor(Qt.BusyCursor)
-                
+
                 for item in selected_items:
                     meta = EbookMeta(item.text(2))
                     meta.get()
@@ -871,21 +858,19 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
                 QApplication.restoreOverrideCursor()
 
-
     def displayCoverThumbmail(self, img):
         scaled_img = img.scaled(120, 160, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         painter = QPainter(scaled_img)
         painter.setBackgroundMode(Qt.OpaqueMode)
         cur_font = painter.font()
         cur_font.setWeight(QFont.Bold)
-        painter.setFont(cur_font)                
+        painter.setFont(cur_font)
         img_size = '{0}x{1}'.format(img.width(), img.height())
         metrics = QFontMetrics(cur_font)
         painter.drawText(2, metrics.boundingRect(img_size).height(), img_size)
         painter.end()
 
         self.imgBookCover.setPixmap(scaled_img)
-
 
     def changeBook(self):
         self.clearBookInfo()
@@ -904,7 +889,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.editSeries.setText(series_name)
             self.editSeriesNumber.setText(series_num)
             self.editBookLanguage.setText(meta.lang)
-            
+
             if meta.coverdata:
                 self.book_cover = QPixmap()
                 self.book_cover.loadFromData(meta.coverdata)
@@ -933,8 +918,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.editSeriesNumber.setEnabled(True)
             self.editBookLanguage.setEnabled(True)
             self.buttonSaveBookInfo.setEnabled(True)
-                
-       
 
     def addFile(self, file):
         if not file.lower().endswith(('.fb2', '.fb2.zip', '.zip', '.epub')):
@@ -943,7 +926,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         found = False
 
         file = os.path.normpath(file)
-        
+
         for i in range(self.rootFileList.childCount()):
             if file == self.rootFileList.child(i).text(2):
                 found = True
@@ -962,9 +945,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             item.setToolTip(0, meta.book_title)
             item.setToolTip(1, meta.get_autors())
             item.setToolTip(2, file)
-            
-            self.treeFileList.addTopLevelItem(item)
 
+            self.treeFileList.addTopLevelItem(item)
 
     def addFiles(self, file_list):
         QApplication.setOverrideCursor(Qt.BusyCursor)
@@ -977,21 +959,18 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 self.addFile(item)
         QApplication.restoreOverrideCursor()
 
-
     def addFilesAction(self):
         if not self.gui_config.lastUsedPath:
             self.gui_config.lastUsedPath = os.path.expanduser('~')
 
         fileDialog = QFileDialog(self, _translate('fb2mobi-gui', 'Select files'), self.gui_config.lastUsedPath)
         fileDialog.setFileMode(QFileDialog.ExistingFiles)
-        fileDialog.setNameFilters([_translate('fb2mobi-gui', 'Ebook files (*.fb2 *.fb2.zip *.zip *.epub)'), 
-                                  _translate('fb2mobi-gui', 'All files (*.*)')])
+        fileDialog.setNameFilters([_translate('fb2mobi-gui', 'Ebook files (*.fb2 *.fb2.zip *.zip *.epub)'), _translate('fb2mobi-gui', 'All files (*.*)')])
 
         if fileDialog.exec_():
             self.gui_config.lastUsedPath = os.path.normpath(fileDialog.directory().absolutePath())
             file_list = fileDialog.selectedFiles()
             self.addFiles(file_list)
-
 
     def closeApp(self):
         # Очистим лог-файл на выходе, если указано в настройках
@@ -1008,11 +987,11 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.gui_config.geometry['x'] = win_x
         self.gui_config.geometry['y'] = win_y
         self.gui_config.geometry['width'] = win_width
-        self.gui_config.geometry['height'] = win_height 
+        self.gui_config.geometry['height'] = win_height
 
-        self.gui_config.columns['0'] = self.treeFileList.columnWidth(0)   
-        self.gui_config.columns['1'] = self.treeFileList.columnWidth(1)   
-        self.gui_config.columns['2'] = self.treeFileList.columnWidth(2)   
+        self.gui_config.columns['0'] = self.treeFileList.columnWidth(0)
+        self.gui_config.columns['1'] = self.treeFileList.columnWidth(1)
+        self.gui_config.columns['2'] = self.treeFileList.columnWidth(2)
 
         self.gui_config.write()
 
@@ -1020,7 +999,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
     def openHelpURL(self):
         webbrowser.open(url=HELP_URL)
-
 
     def openSupportURL(self):
         webbrowser.open(url=SUPPORT_URL)
@@ -1035,7 +1013,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 subprocess.Popen(['xdg-open', filename])
             except:
                 pass
-
 
     def settings(self):
         prev_writeLog = self.gui_config.writeLog
@@ -1054,17 +1031,16 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         self.enableSendViaMail()
 
-
     def about(self):
         aboutDlg = AboutDialog(self)
         aboutDlg.exec_()
-
 
     def closeEvent(self, event):
         self.closeApp()
 
 
 class AppEventFilter(QObject):
+
     def __init__(self, app_win):
         super(AppEventFilter, self).__init__()
         self.app_win = app_win
@@ -1092,7 +1068,7 @@ if __name__ == '__main__':
     app_translator.load(os.path.join(locale_path, 'fb2mobi_' + locale + '.qm'))
     app.installTranslator(app_translator)
 
-    app.setStyleSheet('QStatusBar::item { border: 0px }');
+    app.setStyleSheet('QStatusBar::item { border: 0px }')
 
     mainAppWindow = MainAppWindow()
     mainAppWindow.show()
