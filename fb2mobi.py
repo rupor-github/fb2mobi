@@ -567,11 +567,13 @@ def process(myargs):
         if myargs.transliterateauthorandtitle is not None:
             config.transliterate_author_and_title = myargs.transliterateauthorandtitle
 
-    config.log.info(' ')
-    config.log.info('**********************************************')
-    config.log.info('Using configuration "{0}".'.format(config_file))
-
     if myargs.inputdir:
+
+        config.log.info(' ')
+        config.log.info('**********************************************')
+        config.log.info('Using configuration "{0}".'.format(config_file))
+        config.log.info(' ')
+
         process_folder(config, myargs.inputdir, myargs.outputdir)
         if myargs.deleteinputdir:
             try:
@@ -580,6 +582,12 @@ def process(myargs):
                 config.log.error('Unable to remove directory "%s"', myargs.inputdir)
 
     elif infile:
+
+        config.log.info(' ')
+        config.log.info('**********************************************')
+        config.log.info('Using configuration "{0}".'.format(config_file))
+        config.log.info(' ')
+
         process_file(config, infile, outfile)
         if myargs.deletesourcefile:
             try:
