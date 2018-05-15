@@ -91,9 +91,6 @@ windows_reserved = str.maketrans({
 
 def clean_file_name(fname):
 
-    if not os.path.supports_unicode_filenames:
-        fname = slugify(fname, separator=' ')
-
     # Just in case - control path separators
     fname = fname.replace(os.sep, '')
 

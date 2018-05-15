@@ -20,7 +20,6 @@ except:
     pass
 
 includes = [
-    'PIL._imaging',
     'modules.default_css'
 ]
 
@@ -49,7 +48,7 @@ setup(
         'build_exe': {
             'zip_exclude_packages': '',
             'zip_include_packages': '*',
-            'packages': 'json,lxml,PIL',
+            'packages': 'json,lxml,PIL,slugify,unidecode',
             'include_files': data_files,
             'includes': includes,
             'excludes': excludes,

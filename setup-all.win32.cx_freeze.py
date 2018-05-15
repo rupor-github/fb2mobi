@@ -57,7 +57,7 @@ setup(
             'zip_exclude_packages': '',
             'zip_include_packages': '*',
             'include_files': data_files,
-            'packages': 'json,lxml,PIL',
+            'packages': 'json,lxml,PIL,slugify,unidecode',
             'includes': includes,
             'excludes': excludes,
             'replace_paths': [('*','library.zip/')],
