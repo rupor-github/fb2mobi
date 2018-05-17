@@ -88,16 +88,22 @@ windows_reserved = str.maketrans({
     '*': None,
 })
 
+# pylint: disable=C0330
+other_reserved = str.maketrans({
+    '.': None,
+})
 
 def clean_file_name(fname):
 
     # Just in case - control path separators
     fname = fname.replace(os.sep, '')
+    fname = fname.translate(other_reserved)
 
     if version.WINDOWS:
         # Just in case
         fname = fname.translate(windows_reserved)
-        # Seriously, I know that this is OLD Windows only, but...
-        fname = smart_truncate(fname, max_length=260)
+        # Seriously, not sure very long names are practical anyways
+        # I know that this is Windows only, on newer versions we probably could set "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem\LongPathsEnabled 1" and remove this line
+        fname = smart_truncate(fname, max_length=240)
 
     return fname

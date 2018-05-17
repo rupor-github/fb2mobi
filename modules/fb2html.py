@@ -89,7 +89,7 @@ class Fb2XHTML:
         self.orig_file_name = fb2file
 
         self.book_title = temp_book_name  # Название книги
-        self.book_author = ''  # Автор
+        self.book_authors = []  # Author(s)
         self.book_lang = 'ru'  # Язык книги, по-умолчанию 'ru'
         self.book_series = ''  # Книжная серия
         self.book_series_num = ''  # Номер в книжной серии
@@ -240,6 +240,12 @@ class Fb2XHTML:
         self.font_list = []
         self.book_uuid = uuid.uuid4()
         self.links_location = {}
+
+    def get_book_authors(self):
+        if self.book_authors:
+            return ', '.join(self.book_authors)
+        else:
+            return ''
 
     def generate(self):
 
@@ -544,28 +550,28 @@ class Fb2XHTML:
                         self.genres.append(t.text)
 
                     elif ns_tag(t.tag) == 'author':
-                        if self.book_author == '':
-                            for a in t:
-                                if ns_tag(a.tag) == 'first-name':
-                                    firstname = a.text
-                                elif ns_tag(a.tag) == 'middle-name':
-                                    middlename = a.text
-                                elif ns_tag(a.tag) == 'last-name':
-                                    lastname = a.text
 
-                            # pylint: disable=C0330
-                            # yapf: disable
-                            self.book_author = format_pattern(self.authorformat,
-                                [
-                                    ('#fi', '' if not firstname else firstname[0] + '.'),
-                                    ('#mi', '' if not middlename else middlename[0] + '.'),
-                                    ('#f', '' if not firstname else firstname.strip()),
-                                    ('#m', '' if not middlename else middlename.strip()),
-                                    ('#l', '' if not lastname else lastname.strip())
-                                ])
-                            # yapf: enable
+                        for a in t:
+                            if ns_tag(a.tag) == 'first-name':
+                                firstname = a.text
+                            elif ns_tag(a.tag) == 'middle-name':
+                                middlename = a.text
+                            elif ns_tag(a.tag) == 'last-name':
+                                lastname = a.text
 
-                            self.book_author = self.book_author.strip()
+                        # pylint: disable=C0330
+                        # yapf: disable
+                        ba = format_pattern(self.authorformat,
+                            [
+                                ('#fi', '' if not firstname else firstname[0] + '.'),
+                                ('#mi', '' if not middlename else middlename[0] + '.'),
+                                ('#f', '' if not firstname else firstname.strip()),
+                                ('#m', '' if not middlename else middlename.strip()),
+                                ('#l', '' if not lastname else lastname.strip())
+                            ])
+                        # yapf: enable
+
+                        self.book_authors.append(ba.strip())
 
                     elif ns_tag(t.tag) == 'sequence':
                         if 'name' in t.attrib:
@@ -843,7 +849,10 @@ class Fb2XHTML:
             # We encountered main body without a title - need to add it forcefully, otherwise toc and books structure would be wrong
 
             toc_ref_id = 'tocref{0}'.format(self.toc_index)
-            toc_title = self.book_author + " " + self.book_title
+            if len(self.book_authors) == 1:
+                toc_title = self.book_authors[0] + " " + self.book_title
+            else:
+                toc_title = self.book_title
 
             if self.current_header_level < self.chapterlevel:
                 self.buff.append('<div class="titleblock" id="{0}">'.format(toc_ref_id))
@@ -855,8 +864,8 @@ class Fb2XHTML:
                 self.buff.append('<div class="vignette_title_before"><img src="vignettes/{0}" /></div>'.format(vignette))
 
             self.buff.append('<div class ="h0">')
-            if self.book_author:
-                self.buff.append('<p class="title">{0}</p>'.format(self.book_author))
+            for a in self.book_authors:
+                self.buff.append('<p class="title">{0}</p>'.format(a))
             self.buff.append('<p class="title">{0}</p>'.format(self.book_title))
             self.buff.append('</div>')
 
@@ -1287,6 +1296,9 @@ class Fb2XHTML:
 
     def stamp_cover(self, img):
 
+
+        # Most of numbers/sizes are totally arbitrary...
+
         if self.cover_stamp == 'None':
             return
 
@@ -1298,7 +1310,9 @@ class Fb2XHTML:
         series = '' if not self.book_series else self.book_series.strip()
         if self.book_series_num:
             series = '{0}: {1}'.format(series, self.book_series_num.strip())
-        author = self.book_author
+        author = self.get_book_authors()
+        if len(author) > 25:
+            author = author[0:25] + u"\u2026"
 
         # tuning
         h = img.height // 4
@@ -1411,17 +1425,16 @@ class Fb2XHTML:
                 title = self.book_title
 
         title = title.strip()
-
-        book_author = self.book_author
-
         if self.transliterate_author_and_title:
             title = slugify(title, separator=' ')
-            book_author = slugify(book_author, ' ')
 
         self.buff.append('<dc:title>{0}</dc:title>'.format(save_html(title)))
         self.buff.append('<dc:language>{0}</dc:language>'.format(self.book_lang))
         self.buff.append('<dc:identifier id="BookId" opf:scheme="uuid">urn:uuid:{0}</dc:identifier>'.format(self.book_uuid))
-        self.buff.append('<dc:creator opf:role="aut">{0}</dc:creator>'.format(save_html(book_author)))
+        for a in self.book_authors:
+            if self.transliterate_author_and_title:
+                a = slugify(a, ' ')
+            self.buff.append('<dc:creator opf:role="aut">{0}</dc:creator>'.format(save_html(a)))
         self.buff.append('<dc:publisher />')
 
         for genre in self.genres:

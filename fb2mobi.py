@@ -25,7 +25,6 @@ from modules.sendtokindle import SendToKindle
 from modules.mobi_split import mobi_split, mobi_read
 from modules.mobi_pagemap import PageMapProcessor
 
-
 def create_epub(rootdir, epubname):
     epub = zipfile.ZipFile(epubname, "w")
     epub.write(os.path.join(rootdir, 'mimetype'), 'mimetype', zipfile.ZIP_STORED)
@@ -92,10 +91,7 @@ def rm_tmp_files(dest, deleteroot=True):
             os.rmdir(os.path.join(root, name))
 
     if deleteroot:
-        try:
-            os.rmdir(dest)
-        except:
-            pass
+        os.rmdir(dest)
 
 
 def process_file(config, infile, outfile=None):
@@ -106,7 +102,8 @@ def process_file(config, infile, outfile=None):
         config.log.critical('File {0} not found'.format(infile))
         return
 
-    config.log.info('Converting "{0}" in "{1}"...'.format(os.path.basename(infile), temp_dir))
+    fbname = os.path.basename(infile)
+    config.log.info('Converting "{0}" in "{1}"...'.format(fbname, temp_dir))
     config.log.info('Using profile "{0}".'.format(config.current_profile['name']))
 
     # Проверка корректности параметров
@@ -209,7 +206,7 @@ def process_file(config, infile, outfile=None):
                         ('#abbrseries', ''.join(word[0] for word in fb2parser.book_series.split()).lower() if fb2parser.book_series else ''),
                         ('#number', '' if not fb2parser.book_series_num else fb2parser.book_series_num.strip()),
                         ('#padnumber', '' if not fb2parser.book_series_num else fb2parser.book_series_num.strip().zfill(fb2parser.seriespositions)),
-                        ('#author', '' if not fb2parser.book_author else fb2parser.book_author.strip())
+                        ('#author', fb2parser.get_book_authors())
                     ])
                 # yapf: enable
 
@@ -224,8 +221,8 @@ def process_file(config, infile, outfile=None):
             config.log.debug('Getting details', exc_info=True)
         finally:
             if config.debug:
-                debug_dir, _ = os.path.splitext(outputfile)
-                debug_dir = debug_dir + '.debug'
+                # to avoid problems with file name length we'll base debug directory name on input file
+                debug_dir = '{0}_debug_{1}'.format(os.path.join(os.path.dirname(outputfile), os.path.splitext(fbname)[0]), int(time.time()))
                 # for debugging
                 config.log.info('Copying intermediate files to "{0}"...'.format(debug_dir))
                 if os.path.exists(debug_dir):
