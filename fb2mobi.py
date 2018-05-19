@@ -206,7 +206,8 @@ def process_file(config, infile, outfile=None):
                         ('#abbrseries', ''.join(word[0] for word in fb2parser.book_series.split()).lower() if fb2parser.book_series else ''),
                         ('#number', '' if not fb2parser.book_series_num else fb2parser.book_series_num.strip()),
                         ('#padnumber', '' if not fb2parser.book_series_num else fb2parser.book_series_num.strip().zfill(fb2parser.seriespositions)),
-                        ('#author', fb2parser.get_book_authors())
+                        ('#author', fb2parser.get_book_authors()),
+                        ('#bookid', document_id),
                     ])
                 # yapf: enable
 
@@ -221,8 +222,9 @@ def process_file(config, infile, outfile=None):
             config.log.debug('Getting details', exc_info=True)
         finally:
             if config.debug:
-                # to avoid problems with file name length we'll base debug directory name on input file
-                debug_dir = '{0}_debug_{1}'.format(os.path.join(os.path.dirname(outputfile), os.path.splitext(fbname)[0]), int(time.time()))
+                # to avoid problems with file name length we'll base debug directory name on input file, but will place it in output file directory
+                # part of the name will be number of seconds from epoc start - so name will be unique and easily sorted
+                debug_dir = '{0}_debug_{1}'.format(os.path.join(os.path.dirname(outputfile), os.path.splitext(fbname)[0]), time.strftime("%Y%m%d%H%M%S"))
                 # for debugging
                 config.log.info('Copying intermediate files to "{0}"...'.format(debug_dir))
                 if os.path.exists(debug_dir):
