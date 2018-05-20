@@ -241,8 +241,10 @@ class Fb2XHTML:
         self.book_uuid = uuid.uuid4()
         self.links_location = {}
 
-    def get_book_authors(self):
+    def get_book_authors(self, short=False):
         if self.book_authors:
+            if short and len(self.book_authors) > 1:
+                return self.book_authors[0] + ' и др' if self.book_lang.lower() == 'ru' else ', et al'
             return ', '.join(self.book_authors)
         else:
             return ''

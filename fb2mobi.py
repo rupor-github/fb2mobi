@@ -206,7 +206,8 @@ def process_file(config, infile, outfile=None):
                         ('#abbrseries', ''.join(word[0] for word in fb2parser.book_series.split()).lower() if fb2parser.book_series else ''),
                         ('#number', '' if not fb2parser.book_series_num else fb2parser.book_series_num.strip()),
                         ('#padnumber', '' if not fb2parser.book_series_num else fb2parser.book_series_num.strip().zfill(fb2parser.seriespositions)),
-                        ('#author', fb2parser.get_book_authors()),
+                        ('#authors', fb2parser.get_book_authors()),
+                        ('#author', fb2parser.get_book_authors(True)),
                         ('#bookid', document_id),
                     ])
                 # yapf: enable
