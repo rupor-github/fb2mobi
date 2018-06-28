@@ -377,7 +377,7 @@ def process_file(config, infile, outfile=None):
 
     # Чистим временные файлы
     rm_tmp_files(temp_dir)
-    return outputfile
+    return os.path.splitext(outputfile)[0] + '.' + ext
 
 
 def process_folder(config, inputdir, outputdir=None):

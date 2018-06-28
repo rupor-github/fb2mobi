@@ -447,6 +447,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 config.log.info(' ')
                 # on success process_file will return proper new destination name
                 dest_file = fb2mobi.process_file(config, file, None)
+                self.log.debug('Resulting file: "{0}"'.format(dest_file))
 
                 # Отметим результат конвертации
                 item = None
