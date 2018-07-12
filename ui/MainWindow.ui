@@ -315,6 +315,7 @@
      <string>File</string>
     </property>
     <addaction name="actionAddFile"/>
+    <addaction name="actionAddGDirve"/>
     <addaction name="separator"/>
     <addaction name="actionConvertToDisk"/>
     <addaction name="actionSendToKindle"/>
@@ -461,6 +462,20 @@
   <action name="actionOpenHelpURL">
    <property name="text">
     <string>Help</string>
+   </property>
+  </action>
+  <action name="actionAddGDirve">
+   <property name="text">
+    <string>Add from Google Drive...</string>
+   </property>
+   <property name="toolTip">
+    <string>Add files from Google Drive..</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>false</bool>
    </property>
   </action>
  </widget>
@@ -770,6 +785,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionAddGDirve</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>openFromGDrive()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>280</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>closeApp()</slot>
@@ -790,5 +821,6 @@
   <slot>sendToKindle()</slot>
   <slot>sendViaMail()</slot>
   <slot>openHelpURL()</slot>
+  <slot>openFromGDrive()</slot>
  </slots>
 </ui>

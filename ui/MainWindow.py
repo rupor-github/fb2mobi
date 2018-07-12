@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'MainWindow.ui'
+# Form implementation generated from reading ui file 'ui\MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.9
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -185,7 +185,11 @@ class Ui_MainWindow(object):
         self.actionSendViaMail.setObjectName("actionSendViaMail")
         self.actionOpenHelpURL = QtWidgets.QAction(MainWindow)
         self.actionOpenHelpURL.setObjectName("actionOpenHelpURL")
+        self.actionAddGDirve = QtWidgets.QAction(MainWindow)
+        self.actionAddGDirve.setIconVisibleInMenu(False)
+        self.actionAddGDirve.setObjectName("actionAddGDirve")
         self.menu.addAction(self.actionAddFile)
+        self.menu.addAction(self.actionAddGDirve)
         self.menu.addSeparator()
         self.menu.addAction(self.actionConvertToDisk)
         self.menu.addAction(self.actionSendToKindle)
@@ -225,6 +229,7 @@ class Ui_MainWindow(object):
         self.actionSendToKindle.triggered.connect(MainWindow.sendToKindle)
         self.actionSendViaMail.triggered.connect(MainWindow.sendViaMail)
         self.actionOpenHelpURL.triggered.connect(MainWindow.openHelpURL)
+        self.actionAddGDirve.triggered.connect(MainWindow.openFromGDrive)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -262,4 +267,7 @@ class Ui_MainWindow(object):
         self.actionSendToKindle.setText(_translate("MainWindow", "Send to Kindle"))
         self.actionSendViaMail.setText(_translate("MainWindow", "Send via Gmail"))
         self.actionOpenHelpURL.setText(_translate("MainWindow", "Help"))
+        self.actionAddGDirve.setText(_translate("MainWindow", "Add from Google Drive..."))
+        self.actionAddGDirve.setToolTip(_translate("MainWindow", "Add files from Google Drive.."))
+        self.actionAddGDirve.setShortcut(_translate("MainWindow", "Ctrl+G"))
 

@@ -12,19 +12,26 @@ import logging
 import tempfile
 import shutil
 
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QTreeWidgetItem, QMessageBox, QDialog, QWidget, QLabel, QAbstractItemView, QSizePolicy, QAction, QMenu, QProgressDialog)
-from PyQt5.QtGui import QIcon, QPixmap, QPainter, QFont, QFontMetrics
-from PyQt5.QtCore import (QObject, QThread, pyqtSignal, QEvent, Qt, QTranslator, QLocale, QCoreApplication, QTimer, QSize, QRectF, QByteArray, QBuffer, QPoint)
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QTreeWidgetItem, 
+                            QMessageBox, QDialog, QWidget, QLabel, QAbstractItemView, 
+                            QSizePolicy, QAction, QMenu, QProgressDialog)
+from PyQt5.QtGui import (QIcon, QPixmap, QPainter, QFont, QFontMetrics, 
+                        QStandardItem, QStandardItemModel)
+from PyQt5.QtCore import (QObject, QThread, pyqtSignal, QEvent, Qt, QTranslator, 
+                        QLocale, QCoreApplication, QTimer, QSize, QRectF, QByteArray, 
+                        QBuffer, QPoint)
 
 from ui.MainWindow import Ui_MainWindow
 from ui.AboutDialog import Ui_AboutDialog
 from ui.SettingsDialog import Ui_SettingsDialog
+from ui.OpenGDriveDialog import Ui_GDriveDialog
 
 from ui.gui_config import GuiConfig
 import ui.images_rc
 import ui.ui_version
 from ui.ebookmeta import EbookMeta
 from ui.fontdb import FontDb
+from ui.gdrive import GoogleDrive
 
 from modules.config import ConverterConfig
 from modules.sendtokindle import SendToKindle
@@ -46,6 +53,81 @@ PROCESS_MODE_MAIL = 3
 _translate = QCoreApplication.translate
 
 
+class GDriveDialog(QDialog, Ui_GDriveDialog):
+    def __init__(self, parent, credential_file, executable_path):
+        super(GDriveDialog, self).__init__(parent)
+        self.setupUi(self)
+        self.credential_file = credential_file
+        self.executable_path = executable_path
+
+        self.model = QStandardItemModel(self.tree)
+        self.tree.setModel(self.model)
+        self.tree.expanded.connect(self.update_model)
+        self.tree.setIconSize(QSize(26, 26))
+        self.gdrive = GoogleDrive(self.credential_file, self.executable_path)
+
+        self.selected_files = []
+
+        self.init_model()
+
+    def init_model(self):
+        file_list = self.gdrive.list('root')
+
+        for file in file_list:
+            item = self.create_item(file)
+            if (item.data()['type'] == 'folder' or item.text().lower().endswith('.fb2.zip')
+                or item.text().lower().endswith('.fb2') or item.text().lower().endswith('.epub')):
+                self.model.appendRow(item)
+
+    def update_model(self, index):
+        parent = self.model.itemFromIndex(index)
+        data = parent.data()
+        if data['type'] == 'folder' and not data['loaded']: 
+            parent.removeRow(0)
+            file_list = self.gdrive.list(data['id'])            
+            for file in file_list:
+                item = self.create_item(file)
+                if (item.data()['type'] == 'folder' or item.text().lower().endswith('.fb2.zip')
+                    or item.text().lower().endswith('.fb2') or item.text().lower().endswith('.epub')):
+                    parent.appendRow(item)
+
+            data['loaded'] = True
+            parent.setData(data)
+
+    def create_item(self, file):
+        item = QStandardItem(file['name'])
+        if file['mimeType'].lower().endswith('.folder'):
+            node_type = 'folder'
+            icon = QIcon(':/Images/folder.png')
+        else:
+            node_type = 'file'
+            icon = QIcon(':/Images/file.png')
+        item.setData({'type': node_type, 'id':file['id'], 'loaded': False})
+        item.setIcon(icon)
+        if node_type == 'folder':
+            child_item = QStandardItem(_translate('fb2mobi-gui', 'Loading...'))
+            item.appendRow(child_item)
+
+        return item
+
+    def done(self, result):
+        if result == QDialog.Accepted:
+            self.selected_files = []
+            indexes = self.tree.selectedIndexes()
+            for index in indexes:
+                item = self.model.itemFromIndex(index)
+                data = item.data()
+                if data['type'] == 'folder':
+                    self.selected_files = []
+                    self.update_model(index)
+                    self.tree.expand(index)
+                    return
+                else:
+                    self.selected_files.append(data['id'])
+
+        super(GDriveDialog, self).done(result)
+
+        
 class SettingsDialog(QDialog, Ui_SettingsDialog):
 
     def __init__(self, parent, config):
@@ -241,6 +323,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.config_file = os.path.normpath(os.path.join(config_path, config_file_name))
         self.log_file = os.path.normpath(os.path.join(config_path, log_file_name))
         self.gui_config_file = os.path.normpath(os.path.join(config_path, gui_config_file))
+        self.credential_file = os.path.normpath(os.path.join(config_path, '.credentials', 'fb2moby-credential.json'))
+        self.gdrive_temp_dir = None
 
         self.gui_config = GuiConfig(self.gui_config_file)
         self.gui_config.converterConfig = ConverterConfig(self.config_file)
@@ -301,6 +385,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.toolSendMail.setIcon(QIcon(':/toolbar/send.png'))
         self.toolSettings.setIcon(QIcon(':/toolbar/settings.png'))
         self.toolInfo.setIcon(QIcon(':/toolbar/info_on.png'))
+        self.actionAddGDirve.setIcon(QIcon(':/toolbar/gdrive.png'))
 
         # Немного подстраиваем стили UI для более нативного отображения
         if sys.platform == 'darwin':
@@ -323,6 +408,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             spacer = QWidget()
             spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.toolBar.addAction(self.toolAdd)
+            self.toolBar.addAction(self.actionAddGDirve)
             self.toolBar.addWidget(spacer)
             self.toolBar.addAction(self.toolSaveToDisk)
             self.toolBar.addAction(self.toolSendToKindle)
@@ -340,6 +426,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             spacer = QWidget()
 
             self.toolBar.addAction(self.toolAdd)
+            self.toolBar.addAction(self.actionAddGDirve)
             self.toolBar.addAction(self.toolSaveToDisk)
             self.toolBar.addAction(self.toolSendToKindle)
             self.toolBar.addAction(self.toolSendMail)
@@ -478,7 +565,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                         except:
                             self.log.critical('Error while creating subfolder {0} in documents folder.'.format(self.gui_config.kindleDocsSubfolder))
                             self.log.debug('Getting details', exc_info=True)
-                            QMessageBox.critical(self, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui'), 'Error while sending file(s). Check log for details.')
+                            QMessageBox.critical(self, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui', 'Error while sending file(s). Check log for details.'))
                             return
 
                 thumbnail_path = os.path.join(self.kindle_path, 'system', 'thumbnails')
@@ -980,6 +1067,11 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 with open(self.log_file, 'w'):
                     pass
 
+        # Если загружали файлы с Google диска, почистим
+        if self.gdrive_temp_dir:
+            if os.path.exists(self.gdrive_temp_dir):
+                shutil.rmtree(self.gdrive_temp_dir)
+
         win_x = self.pos().x()
         win_y = self.pos().y()
         win_width = self.size().width()
@@ -997,6 +1089,38 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.gui_config.write()
 
         self.close()
+
+    def openFromGDrive(self):
+        try:
+            gdriveDlg = GDriveDialog(self, self.credential_file, fb2mobi.get_executable_path())
+            files = []
+            if gdriveDlg.exec_():
+                if len(gdriveDlg.selected_files) > 0:
+                    if not self.gdrive_temp_dir:
+                        self.gdrive_temp_dir = tempfile.mkdtemp()
+                    progressDlg = QProgressDialog(self)
+                    progressDlg.setWindowModality(Qt.WindowModal)
+                    progressDlg.setMinimumDuration(0)
+                    progressDlg.setLabelText(_translate('fb2mobi-gui', 'Download files from Google Drive...'))
+                    progressDlg.setRange(1, len(gdriveDlg.selected_files))
+                    progressDlg.setAutoClose(False)
+                    progressDlg.forceShow()
+
+                    i = 0
+
+                    for file_id in gdriveDlg.selected_files:
+                        progressDlg.setValue(i)
+                        file_name = gdriveDlg.gdrive.download(file_id, self.gdrive_temp_dir)
+                        files.append(file_name)                    
+                        i += 1
+                        if progressDlg.wasCanceled():
+                            break
+
+                    progressDlg.deleteLater()
+                    self.addFiles(files)
+        except Exception as e:
+            QMessageBox.critical(self, _translate('fb2mobi-gui', 'Error'), str(e))
+
 
     def openHelpURL(self):
         webbrowser.open(url=HELP_URL)
