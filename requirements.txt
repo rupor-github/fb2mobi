@@ -6,3 +6,5 @@ psutil==5.4.5
 PyHyphen==3.0.1
 PyQt5==5.10.1
 python-slugify==1.2.5
+google-api-python-client==1.7.3
+oauth2client==4.1.2

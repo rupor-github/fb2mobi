@@ -25,6 +25,7 @@ except:
 includes = [
     'atexit',
     'modules.default_css',
+    'httplib2.socks',
 ]
 
 excludes = [
@@ -47,6 +48,8 @@ data_files = [
     (os.path.join(base_dir, 'ui/locale/qtbase_ru.qm'), 'ui/locale/qtbase_ru.qm'),
     (os.path.join(base_dir, 'ui/locale/fb2mobi_ru.qm'), 'ui/locale/fb2mobi_ru.qm'),
     (os.path.join(site.getsitepackages()[1], 'PyQt5/Qt/plugins/styles/qwindowsvistastyle.dll'), "styles/qwindowsvistastyle.dll"),
+    (os.path.join(base_dir, 'client_secret.json'), 'client_secret.json'),
+    (os.path.join(base_dir, 'cacerts.txt'), 'cacerts.txt'),
 ]
 
 setup(

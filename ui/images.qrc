@@ -7,6 +7,10 @@
     <file>icon32.png</file>
     <file>icon16.png</file>
     <file>icon128.png</file>
+    <file>folder.png</file>
+    <file>folder@2x.png</file>
+    <file>file.png</file>
+    <file>file@2x.png</file>
   </qresource>
   <qresource prefix="toolbar">
     <file>add.png</file>
@@ -23,5 +27,7 @@
     <file>save@2x.png</file>
     <file>send.png</file>
     <file>send@2x.png</file>
+    <file>gdrive.png</file>
+    <file>gdrive@2x.png</file>
   </qresource>
 </RCC>
