@@ -29,6 +29,7 @@ from ui.OpenGDriveDialog import Ui_GDriveDialog
 from ui.gui_config import GuiConfig
 import ui.images_rc
 import ui.ui_version
+import ui.genres
 from ui.ebookmeta import EbookMeta
 from ui.fontdb import FontDb
 from ui.gdrive import GoogleDrive
@@ -456,6 +457,13 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         self.enableSendViaMail()
 
+        self.comboGenres.addItem(_translate('fb2mobi-gui', '<Empty>'))
+        self.comboGenres.setItemData(0, 'empty')
+
+        for genre in ui.genres.genres:
+            self.comboGenres.addItem('{0} ({1})'.format(ui.genres.genres[genre], genre))
+            self.comboGenres.setItemData(self.comboGenres.count() - 1, genre)
+
     def event(self, event):
         if event.type() == QEvent.WindowActivate:
             if sys.platform == 'darwin':
@@ -882,8 +890,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.editAuthor.clear()
         self.editTitle.clear()
         self.editSeries.clear()
+        self.comboGenres.setCurrentIndex(0)
         self.editSeriesNumber.clear()
         self.editBookLanguage.clear()
+        self.editTranslator.clear()
 
     def saveBookInfo(self):
         selected_items = self.treeFileList.selectedItems()
@@ -891,7 +901,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             QApplication.setOverrideCursor(Qt.BusyCursor)
 
             item = selected_items[0]
-            meta = EbookMeta(item.text(2))
+            meta = EbookMeta(item.text(4))
             meta.get()
 
             if self.book_cover:
@@ -910,10 +920,14 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             meta.book_title = self.editTitle.text()
             meta.set_series(self.editSeries.text(), self.editSeriesNumber.text())
             meta.lang = self.editBookLanguage.text()
+            meta.set_genre(self.comboGenres.itemData(self.comboGenres.currentIndex()))
+            meta.set_translators(self.editTranslator.text())
             meta.write()
 
             item.setText(0, meta.book_title)
             item.setText(1, meta.get_autors())
+            item.setText(2, meta.get_first_series_str())
+            item.setText(3, meta.get_first_genre_name())
 
             QApplication.restoreOverrideCursor()
         elif len(selected_items) > 1:
@@ -926,23 +940,27 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 QApplication.setOverrideCursor(Qt.BusyCursor)
 
                 for item in selected_items:
-                    meta = EbookMeta(item.text(2))
+                    meta = EbookMeta(item.text(4))
                     meta.get()
-                    (series, series_number) = meta.get_first_series()
-                    authors = meta.get_autors()
-                    if self.editAuthor.text():
-                        authors = self.editAuthor.text()
-                    if self.editSeries.text():
-                        series = self.editSeries.text()
+                    (series_name, series_num) = meta.get_first_series()
 
-                    meta.set_authors(authors)
-                    meta.set_series(series, series_number)
+                    if self.editAuthor.text():
+                        meta.set_authors(self.editAuthor.text())
+                    if self.editSeries.text():
+                        series_name = self.editSeries.text()
+                        meta.set_series(series_name, series_num)
+                    if self.editTranslator.text():
+                        meta.set_translators(self.editTranslator.text())
                     if self.editBookLanguage.text():
                         meta.lang = self.editBookLanguage.text()
+                    if self.comboGenres.currentIndex() > 0:
+                        meta.set_genre(self.comboGenres.itemData(self.comboGenres.currentIndex()))
                     meta.write()
 
                     item.setText(0, meta.book_title)
                     item.setText(1, meta.get_autors())
+                    item.setText(2, meta.get_first_series_str())
+                    item.setText(3, meta.get_first_genre_name())
 
                 QApplication.restoreOverrideCursor()
 
@@ -968,7 +986,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.editTitle.setEnabled(True)
             self.editSeriesNumber.setEnabled(True)
 
-            meta = EbookMeta(selected_items[0].text(2))
+            meta = EbookMeta(selected_items[0].text(4))
             meta.get()
 
             self.editAuthor.setText(meta.get_autors())
@@ -977,6 +995,20 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.editSeries.setText(series_name)
             self.editSeriesNumber.setText(series_num)
             self.editBookLanguage.setText(meta.lang)
+            self.editTranslator.setText(meta.get_translators())
+
+            found_genre = False
+            if meta.genre:
+                for i in range(self.comboGenres.count()):
+                    data = self.comboGenres.itemData(i)
+                    if data == meta.get_first_genre():
+                        self.comboGenres.setCurrentIndex(i)
+                        found_genre = True
+                        break
+                if not found_genre:
+                    self.comboGenres.setCurrentIndex(0)    
+            else:
+                self.comboGenres.setCurrentIndex(0)
 
             if meta.coverdata:
                 self.book_cover = QPixmap()
@@ -988,23 +1020,28 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 self.editTitle.setEnabled(True)
                 self.editSeries.setEnabled(True)
                 self.editSeriesNumber.setEnabled(True)
+                self.comboGenres.setEnabled(True)
                 self.editBookLanguage.setEnabled(True)
+                self.editTranslator.setEnabled(True)
                 self.buttonSaveBookInfo.setEnabled(True)
             else:
                 self.editAuthor.setEnabled(False)
                 self.editTitle.setEnabled(False)
                 self.editSeries.setEnabled(False)
                 self.editSeriesNumber.setEnabled(False)
+                self.comboGenres.setEnabled(False)
                 self.editBookLanguage.setEnabled(False)
+                self.editTranslator.setEnabled(False)
                 self.buttonSaveBookInfo.setEnabled(False)
 
         elif len(selected_items) > 1:
             self.editAuthor.setEnabled(True)
             self.editTitle.setEnabled(False)
-            self.editSeriesNumber.setEnabled(False)
             self.editSeries.setEnabled(True)
-            self.editSeriesNumber.setEnabled(True)
+            self.editSeriesNumber.setEnabled(False)
+            self.comboGenres.setEnabled(True)
             self.editBookLanguage.setEnabled(True)
+            self.editTranslator.setEnabled(True)
             self.buttonSaveBookInfo.setEnabled(True)
 
     def addFile(self, file):
@@ -1028,11 +1065,15 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             item.setIcon(0, self.iconWhite)
             item.setText(0, meta.book_title)
             item.setText(1, meta.get_autors())
-            item.setText(2, file)
+            item.setText(2, meta.get_first_series_str())
+            item.setText(3, meta.get_first_genre_name())
+            item.setText(4, file)
             # Установим подсказки
             item.setToolTip(0, meta.book_title)
             item.setToolTip(1, meta.get_autors())
-            item.setToolTip(2, file)
+            item.setToolTip(2, meta.get_first_series_str())
+            item.setToolTip(3, meta.get_first_genre_name())
+            item.setToolTip(4, file)
 
             self.treeFileList.addTopLevelItem(item)
 

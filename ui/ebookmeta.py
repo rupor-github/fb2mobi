@@ -9,6 +9,7 @@ from modules.myzipfile import ZipFile, ZipInfo
 from io import BytesIO
 from lxml import etree
 from lxml.etree import QName
+from ui.genres import genres
 
 
 class Author():
@@ -72,6 +73,22 @@ class EbookMeta():
         except:
             self.book_type = ''
 
+    def get_first_genre_name(self):
+        genre_name = ''
+        genre = self.get_first_genre()
+        if genre in genres.keys():
+            genre_name = genres[genre]
+
+        return genre_name
+
+    def get_first_genre(self):
+        genre_name = ''
+        for g in self.genre:
+            genre_name = g
+            break
+
+        return genre_name
+
     def get_first_series(self):
         series_name = ''
         series_num = ''
@@ -80,8 +97,19 @@ class EbookMeta():
             for series in self.sequence:
                 series_name = series.name
                 series_num = series.number
+                break
 
         return (series_name, series_num)
+
+    def get_first_series_str(self):
+        series = ''
+        (name, num) = self.get_first_series()
+        if name:
+            series = name
+        if num and series:
+            series = series + ' [{}]'.format(num)
+
+        return series
 
     def set_series(self, series_name, series_num):
         if self.book_type == 'fb2':
@@ -93,6 +121,7 @@ class EbookMeta():
                 self.sequence.append(cur_series)
 
     def set_authors(self, author_str):
+        print(author_str, self.book_type)
         if self.book_type == 'fb2':
             self.author = []
             if author_str:
@@ -110,6 +139,47 @@ class EbookMeta():
                         cur_author.last_name = cur_author_str.strip()
 
                     self.author.append(cur_author)
+
+    def set_translators(self, translator_str):
+        if self.book_type == 'fb2':
+            self.translator = []
+            if translator_str:
+                for cur_tr_str in translator_str.split(','):
+                    tr_elements = cur_tr_str.strip().split()
+                    cur_tr = Author()
+                    if len(tr_elements) == 3:
+                        cur_tr.first_name = tr_elements[0]
+                        cur_tr.middle_name = tr_elements[1]
+                        cur_tr.last_name = tr_elements[2]
+                    elif len(tr_elements) == 2:
+                        cur_tr.first_name = tr_elements[0]
+                        cur_tr.last_name = tr_elements[1]
+                    else:
+                        cur_tr.last_name = cur_tr_str.strip()
+
+                    self.translator.append(cur_tr)
+
+    def set_genre(self, genre):
+        self.genre = []
+        if genre and genre != 'empty':
+            self.genre.append(genre)
+        
+    def get_translators(self):
+        author_str = ''
+
+        if self.book_type == 'fb2':
+            for author in self.translator:
+                if len(author_str) > 0:
+                    author_str += ', '
+
+                if author.first_name:
+                    author_str += author.first_name
+                if author.middle_name:
+                    author_str += ' ' + author.middle_name
+                if author.last_name:
+                    author_str += ' ' + author.last_name
+
+        return author_str.replace('  ', ' ').strip()
 
     def get_autors(self):
         author_str = ''
@@ -222,7 +292,15 @@ class EbookMeta():
                 elif QName(elem).localname == 'src-lang':
                     self.src_lang = elem.text
                 elif QName(elem).localname == 'translator':
-                    self.translator.append(elem)
+                    translator = Author()
+                    for e in elem:
+                        if QName(e).localname == 'first-name':
+                            translator.first_name = e.text
+                        elif QName(e).localname == 'middle-name':
+                            translator.middle_name = e.text
+                        elif QName(e).localname == 'last-name':
+                            translator.last_name = e.text
+                    self.translator.append(translator)                    
                 elif QName(elem).localname == 'sequence':
                     seq = Sequence()
                     for a in elem.attrib:
@@ -273,8 +351,21 @@ class EbookMeta():
         etree.SubElement(title_info, 'lang').text = self.lang
         if self.src_lang:
             etree.SubElement(title_info, 'src-lang').text = self.src_lang
-        for translator in self.translator:
-            title_info.append(translator)
+        for translator in self.translator:            
+            tr_elem = etree.Element('translator')
+            if translator.first_name:
+                elem = etree.Element('first-name')
+                elem.text = translator.first_name
+                tr_elem.append(elem)
+            if translator.middle_name:
+                elem = etree.Element('middle-name')
+                elem.text = translator.middle_name
+                tr_elem.append(elem)
+            if translator.last_name:
+                elem = etree.Element('last-name')
+                elem.text = translator.last_name
+                tr_elem.append(elem)
+            title_info.append(tr_elem)
         for sequence in self.sequence:
             elem = etree.SubElement(title_info, 'sequence')
             if sequence.name:

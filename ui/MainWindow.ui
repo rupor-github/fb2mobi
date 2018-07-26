@@ -21,6 +21,9 @@
     </sizepolicy>
    </property>
    <layout class="QGridLayout" name="gridLayout">
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item row="0" column="0">
      <widget class="QSplitter" name="bookInfoSplitter">
       <property name="orientation">
@@ -45,6 +48,9 @@
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
        </property>
+       <property name="rootIsDecorated">
+        <bool>false</bool>
+       </property>
        <attribute name="headerVisible">
         <bool>true</bool>
        </attribute>
@@ -56,6 +62,16 @@
        <column>
         <property name="text">
          <string>Author</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Series</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Genre</string>
         </property>
        </column>
        <column>
@@ -74,7 +90,7 @@
           <x>0</x>
           <y>0</y>
           <width>407</width>
-          <height>489</height>
+          <height>498</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
@@ -233,6 +249,16 @@
           </layout>
          </item>
          <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Genre</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="comboGenres"/>
+         </item>
+         <item>
           <widget class="QLabel" name="labelBookLanguage">
            <property name="text">
             <string>Book language</string>
@@ -241,6 +267,16 @@
          </item>
          <item>
           <widget class="QLineEdit" name="editBookLanguage"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Translator</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="editTranslator"/>
          </item>
          <item>
           <spacer name="verticalSpacer">
