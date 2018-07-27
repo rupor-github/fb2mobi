@@ -32,9 +32,11 @@ class GuiConfig():
         self.bookInfoSplitterState = None
 
         self.columns = {}
-        self.columns['0'] = None
-        self.columns['1'] = None
-        self.columns['2'] = None
+        self.columns['0'] = 100
+        self.columns['1'] = 100
+        self.columns['2'] = 100
+        self.columns['3'] = 100
+        self.columns['4'] = 100
 
         self.geometry = {}
         self.geometry['x'] = None
@@ -105,10 +107,10 @@ class GuiConfig():
             elif e.tag == 'kindleSyncCovers':
                 self.kindleSyncCovers = e.text.lower() == 'true'
 
-          
             elif e.tag == 'columns':
                 for c in e:
                     self.columns[c.tag[1:]] = int(c.text) if c.text else None
+                    
             elif e.tag == 'geometry':
                 for g in e:
                     self.geometry[g.tag] = int(g.text) if g.text else None
@@ -138,7 +140,9 @@ class GuiConfig():
                     E('columns',
                         E('c0', str(self.columns['0'])) if self.columns['0'] else E('c0'),
                         E('c1', str(self.columns['1'])) if self.columns['1'] else E('c1'),
-                        E('c2', str(self.columns['2'])) if self.columns['2'] else E('c2')
+                        E('c2', str(self.columns['2'])) if self.columns['2'] else E('c2'),
+                        E('c3', str(self.columns['3'])) if self.columns['3'] else E('c3'),
+                        E('c4', str(self.columns['4'])) if self.columns['4'] else E('c4')
                         ),
                     E('geometry',
                         E('x', str(self.geometry['x'])) if self.geometry['x'] else E('x'),

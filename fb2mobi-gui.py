@@ -64,7 +64,7 @@ class GDriveDialog(QDialog, Ui_GDriveDialog):
         self.model = QStandardItemModel(self.tree)
         self.tree.setModel(self.model)
         self.tree.expanded.connect(self.update_model)
-        self.tree.setIconSize(QSize(26, 26))
+        self.tree.setIconSize(QSize(32, 32))
         self.gdrive = GoogleDrive(self.credential_file, self.executable_path)
 
         self.selected_files = []
@@ -377,7 +377,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.imgBookCover.setContextMenuPolicy(Qt.CustomContextMenu)
         self.imgBookCover.customContextMenuRequested[QPoint].connect(self.contextCoverMenu)
 
-        self.toolBar.setIconSize(QSize(26, 26))
+        self.toolBar.setIconSize(QSize(32, 32))
 
         self.toolAdd.setIcon(QIcon(':/toolbar/add.png'))
         self.toolSaveToDisk.setIcon(QIcon(':/toolbar/save.png'))
@@ -387,6 +387,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.toolSettings.setIcon(QIcon(':/toolbar/settings.png'))
         self.toolInfo.setIcon(QIcon(':/toolbar/info_on.png'))
         self.actionAddGDirve.setIcon(QIcon(':/toolbar/gdrive.png'))
+        self.actionRename.setIcon(QIcon(':/toolbar/rename.png'))
 
         # Немного подстраиваем стили UI для более нативного отображения
         if sys.platform == 'darwin':
@@ -406,10 +407,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
             self.toolBar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
             self.setUnifiedTitleAndToolBarOnMac(True)
-            spacer = QWidget()
-            spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.toolBar.addAction(self.toolAdd)
             self.toolBar.addAction(self.actionAddGDirve)
+            spacer = QWidget()
+            spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.toolBar.addWidget(spacer)
             self.toolBar.addAction(self.toolSaveToDisk)
             self.toolBar.addAction(self.toolSendToKindle)
@@ -417,26 +418,43 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             spacer = QWidget()
             spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.toolBar.addWidget(spacer)
+            self.toolBar.addAction(self.actionRename)
+            spacer = QWidget()
+            spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            self.toolBar.addWidget(spacer)            
             self.toolBar.addAction(self.toolInfo)
             self.toolBar.addAction(self.toolSettings)
         else:
             # Для Windows, Linux
             self.toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-            self.toolBar.setStyleSheet('QToolButton { padding: 4px; }')
+            self.toolBar.setStyleSheet('QToolButton { padding: 2px; }')
 
             spacer = QWidget()
 
             self.toolBar.addAction(self.toolAdd)
             self.toolBar.addAction(self.actionAddGDirve)
+            self.toolBar.addSeparator()
+            self.toolBar.addWidget(spacer)
             self.toolBar.addAction(self.toolSaveToDisk)
             self.toolBar.addAction(self.toolSendToKindle)
             self.toolBar.addAction(self.toolSendMail)
+            self.toolBar.addSeparator()
+            self.toolBar.addWidget(spacer)
+            self.toolBar.addAction(self.actionRename)
             self.toolBar.addAction(self.toolSettings)
             spacer = QWidget()
             spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.toolBar.addWidget(spacer)
             self.toolBar.addAction(self.toolInfo)
             self.toolInfo.setPriority(QAction.LowPriority)
+
+            self.toolAdd.setPriority(QAction.LowPriority)
+            self.actionAddGDirve.setPriority(QAction.LowPriority)
+            self.toolSaveToDisk.setPriority(QAction.LowPriority)
+            self.toolSendToKindle.setPriority(QAction.LowPriority)
+            self.toolSendMail.setPriority(QAction.LowPriority)
+            self.actionRename.setPriority(QAction.LowPriority)
+            self.toolSettings.setPriority(QAction.LowPriority)
 
         self.setBookInfoPanelVisible()
         self.scrollBookInfo.setVisible(self.gui_config.bookInfoVisible)
@@ -450,6 +468,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.treeFileList.setColumnWidth(0, self.gui_config.columns['0'])
             self.treeFileList.setColumnWidth(1, self.gui_config.columns['1'])
             self.treeFileList.setColumnWidth(2, self.gui_config.columns['2'])
+            self.treeFileList.setColumnWidth(3, self.gui_config.columns['3'])
+            self.treeFileList.setColumnWidth(4, self.gui_config.columns['4'])
 
         self.timerKindleStatus = QTimer()
         self.timerKindleStatus.timeout.connect(self.checkKindleStatus)
@@ -477,7 +497,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
     def getFileList(self):
         files = []
         for i in range(self.rootFileList.childCount()):
-            files.append(self.rootFileList.child(i).text(2))
+            files.append(self.rootFileList.child(i).text(4))
 
         return files
 
@@ -1126,6 +1146,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.gui_config.columns['0'] = self.treeFileList.columnWidth(0)
         self.gui_config.columns['1'] = self.treeFileList.columnWidth(1)
         self.gui_config.columns['2'] = self.treeFileList.columnWidth(2)
+        self.gui_config.columns['3'] = self.treeFileList.columnWidth(3)
+        self.gui_config.columns['4'] = self.treeFileList.columnWidth(4)
 
         self.gui_config.write()
 
@@ -1162,6 +1184,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         except Exception as e:
             QMessageBox.critical(self, _translate('fb2mobi-gui', 'Error'), str(e))
 
+    def rename(self):
+        print('Rename...')
 
     def openHelpURL(self):
         webbrowser.open(url=HELP_URL)
