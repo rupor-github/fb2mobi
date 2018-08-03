@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="ru_RU">
+<!DOCTYPE TS><TS version="2.0" language="ru_RU" sourcelanguage="">
 <context>
     <name>AboutDialog</name>
     <message>
@@ -231,6 +230,44 @@
     </message>
 </context>
 <context>
+    <name>RenameDialog</name>
+    <message>
+        <location filename="ui/RenameDialog.py" line="71"/>
+        <source>Rename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/RenameDialog.py" line="75"/>
+        <source>Rename in same directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/RenameDialog.py" line="76"/>
+        <source>Copy to:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/RenameDialog.py" line="77"/>
+        <source>Select</source>
+        <translation type="unfinished">Выбрать</translation>
+    </message>
+    <message>
+        <location filename="ui/RenameDialog.py" line="72"/>
+        <source>Author pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/RenameDialog.py" line="73"/>
+        <source>Filename pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/RenameDialog.py" line="74"/>
+        <source>Sample string</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SettingsDialog</name>
     <message>
         <location filename="ui/SettingsDialog.py" line="239"/>
@@ -396,12 +433,12 @@
 <context>
     <name>fb2mobi</name>
     <message>
-        <location filename="fb2mobi-gui.py" line="966"/>
+        <location filename="fb2mobi-gui.py" line="987"/>
         <source>Save</source>
         <translation>Сохранить</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="967"/>
+        <location filename="fb2mobi-gui.py" line="988"/>
         <source>Save changes in selected files?</source>
         <translation>Сохранить изменения в выбранных файлах?</translation>
     </message>
@@ -409,7 +446,7 @@
 <context>
     <name>fb2mobi-gui</name>
     <message>
-        <location filename="fb2mobi-gui.py" line="213"/>
+        <location filename="fb2mobi-gui.py" line="237"/>
         <source>Select folder</source>
         <translation>Выберите папку</translation>
     </message>
@@ -419,7 +456,7 @@
         <translation type="obsolete">Указанная папка не существует.</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="1195"/>
+        <location filename="fb2mobi-gui.py" line="1217"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
@@ -459,7 +496,7 @@
         <translation type="obsolete">Обработка файла: {0}</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="1125"/>
+        <location filename="fb2mobi-gui.py" line="1146"/>
         <source>Select files</source>
         <translation>Выберите файлы</translation>
     </message>
@@ -469,7 +506,7 @@
         <translation type="obsolete">Файлы fb2 (*.fb2 *.fb2.zip *.zip)</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="1127"/>
+        <location filename="fb2mobi-gui.py" line="1148"/>
         <source>All files (*.*)</source>
         <translation>Все файлы (*.*)</translation>
     </message>
@@ -489,92 +526,92 @@
         <translation type="obsolete">Устройство не обнаружено</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="174"/>
+        <location filename="fb2mobi-gui.py" line="198"/>
         <source>None</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="814"/>
+        <location filename="fb2mobi-gui.py" line="835"/>
         <source>Load from file...</source>
         <translation>Загрузить из файла...</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="815"/>
+        <location filename="fb2mobi-gui.py" line="836"/>
         <source>Save to file...</source>
         <translation>Сохранить в файл...</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="816"/>
+        <location filename="fb2mobi-gui.py" line="837"/>
         <source>Clear</source>
         <translation>Очистить</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="821"/>
+        <location filename="fb2mobi-gui.py" line="842"/>
         <source>Select book cover</source>
         <translation>Выберите обложку для книги</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="832"/>
+        <location filename="fb2mobi-gui.py" line="853"/>
         <source>Image files (*.png *.jpg *.bmp)</source>
         <translation>Изображения (*.png *.jpg *.bmp)</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="829"/>
+        <location filename="fb2mobi-gui.py" line="850"/>
         <source>Save cover as</source>
         <translation>Сохранить обложку как</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="523"/>
+        <location filename="fb2mobi-gui.py" line="543"/>
         <source>Converting...</source>
         <translation>Идет конвертация...</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="671"/>
+        <location filename="fb2mobi-gui.py" line="692"/>
         <source>Error while sending file(s). Check log for details.</source>
         <translation>Возникла ошибка при отправке файлов. Детали смотрите в лог-файле.</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="608"/>
+        <location filename="fb2mobi-gui.py" line="629"/>
         <source>Sending to Kindle...</source>
         <translation>Отправка на Kindle...</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="643"/>
+        <location filename="fb2mobi-gui.py" line="664"/>
         <source>Sending via Gmail...</source>
         <translation>Отправка через Gmail...</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="681"/>
+        <location filename="fb2mobi-gui.py" line="702"/>
         <source>Select folder to convert</source>
         <translation>Выберите папку для сконвертированных файлов</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="745"/>
+        <location filename="fb2mobi-gui.py" line="766"/>
         <source>Kindle connected to {0}</source>
         <translation>Kindle подключен как {0}</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="587"/>
+        <location filename="fb2mobi-gui.py" line="608"/>
         <source>Error while converting file(s). Check log for details.</source>
         <translation>Возникла ошибка при конвертации файлов. Детали смотрите в лог-файле.</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="1127"/>
+        <location filename="fb2mobi-gui.py" line="1148"/>
         <source>Ebook files (*.fb2 *.fb2.zip *.zip *.epub)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="109"/>
+        <location filename="fb2mobi-gui.py" line="133"/>
         <source>Loading...</source>
         <translation>Загрузка...</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="1177"/>
+        <location filename="fb2mobi-gui.py" line="1198"/>
         <source>Download files from Google Drive...</source>
         <translation>Загрузка файлов с Google Диска</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="483"/>
+        <location filename="fb2mobi-gui.py" line="503"/>
         <source>&lt;Empty&gt;</source>
         <translation>&lt;Пусто&gt;</translation>
     </message>

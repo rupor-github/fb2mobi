@@ -25,6 +25,7 @@ from ui.MainWindow import Ui_MainWindow
 from ui.AboutDialog import Ui_AboutDialog
 from ui.SettingsDialog import Ui_SettingsDialog
 from ui.OpenGDriveDialog import Ui_GDriveDialog
+from ui.RenameDialog import Ui_RenameDialog
 
 from ui.gui_config import GuiConfig
 import ui.images_rc
@@ -54,6 +55,48 @@ PROCESS_MODE_MAIL = 3
 _translate = QCoreApplication.translate
 
 
+class RenameDialog(QDialog, Ui_RenameDialog):
+    def __init__(self, parent, author_pattern, filename_pattern):
+        super(RenameDialog, self).__init__(parent)
+        self.setupUi(self)
+        self.switch_copy_to()
+        self.lineAuthorPattern.setText(author_pattern)
+        self.lineFilenamePattern.setText(filename_pattern)
+
+        self.lineAuthorPattern.setToolTip(( '<b>Возможные значения:</b><br/>'
+                                            '<b>#f</b> - имя<br/>'
+                                            '<b>#m</b> - отчество<br/>'
+                                            '<b>#l</b> - фамилия<br/>'
+                                            '<b>#fi</b> - инициал имени<br/>'
+                                            '<b>#mi</b> - инициал отчества'))
+
+        self.lineFilenamePattern.setToolTip((   '<b>Возможные значения:</b><br/>'
+                                                '<b>#author</b> - автор(ы)<br/>'
+                                                '<b>#title</b> - название книги<br/>'
+                                                '<b>#series</b> - название серии<br/>'
+                                                '<b>#number</b> - номер в серии<br/>'
+                                                '<b>#abbrseries</b> - аббревиатура названия серии<br/>'
+                                                '<b>#translator</b> - переводчик<br/>'
+                                                '<b>{}</b> - блок'))
+
+
+    def switch_copy_to(self):
+        if self.radioSameDir.isChecked():
+            self.lineDestFolder.setEnabled(False)
+            self.buttonSelectFolder.setEnabled(False)
+        else:
+            self.lineDestFolder.setEnabled(True)
+            self.buttonSelectFolder.setEnabled(True)
+
+    def select_dest_dir(self):
+        dlgPath = QFileDialog(self, _translate('fb2mobi-gui', 'Select folder'))
+        dlgPath.setFileMode(QFileDialog.Directory)
+        dlgPath.setOption(QFileDialog.ShowDirsOnly, True)
+
+        if dlgPath.exec_():
+            for d in dlgPath.selectedFiles():
+                self.lineDestFolder.setText(os.path.normpath(d))
+
 class GDriveDialog(QDialog, Ui_GDriveDialog):
     def __init__(self, parent, credential_file, executable_path):
         super(GDriveDialog, self).__init__(parent)
@@ -64,7 +107,7 @@ class GDriveDialog(QDialog, Ui_GDriveDialog):
         self.model = QStandardItemModel(self.tree)
         self.tree.setModel(self.model)
         self.tree.expanded.connect(self.update_model)
-        self.tree.setIconSize(QSize(32, 32))
+        self.tree.setIconSize(QSize(24, 24))
         self.gdrive = GoogleDrive(self.credential_file, self.executable_path)
 
         self.selected_files = []
@@ -377,7 +420,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.imgBookCover.setContextMenuPolicy(Qt.CustomContextMenu)
         self.imgBookCover.customContextMenuRequested[QPoint].connect(self.contextCoverMenu)
 
-        self.toolBar.setIconSize(QSize(32, 32))
+        self.toolBar.setIconSize(QSize(24, 24))
 
         self.toolAdd.setIcon(QIcon(':/toolbar/add.png'))
         self.toolSaveToDisk.setIcon(QIcon(':/toolbar/save.png'))
@@ -464,12 +507,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         self.statusBar().addWidget(self.labelStatus, 1)
 
-        if self.gui_config.columns['0']:
-            self.treeFileList.setColumnWidth(0, self.gui_config.columns['0'])
-            self.treeFileList.setColumnWidth(1, self.gui_config.columns['1'])
-            self.treeFileList.setColumnWidth(2, self.gui_config.columns['2'])
-            self.treeFileList.setColumnWidth(3, self.gui_config.columns['3'])
-            self.treeFileList.setColumnWidth(4, self.gui_config.columns['4'])
+        for col in self.gui_config.columns.keys():
+            self.treeFileList.setColumnWidth(int(col), self.gui_config.columns[col])
 
         self.timerKindleStatus = QTimer()
         self.timerKindleStatus.timeout.connect(self.checkKindleStatus)
@@ -518,7 +557,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             progressDlg.setWindowModality(Qt.WindowModal)
             progressDlg.setMinimumDuration(0)
             progressDlg.setLabelText(_translate('fb2mobi-gui', 'Converting...'))
-            progressDlg.setRange(1, len(files))
+            progressDlg.setRange(0, len(files))
             progressDlg.setAutoClose(False)
             progressDlg.forceShow()
 
@@ -542,11 +581,12 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             elif self.gui_config.hyphens.lower() == 'no':
                 config.current_profile['hyphens'] = False
 
-            i = 1
+            i = 0
             errors = 0
 
             for file in files:
                 result = True
+                i += 1
                 progressDlg.setValue(i)
 
                 output_dir = os.path.abspath(config.output_dir)
@@ -567,7 +607,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 # Отметим результат конвертации
                 item = None
                 for j in range(self.rootFileList.childCount()):
-                    if file == self.rootFileList.child(j).text(2):
+                    if file == self.rootFileList.child(j).text(4):
                         item = self.rootFileList.child(j)
                         if dest_file and os.path.exists(dest_file):
                             dest_files.append(dest_file)
@@ -578,7 +618,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
                 if progressDlg.wasCanceled():
                     break
-                i += 1
+               
 
             if errors > 0:
                 QMessageBox.warning(self, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui', 'Error while converting file(s). Check log for details.'))
@@ -602,10 +642,11 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
                 if os.path.exists(kindle_doc_path):
                     progressDlg.setLabelText(_translate('fb2mobi-gui', 'Sending to Kindle...'))
-                    progressDlg.setRange(1, len(dest_files))
-                    i = 1
+                    progressDlg.setRange(0, len(dest_files))
+                    i = 0
                     errors = 0
                     for file in dest_files:
+                        i += 1
                         progressDlg.setValue(i)
                         try:
                             shutil.copy2(file, kindle_doc_path)
@@ -626,7 +667,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                             self.log.debug('Getting details', exc_info=True)
                             errors += 1
 
-                        i += 1
                         if progressDlg.wasCanceled() or errors == 3:
                             break
 
@@ -637,7 +677,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
             if mode == PROCESS_MODE_MAIL:
                 progressDlg.setLabelText(_translate('fb2mobi-gui', 'Sending via Gmail...'))
-                progressDlg.setRange(1, len(dest_files))
+                progressDlg.setRange(0, len(dest_files))
 
                 kindle = SendToKindle()
                 kindle.smtp_server = 'smtp.gmail.com'
@@ -648,9 +688,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 kindle.kindle_email = self.gui_config.KindleMail
                 kindle.convert = False
 
-                i = 1
+                i = 0
                 errors = 0
                 for file in dest_files:
+                    i += 1
                     progressDlg.setValue(i)
                     try:
                         kindle.send_mail([file])
@@ -659,7 +700,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                         self.log.debug('Getting details', exc_info=True)
                         errors += 1
 
-                    i += 1
                     if progressDlg.wasCanceled() or errors == 3:
                         break
 
@@ -1165,17 +1205,18 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                     progressDlg.setWindowModality(Qt.WindowModal)
                     progressDlg.setMinimumDuration(0)
                     progressDlg.setLabelText(_translate('fb2mobi-gui', 'Download files from Google Drive...'))
-                    progressDlg.setRange(1, len(gdriveDlg.selected_files))
+                    progressDlg.setRange(0, len(gdriveDlg.selected_files))
                     progressDlg.setAutoClose(False)
                     progressDlg.forceShow()
 
                     i = 0
 
                     for file_id in gdriveDlg.selected_files:
+                        i += 1
                         progressDlg.setValue(i)
+
                         file_name = gdriveDlg.gdrive.download(file_id, self.gdrive_temp_dir)
                         files.append(file_name)                    
-                        i += 1
                         if progressDlg.wasCanceled():
                             break
 
@@ -1185,7 +1226,9 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             QMessageBox.critical(self, _translate('fb2mobi-gui', 'Error'), str(e))
 
     def rename(self):
-        print('Rename...')
+        renDlg = RenameDialog(self, self.gui_config.authorPattern, self.gui_config.filenamePattern)
+        if renDlg.exec_():
+            print('Exec')
 
     def openHelpURL(self):
         webbrowser.open(url=HELP_URL)
