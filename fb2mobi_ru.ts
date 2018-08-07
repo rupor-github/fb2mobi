@@ -60,7 +60,7 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="ui/MainWindow.py" line="237"/>
+        <location filename="ui/MainWindow.py" line="257"/>
         <source>fb2mobi</source>
         <translation></translation>
     </message>
@@ -70,32 +70,32 @@
         <translation type="obsolete">Пуск</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="258"/>
+        <location filename="ui/MainWindow.py" line="282"/>
         <source>Settings...</source>
         <translation>Настройки...</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="247"/>
+        <location filename="ui/MainWindow.py" line="271"/>
         <source>File</source>
         <translation>Файл</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="269"/>
+        <location filename="ui/MainWindow.py" line="293"/>
         <source>Help</source>
         <translation>Справка</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="249"/>
+        <location filename="ui/MainWindow.py" line="273"/>
         <source>Edit</source>
         <translation>Правка</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="251"/>
+        <location filename="ui/MainWindow.py" line="275"/>
         <source>Add...</source>
         <translation>Добавить файлы...</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="252"/>
+        <location filename="ui/MainWindow.py" line="276"/>
         <source>Ctrl+O</source>
         <translation></translation>
     </message>
@@ -105,109 +105,177 @@
         <translation type="obsolete">Конвертировать</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="253"/>
+        <location filename="ui/MainWindow.py" line="277"/>
         <source>Exit</source>
         <translation>Выход</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="254"/>
+        <location filename="ui/MainWindow.py" line="278"/>
         <source>Support forum</source>
         <translation>Форум поддержки</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="255"/>
+        <location filename="ui/MainWindow.py" line="279"/>
         <source>About...</source>
         <translation>О программе...</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="256"/>
+        <location filename="ui/MainWindow.py" line="280"/>
         <source>View log</source>
         <translation>Посмотреть журнал</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="257"/>
+        <location filename="ui/MainWindow.py" line="281"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="242"/>
+        <location filename="ui/MainWindow.py" line="264"/>
         <source>Title</source>
         <translation>Название</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="241"/>
+        <location filename="ui/MainWindow.py" line="263"/>
         <source>Author</source>
         <translation>Автор</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="243"/>
+        <location filename="ui/MainWindow.py" line="265"/>
         <source>Series</source>
         <translation>Серия</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="244"/>
+        <location filename="ui/MainWindow.py" line="266"/>
         <source>#</source>
         <translation>№</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="245"/>
+        <location filename="ui/MainWindow.py" line="268"/>
         <source>Book language</source>
         <translation>Язык книги</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="246"/>
+        <location filename="ui/MainWindow.py" line="270"/>
         <source>Save</source>
         <translation>Сохранить</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="250"/>
+        <location filename="ui/MainWindow.py" line="274"/>
         <source>toolBar</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="259"/>
+        <location filename="ui/MainWindow.py" line="283"/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="260"/>
+        <location filename="ui/MainWindow.py" line="284"/>
         <source>Info</source>
         <translation>Информация</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="261"/>
+        <location filename="ui/MainWindow.py" line="285"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="266"/>
+        <location filename="ui/MainWindow.py" line="290"/>
         <source>Convert to disk</source>
         <translation>Конвертировать на диск</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="267"/>
+        <location filename="ui/MainWindow.py" line="291"/>
         <source>Send to Kindle</source>
         <translation>Отправить на Kindle</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="268"/>
+        <location filename="ui/MainWindow.py" line="292"/>
         <source>Send via Gmail</source>
         <translation>Отправить через Gmail</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="270"/>
+        <location filename="ui/MainWindow.py" line="294"/>
         <source>Add from Google Drive...</source>
         <translation>Добавить с Google Диска</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="271"/>
+        <location filename="ui/MainWindow.py" line="295"/>
         <source>Add files from Google Drive..</source>
         <translation>Добавить файлы с Google Диска</translation>
     </message>
     <message>
-        <location filename="ui/MainWindow.py" line="272"/>
+        <location filename="ui/MainWindow.py" line="296"/>
         <source>Ctrl+G</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/MainWindow.py" line="267"/>
+        <source>Genre</source>
+        <translation>Жанр</translation>
+    </message>
+    <message>
+        <location filename="ui/MainWindow.py" line="269"/>
+        <source>Translator</source>
+        <translation>Переводчик</translation>
+    </message>
+    <message>
+        <location filename="ui/MainWindow.py" line="297"/>
+        <source>Rename...</source>
+        <translation>Переименовать...</translation>
+    </message>
+    <message>
+        <location filename="ui/MainWindow.py" line="298"/>
+        <source>Rename selected files</source>
+        <translation>Переименовать выбранные файлы</translation>
+    </message>
+</context>
+<context>
+    <name>RenameDialog</name>
+    <message>
+        <location filename="ui/RenameDialog.py" line="84"/>
+        <source>Rename</source>
+        <translation>Переименование</translation>
+    </message>
+    <message>
+        <location filename="ui/RenameDialog.py" line="87"/>
+        <source>Rename in same directory</source>
+        <translation>Переименовать в том же каталоге</translation>
+    </message>
+    <message>
+        <location filename="ui/RenameDialog.py" line="88"/>
+        <source>Copy to:</source>
+        <translation>Копировать в</translation>
+    </message>
+    <message>
+        <location filename="ui/RenameDialog.py" line="89"/>
+        <source>Select</source>
+        <translation>Выбрать</translation>
+    </message>
+    <message>
+        <location filename="ui/RenameDialog.py" line="85"/>
+        <source>Author pattern</source>
+        <translation>Шаблон для автора</translation>
+    </message>
+    <message>
+        <location filename="ui/RenameDialog.py" line="86"/>
+        <source>Filename pattern</source>
+        <translation>Шаблон имени файла</translation>
+    </message>
+    <message>
+        <location filename="ui/RenameDialog.py" line="91"/>
+        <source>Samples:</source>
+        <translation>Примеры:</translation>
+    </message>
+    <message>
+        <location filename="ui/RenameDialog.py" line="92"/>
+        <source>Test</source>
+        <translation>Тест</translation>
+    </message>
+    <message>
+        <location filename="ui/RenameDialog.py" line="90"/>
+        <source>Delete source files after rename</source>
+        <translation>Удалить исходные файлы после переименования</translation>
     </message>
 </context>
 <context>
@@ -376,20 +444,30 @@
 <context>
     <name>fb2mobi</name>
     <message>
-        <location filename="fb2mobi-gui.py" line="939"/>
+        <location filename="fb2mobi-gui.py" line="1034"/>
         <source>Save</source>
         <translation>Сохранить</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="940"/>
+        <location filename="fb2mobi-gui.py" line="1035"/>
         <source>Save changes in selected files?</source>
         <translation>Сохранить изменения в выбранных файлах?</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="1286"/>
+        <source>Rename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="1287"/>
+        <source>Rename selected files?</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>fb2mobi-gui</name>
     <message>
-        <location filename="fb2mobi-gui.py" line="219"/>
+        <location filename="fb2mobi-gui.py" line="281"/>
         <source>Select folder</source>
         <translation>Выберите папку</translation>
     </message>
@@ -399,7 +477,7 @@
         <translation type="obsolete">Указанная папка не существует.</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="650"/>
+        <location filename="fb2mobi-gui.py" line="1337"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
@@ -439,7 +517,7 @@
         <translation type="obsolete">Обработка файла: {0}</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="1071"/>
+        <location filename="fb2mobi-gui.py" line="1198"/>
         <source>Select files</source>
         <translation>Выберите файлы</translation>
     </message>
@@ -449,7 +527,7 @@
         <translation type="obsolete">Файлы fb2 (*.fb2 *.fb2.zip *.zip)</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="1073"/>
+        <location filename="fb2mobi-gui.py" line="1200"/>
         <source>All files (*.*)</source>
         <translation>Все файлы (*.*)</translation>
     </message>
@@ -469,89 +547,106 @@
         <translation type="obsolete">Устройство не обнаружено</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="180"/>
+        <location filename="fb2mobi-gui.py" line="242"/>
         <source>None</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="793"/>
+        <location filename="fb2mobi-gui.py" line="877"/>
         <source>Load from file...</source>
         <translation>Загрузить из файла...</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="794"/>
+        <location filename="fb2mobi-gui.py" line="878"/>
         <source>Save to file...</source>
         <translation>Сохранить в файл...</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="795"/>
+        <location filename="fb2mobi-gui.py" line="879"/>
         <source>Clear</source>
         <translation>Очистить</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="800"/>
+        <location filename="fb2mobi-gui.py" line="884"/>
         <source>Select book cover</source>
         <translation>Выберите обложку для книги</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="811"/>
+        <location filename="fb2mobi-gui.py" line="895"/>
         <source>Image files (*.png *.jpg *.bmp)</source>
         <translation>Изображения (*.png *.jpg *.bmp)</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="808"/>
+        <location filename="fb2mobi-gui.py" line="892"/>
         <source>Save cover as</source>
         <translation>Сохранить обложку как</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="502"/>
+        <location filename="fb2mobi-gui.py" line="585"/>
         <source>Converting...</source>
         <translation>Идет конвертация...</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="650"/>
+        <location filename="fb2mobi-gui.py" line="734"/>
         <source>Error while sending file(s). Check log for details.</source>
         <translation>Возникла ошибка при отправке файлов. Детали смотрите в лог-файле.</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="587"/>
+        <location filename="fb2mobi-gui.py" line="671"/>
         <source>Sending to Kindle...</source>
         <translation>Отправка на Kindle...</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="622"/>
+        <location filename="fb2mobi-gui.py" line="706"/>
         <source>Sending via Gmail...</source>
         <translation>Отправка через Gmail...</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="660"/>
+        <location filename="fb2mobi-gui.py" line="744"/>
         <source>Select folder to convert</source>
         <translation>Выберите папку для сконвертированных файлов</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="724"/>
+        <location filename="fb2mobi-gui.py" line="808"/>
         <source>Kindle connected to {0}</source>
         <translation>Kindle подключен как {0}</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="566"/>
+        <location filename="fb2mobi-gui.py" line="650"/>
         <source>Error while converting file(s). Check log for details.</source>
         <translation>Возникла ошибка при конвертации файлов. Детали смотрите в лог-файле.</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="1073"/>
+        <location filename="fb2mobi-gui.py" line="1200"/>
         <source>Ebook files (*.fb2 *.fb2.zip *.zip *.epub)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="115"/>
+        <location filename="fb2mobi-gui.py" line="177"/>
         <source>Loading...</source>
         <translation>Загрузка...</translation>
     </message>
     <message>
-        <location filename="fb2mobi-gui.py" line="1120"/>
+        <location filename="fb2mobi-gui.py" line="1250"/>
         <source>Download files from Google Drive...</source>
         <translation>Загрузка файлов с Google Диска</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="545"/>
+        <source>&lt;Empty&gt;</source>
+        <translation>&lt;Пусто&gt;</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="1304"/>
+        <source>Renaming files...</source>
+        <translation>Переименование...</translation>
+    </message>
+    <message>
+        <location filename="fb2mobi-gui.py" line="1337"/>
+        <source>Error while renaming file(s).
+Check log for details.</source>
+        <translation>Возникли ошибки при переименовании файлов.
+Детальную информацию смотрите в лог-файле.</translation>
     </message>
 </context>
 </TS>

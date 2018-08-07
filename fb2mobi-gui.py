@@ -25,16 +25,19 @@ from ui.MainWindow import Ui_MainWindow
 from ui.AboutDialog import Ui_AboutDialog
 from ui.SettingsDialog import Ui_SettingsDialog
 from ui.OpenGDriveDialog import Ui_GDriveDialog
+from ui.RenameDialog import Ui_RenameDialog
 
 from ui.gui_config import GuiConfig
 import ui.images_rc
 import ui.ui_version
+import ui.genres
 from ui.ebookmeta import EbookMeta
 from ui.fontdb import FontDb
 from ui.gdrive import GoogleDrive
 
 from modules.config import ConverterConfig
 from modules.sendtokindle import SendToKindle
+from modules.utils import format_pattern, copy_file
 import modules.default_css
 import fb2mobi
 import synccovers
@@ -53,6 +56,71 @@ PROCESS_MODE_MAIL = 3
 _translate = QCoreApplication.translate
 
 
+class RenameDialog(QDialog, Ui_RenameDialog):
+    def __init__(self, parent, author_pattern, filename_pattern, dest_dir, delete_after_rename, files):
+        super(RenameDialog, self).__init__(parent)
+      
+        self.files = files
+        self.setupUi(self)
+        self.switch_copy_to()
+        self.lineAuthorPattern.setText(author_pattern)
+        self.lineFilenamePattern.setText(filename_pattern)
+        self.checkDeleteAfterRename.setCheckState(delete_after_rename)
+        if dest_dir:
+            self.lineDestFolder.setText(dest_dir)
+            self.radioRenameTo.setChecked(True)
+        self.switch_copy_to()
+
+        self.lineAuthorPattern.setToolTip(( '<b>Возможные значения:</b><br/>'
+                                            '<b>#f</b> - имя<br/>'
+                                            '<b>#m</b> - отчество<br/>'
+                                            '<b>#l</b> - фамилия<br/>'
+                                            '<b>#fi</b> - инициал имени<br/>'
+                                            '<b>#mi</b> - инициал отчества'))
+
+        self.lineFilenamePattern.setToolTip((   '<b>Возможные значения:</b><br/>'
+                                                '<b>#author</b> - автор<br/>'
+                                                '<b>#authors</b> - авторы<br/>'
+                                                '<b>#title</b> - название книги<br/>'
+                                                '<b>#series</b> - название серии<br/>'
+                                                '<b>#number</b> - номер в серии<br/>'
+                                                '<b>#abbrseries</b> - аббревиатура названия серии<br/>'
+                                                '<b>#translator</b> - переводчик<br/>'
+                                                '<b>{}</b> - блок'))
+
+    def test(self):
+        self.textSamples.clear()        
+        dest_dir = ''
+        if self.radioRenameTo.isChecked():
+            dest_dir = self.lineDestFolder.text()
+        for file in self.files:
+            try:
+                meta = EbookMeta(file)
+                meta.get()
+                new_file = meta.meta_to_filename(self.lineAuthorPattern.text(), 
+                    self.lineFilenamePattern.text(),
+                    dest_path=dest_dir)
+                self.textSamples.append(new_file)
+            except:
+                self.textSamples.append(_translate('fb2mobi-gui', 'Renaming error for file {0}'.format(file)))
+
+    def switch_copy_to(self):
+        if self.radioSameDir.isChecked():
+            self.lineDestFolder.setEnabled(False)
+            self.buttonSelectFolder.setEnabled(False)
+        else:
+            self.lineDestFolder.setEnabled(True)
+            self.buttonSelectFolder.setEnabled(True)
+
+    def select_dest_dir(self):
+        dlgPath = QFileDialog(self, _translate('fb2mobi-gui', 'Select folder'))
+        dlgPath.setFileMode(QFileDialog.Directory)
+        dlgPath.setOption(QFileDialog.ShowDirsOnly, True)
+
+        if dlgPath.exec_():
+            for d in dlgPath.selectedFiles():
+                self.lineDestFolder.setText(os.path.normpath(d))
+
 class GDriveDialog(QDialog, Ui_GDriveDialog):
     def __init__(self, parent, credential_file, executable_path):
         super(GDriveDialog, self).__init__(parent)
@@ -63,7 +131,7 @@ class GDriveDialog(QDialog, Ui_GDriveDialog):
         self.model = QStandardItemModel(self.tree)
         self.tree.setModel(self.model)
         self.tree.expanded.connect(self.update_model)
-        self.tree.setIconSize(QSize(26, 26))
+        self.tree.setIconSize(QSize(24, 24))
         self.gdrive = GoogleDrive(self.credential_file, self.executable_path)
 
         self.selected_files = []
@@ -376,7 +444,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.imgBookCover.setContextMenuPolicy(Qt.CustomContextMenu)
         self.imgBookCover.customContextMenuRequested[QPoint].connect(self.contextCoverMenu)
 
-        self.toolBar.setIconSize(QSize(26, 26))
+        self.toolBar.setIconSize(QSize(24, 24))
 
         self.toolAdd.setIcon(QIcon(':/toolbar/add.png'))
         self.toolSaveToDisk.setIcon(QIcon(':/toolbar/save.png'))
@@ -386,6 +454,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.toolSettings.setIcon(QIcon(':/toolbar/settings.png'))
         self.toolInfo.setIcon(QIcon(':/toolbar/info_on.png'))
         self.actionAddGDirve.setIcon(QIcon(':/toolbar/gdrive.png'))
+        self.actionRename.setIcon(QIcon(':/toolbar/rename.png'))
 
         # Немного подстраиваем стили UI для более нативного отображения
         if sys.platform == 'darwin':
@@ -405,10 +474,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
             self.toolBar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
             self.setUnifiedTitleAndToolBarOnMac(True)
-            spacer = QWidget()
-            spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.toolBar.addAction(self.toolAdd)
             self.toolBar.addAction(self.actionAddGDirve)
+            spacer = QWidget()
+            spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.toolBar.addWidget(spacer)
             self.toolBar.addAction(self.toolSaveToDisk)
             self.toolBar.addAction(self.toolSendToKindle)
@@ -416,26 +485,41 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             spacer = QWidget()
             spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.toolBar.addWidget(spacer)
+            self.toolBar.addAction(self.actionRename)
+            spacer = QWidget()
+            spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            self.toolBar.addWidget(spacer)            
             self.toolBar.addAction(self.toolInfo)
             self.toolBar.addAction(self.toolSettings)
         else:
             # Для Windows, Linux
             self.toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-            self.toolBar.setStyleSheet('QToolButton { padding: 4px; }')
+            self.toolBar.setStyleSheet('QToolButton { padding: 2px; }')
 
             spacer = QWidget()
 
             self.toolBar.addAction(self.toolAdd)
             self.toolBar.addAction(self.actionAddGDirve)
+            self.toolBar.addSeparator()
             self.toolBar.addAction(self.toolSaveToDisk)
             self.toolBar.addAction(self.toolSendToKindle)
             self.toolBar.addAction(self.toolSendMail)
+            self.toolBar.addSeparator()
+            self.toolBar.addAction(self.actionRename)
             self.toolBar.addAction(self.toolSettings)
             spacer = QWidget()
             spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.toolBar.addWidget(spacer)
             self.toolBar.addAction(self.toolInfo)
             self.toolInfo.setPriority(QAction.LowPriority)
+
+            self.toolAdd.setPriority(QAction.LowPriority)
+            self.actionAddGDirve.setPriority(QAction.LowPriority)
+            self.toolSaveToDisk.setPriority(QAction.LowPriority)
+            self.toolSendToKindle.setPriority(QAction.LowPriority)
+            self.toolSendMail.setPriority(QAction.LowPriority)
+            self.actionRename.setPriority(QAction.LowPriority)
+            self.toolSettings.setPriority(QAction.LowPriority)
 
         self.setBookInfoPanelVisible()
         self.scrollBookInfo.setVisible(self.gui_config.bookInfoVisible)
@@ -445,16 +529,21 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
         self.statusBar().addWidget(self.labelStatus, 1)
 
-        if self.gui_config.columns['0']:
-            self.treeFileList.setColumnWidth(0, self.gui_config.columns['0'])
-            self.treeFileList.setColumnWidth(1, self.gui_config.columns['1'])
-            self.treeFileList.setColumnWidth(2, self.gui_config.columns['2'])
+        for col in self.gui_config.columns.keys():
+            self.treeFileList.setColumnWidth(int(col), self.gui_config.columns[col])
 
         self.timerKindleStatus = QTimer()
         self.timerKindleStatus.timeout.connect(self.checkKindleStatus)
         self.timerKindleStatus.start(1500)
 
         self.enableSendViaMail()
+
+        self.comboGenres.addItem(_translate('fb2mobi-gui', '<Empty>'))
+        self.comboGenres.setItemData(0, 'empty')
+
+        for genre in ui.genres.genres:
+            self.comboGenres.addItem('{0} ({1})'.format(ui.genres.genres[genre], genre))
+            self.comboGenres.setItemData(self.comboGenres.count() - 1, genre)
 
     def event(self, event):
         if event.type() == QEvent.WindowActivate:
@@ -469,7 +558,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
     def getFileList(self):
         files = []
         for i in range(self.rootFileList.childCount()):
-            files.append(self.rootFileList.child(i).text(2))
+            files.append(self.rootFileList.child(i).text(4))
 
         return files
 
@@ -490,7 +579,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             progressDlg.setWindowModality(Qt.WindowModal)
             progressDlg.setMinimumDuration(0)
             progressDlg.setLabelText(_translate('fb2mobi-gui', 'Converting...'))
-            progressDlg.setRange(1, len(files))
+            progressDlg.setRange(0, len(files))
             progressDlg.setAutoClose(False)
             progressDlg.forceShow()
 
@@ -514,11 +603,12 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             elif self.gui_config.hyphens.lower() == 'no':
                 config.current_profile['hyphens'] = False
 
-            i = 1
+            i = 0
             errors = 0
 
             for file in files:
                 result = True
+                i += 1
                 progressDlg.setValue(i)
 
                 output_dir = os.path.abspath(config.output_dir)
@@ -539,7 +629,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 # Отметим результат конвертации
                 item = None
                 for j in range(self.rootFileList.childCount()):
-                    if file == self.rootFileList.child(j).text(2):
+                    if file == self.rootFileList.child(j).text(4):
                         item = self.rootFileList.child(j)
                         if dest_file and os.path.exists(dest_file):
                             dest_files.append(dest_file)
@@ -550,7 +640,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
                 if progressDlg.wasCanceled():
                     break
-                i += 1
+               
 
             if errors > 0:
                 QMessageBox.warning(self, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui', 'Error while converting file(s). Check log for details.'))
@@ -574,10 +664,11 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
                 if os.path.exists(kindle_doc_path):
                     progressDlg.setLabelText(_translate('fb2mobi-gui', 'Sending to Kindle...'))
-                    progressDlg.setRange(1, len(dest_files))
-                    i = 1
+                    progressDlg.setRange(0, len(dest_files))
+                    i = 0
                     errors = 0
                     for file in dest_files:
+                        i += 1
                         progressDlg.setValue(i)
                         try:
                             shutil.copy2(file, kindle_doc_path)
@@ -598,7 +689,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                             self.log.debug('Getting details', exc_info=True)
                             errors += 1
 
-                        i += 1
                         if progressDlg.wasCanceled() or errors == 3:
                             break
 
@@ -609,7 +699,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
             if mode == PROCESS_MODE_MAIL:
                 progressDlg.setLabelText(_translate('fb2mobi-gui', 'Sending via Gmail...'))
-                progressDlg.setRange(1, len(dest_files))
+                progressDlg.setRange(0, len(dest_files))
 
                 kindle = SendToKindle()
                 kindle.smtp_server = 'smtp.gmail.com'
@@ -620,9 +710,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 kindle.kindle_email = self.gui_config.KindleMail
                 kindle.convert = False
 
-                i = 1
+                i = 0
                 errors = 0
                 for file in dest_files:
+                    i += 1
                     progressDlg.setValue(i)
                     try:
                         kindle.send_mail([file])
@@ -631,7 +722,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                         self.log.debug('Getting details', exc_info=True)
                         errors += 1
 
-                    i += 1
                     if progressDlg.wasCanceled() or errors == 3:
                         break
 
@@ -882,8 +972,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.editAuthor.clear()
         self.editTitle.clear()
         self.editSeries.clear()
+        self.comboGenres.setCurrentIndex(0)
         self.editSeriesNumber.clear()
         self.editBookLanguage.clear()
+        self.editTranslator.clear()
 
     def saveBookInfo(self):
         selected_items = self.treeFileList.selectedItems()
@@ -891,7 +983,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             QApplication.setOverrideCursor(Qt.BusyCursor)
 
             item = selected_items[0]
-            meta = EbookMeta(item.text(2))
+            meta = EbookMeta(item.text(4))
             meta.get()
 
             if self.book_cover:
@@ -910,10 +1002,19 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             meta.book_title = self.editTitle.text()
             meta.set_series(self.editSeries.text(), self.editSeriesNumber.text())
             meta.lang = self.editBookLanguage.text()
+            meta.set_genre(self.comboGenres.itemData(self.comboGenres.currentIndex()))
+            meta.set_translators(self.editTranslator.text())
             meta.write()
 
             item.setText(0, meta.book_title)
             item.setText(1, meta.get_autors())
+            item.setText(2, meta.get_first_series_str())
+            item.setText(3, meta.get_first_genre_name())
+
+            item.setToolTip(0, meta.book_title)
+            item.setToolTip(1, meta.get_autors())
+            item.setToolTip(2, meta.get_first_series_str())
+            item.setToolTip(3, meta.get_first_genre_name())
 
             QApplication.restoreOverrideCursor()
         elif len(selected_items) > 1:
@@ -926,23 +1027,32 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 QApplication.setOverrideCursor(Qt.BusyCursor)
 
                 for item in selected_items:
-                    meta = EbookMeta(item.text(2))
+                    meta = EbookMeta(item.text(4))
                     meta.get()
-                    (series, series_number) = meta.get_first_series()
-                    authors = meta.get_autors()
-                    if self.editAuthor.text():
-                        authors = self.editAuthor.text()
-                    if self.editSeries.text():
-                        series = self.editSeries.text()
+                    (series_name, series_num) = meta.get_first_series()
 
-                    meta.set_authors(authors)
-                    meta.set_series(series, series_number)
+                    if self.editAuthor.text():
+                        meta.set_authors(self.editAuthor.text())
+                    if self.editSeries.text():
+                        series_name = self.editSeries.text()
+                        meta.set_series(series_name, series_num)
+                    if self.editTranslator.text():
+                        meta.set_translators(self.editTranslator.text())
                     if self.editBookLanguage.text():
                         meta.lang = self.editBookLanguage.text()
+                    if self.comboGenres.currentIndex() > 0:
+                        meta.set_genre(self.comboGenres.itemData(self.comboGenres.currentIndex()))
                     meta.write()
 
                     item.setText(0, meta.book_title)
                     item.setText(1, meta.get_autors())
+                    item.setText(2, meta.get_first_series_str())
+                    item.setText(3, meta.get_first_genre_name())
+
+                    item.setToolTip(0, meta.book_title)
+                    item.setToolTip(1, meta.get_autors())
+                    item.setToolTip(2, meta.get_first_series_str())
+                    item.setToolTip(3, meta.get_first_genre_name())
 
                 QApplication.restoreOverrideCursor()
 
@@ -968,7 +1078,7 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.editTitle.setEnabled(True)
             self.editSeriesNumber.setEnabled(True)
 
-            meta = EbookMeta(selected_items[0].text(2))
+            meta = EbookMeta(selected_items[0].text(4))
             meta.get()
 
             self.editAuthor.setText(meta.get_autors())
@@ -977,6 +1087,20 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.editSeries.setText(series_name)
             self.editSeriesNumber.setText(series_num)
             self.editBookLanguage.setText(meta.lang)
+            self.editTranslator.setText(meta.get_translators())
+
+            found_genre = False
+            if meta.genre:
+                for i in range(self.comboGenres.count()):
+                    data = self.comboGenres.itemData(i)
+                    if data == meta.get_first_genre():
+                        self.comboGenres.setCurrentIndex(i)
+                        found_genre = True
+                        break
+                if not found_genre:
+                    self.comboGenres.setCurrentIndex(0)    
+            else:
+                self.comboGenres.setCurrentIndex(0)
 
             if meta.coverdata:
                 self.book_cover = QPixmap()
@@ -988,23 +1112,28 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                 self.editTitle.setEnabled(True)
                 self.editSeries.setEnabled(True)
                 self.editSeriesNumber.setEnabled(True)
+                self.comboGenres.setEnabled(True)
                 self.editBookLanguage.setEnabled(True)
+                self.editTranslator.setEnabled(True)
                 self.buttonSaveBookInfo.setEnabled(True)
             else:
                 self.editAuthor.setEnabled(False)
                 self.editTitle.setEnabled(False)
                 self.editSeries.setEnabled(False)
                 self.editSeriesNumber.setEnabled(False)
+                self.comboGenres.setEnabled(False)
                 self.editBookLanguage.setEnabled(False)
+                self.editTranslator.setEnabled(False)
                 self.buttonSaveBookInfo.setEnabled(False)
 
         elif len(selected_items) > 1:
             self.editAuthor.setEnabled(True)
             self.editTitle.setEnabled(False)
-            self.editSeriesNumber.setEnabled(False)
             self.editSeries.setEnabled(True)
-            self.editSeriesNumber.setEnabled(True)
+            self.editSeriesNumber.setEnabled(False)
+            self.comboGenres.setEnabled(True)
             self.editBookLanguage.setEnabled(True)
+            self.editTranslator.setEnabled(True)
             self.buttonSaveBookInfo.setEnabled(True)
 
     def addFile(self, file):
@@ -1028,11 +1157,15 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             item.setIcon(0, self.iconWhite)
             item.setText(0, meta.book_title)
             item.setText(1, meta.get_autors())
-            item.setText(2, file)
+            item.setText(2, meta.get_first_series_str())
+            item.setText(3, meta.get_first_genre_name())
+            item.setText(4, file)
             # Установим подсказки
             item.setToolTip(0, meta.book_title)
             item.setToolTip(1, meta.get_autors())
-            item.setToolTip(2, file)
+            item.setToolTip(2, meta.get_first_series_str())
+            item.setToolTip(3, meta.get_first_genre_name())
+            item.setToolTip(4, file)
 
             self.treeFileList.addTopLevelItem(item)
 
@@ -1085,6 +1218,8 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         self.gui_config.columns['0'] = self.treeFileList.columnWidth(0)
         self.gui_config.columns['1'] = self.treeFileList.columnWidth(1)
         self.gui_config.columns['2'] = self.treeFileList.columnWidth(2)
+        self.gui_config.columns['3'] = self.treeFileList.columnWidth(3)
+        self.gui_config.columns['4'] = self.treeFileList.columnWidth(4)
 
         self.gui_config.write()
 
@@ -1102,17 +1237,18 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                     progressDlg.setWindowModality(Qt.WindowModal)
                     progressDlg.setMinimumDuration(0)
                     progressDlg.setLabelText(_translate('fb2mobi-gui', 'Download files from Google Drive...'))
-                    progressDlg.setRange(1, len(gdriveDlg.selected_files))
+                    progressDlg.setRange(0, len(gdriveDlg.selected_files))
                     progressDlg.setAutoClose(False)
                     progressDlg.forceShow()
 
                     i = 0
 
                     for file_id in gdriveDlg.selected_files:
+                        i += 1
                         progressDlg.setValue(i)
+
                         file_name = gdriveDlg.gdrive.download(file_id, self.gdrive_temp_dir)
                         files.append(file_name)                    
-                        i += 1
                         if progressDlg.wasCanceled():
                             break
 
@@ -1121,6 +1257,74 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         except Exception as e:
             QMessageBox.critical(self, _translate('fb2mobi-gui', 'Error'), str(e))
 
+    def rename(self):
+        files_to_rename = []
+        if len(self.treeFileList.selectedItems()) > 0:
+            selected_items = self.treeFileList.selectedItems()
+            for item in selected_items:
+                files_to_rename.append(item.text(4))
+
+            renDlg = RenameDialog(self, self.gui_config.authorPattern, 
+                self.gui_config.filenamePattern, 
+                self.gui_config.renameDestDir,
+                self.gui_config.deleteAfterRename,
+                files_to_rename)
+            if renDlg.exec_():
+                msg = QMessageBox(self)
+                msg.setIcon(QMessageBox.Question)
+                msg.setWindowTitle(_translate('fb2mobi', 'Rename'))
+                msg.setText(_translate('fb2mobi', 'Rename selected files?'))
+                msg.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+                if msg.exec_() == QMessageBox.Yes:
+                    self.gui_config.authorPattern = renDlg.lineAuthorPattern.text()
+                    self.gui_config.filenamePattern = renDlg.lineFilenamePattern.text()
+                    if renDlg.radioRenameTo.isChecked():
+                        self.gui_config.renameDestDir = renDlg.lineDestFolder.text().strip()
+                    else:
+                        self.gui_config.renameDestDir = None
+                    self.gui_config.deleteAfterRename = renDlg.checkDeleteAfterRename.checkState()
+
+                    selected_items = self.treeFileList.selectedItems()
+                    errors = 0
+
+                    progressDlg = QProgressDialog(self)
+                    progressDlg.setWindowModality(Qt.WindowModal)
+                    progressDlg.setMinimumDuration(0)
+                    progressDlg.setLabelText(_translate('fb2mobi-gui', 'Renaming files...'))
+                    progressDlg.setRange(0, len(selected_items))
+                    progressDlg.setAutoClose(False)
+                    progressDlg.forceShow()
+
+                    i = 0
+                    for item in selected_items:
+                        try:
+                            i += 1
+                            progressDlg.setValue(i)
+
+                            file = item.text(4)
+                            meta = EbookMeta(file)
+                            meta.get()
+                            new_file = meta.meta_to_filename(self.gui_config.authorPattern, 
+                                self.gui_config.filenamePattern,
+                                dest_path=self.gui_config.renameDestDir)
+                            if os.path.exists(new_file):
+                                raise Exception('File {} exist!'.format(new_file))
+                            else:
+                                copy_file(file, new_file)
+                            if self.gui_config.deleteAfterRename:
+                                os.remove(file)
+                            item.setText(4, new_file)
+                            item.setToolTip(4, new_file)
+                        except Exception as e:
+                            self.log.critical('Error while renaming  file {0}: {1}.'.format(file, str(e)))
+                            self.log.debug('Getting details', exc_info=True)
+                            errors += 1
+
+                    progressDlg.deleteLater()
+
+                    if errors > 0:
+                        QMessageBox.critical(self, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui', 'Error while renaming file(s).\nCheck log for details.'))
+                    
 
     def openHelpURL(self):
         webbrowser.open(url=HELP_URL)
@@ -1165,7 +1369,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
 
 class AppEventFilter(QObject):
-
     def __init__(self, app_win):
         super(AppEventFilter, self).__init__()
         self.app_win = app_win

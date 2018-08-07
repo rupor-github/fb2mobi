@@ -19,7 +19,13 @@ def compile_rc():
         pyfile = os.path.normpath(pyfile)
         call('pyrcc5 {} -o {}'.format(uifile, pyfile), shell=True)
 
+def compile_pro():
+    for pro_file in glob(os.path.join('.', '*.pro')):
+        call('pylupdate5 {}'.format(pro_file), shell=True)
+
+
 
 if __name__ == '__main__':
     compile_ui()
     compile_rc()
+    compile_pro()

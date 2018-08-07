@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 from lxml import etree
-from lxml.builder import E
+from lxml.builder import ElementMaker
 import os
 import codecs
 
@@ -32,9 +32,10 @@ class GuiConfig():
         self.bookInfoSplitterState = None
 
         self.columns = {}
-        self.columns['0'] = None
-        self.columns['1'] = None
-        self.columns['2'] = None
+        self.authorPattern = '#l, #f'
+        self.filenamePattern = '#author. #title{ (пер. #translator)}'
+        self.renameDestDir = ''
+        self.deleteAfterRename = False
 
         self.geometry = {}
         self.geometry['x'] = None
@@ -105,48 +106,67 @@ class GuiConfig():
             elif e.tag == 'kindleSyncCovers':
                 self.kindleSyncCovers = e.text.lower() == 'true'
 
-          
             elif e.tag == 'columns':
                 for c in e:
-                    self.columns[c.tag[1:]] = int(c.text) if c.text else None
+                    if c.tag == 'column':
+                        self.columns[c.attrib['number']] = int(c.text) if c.text else 100
+                    
             elif e.tag == 'geometry':
                 for g in e:
                     self.geometry[g.tag] = int(g.text) if g.text else None
-            
 
+            elif e.tag == 'authorPattern':
+                self.authorPattern = e.text
+
+            elif e.tag == 'filenamePattern':
+                self.filenamePattern = e.text
+
+            elif e.tag == 'renameDestDir':
+                self.renameDestDir = e.text
+
+            elif e.tag == 'deleteAfterRename':
+                self.deleteAfterRename = e.text.lower() == 'true'
 
     def write(self):
-        config = E('settings',
-                    E('currentProfile', self.currentProfile) if self.currentProfile else E('currentProfile'),
-                    E('currentFormat', self.currentFormat) if self.currentFormat else E('currentFormat'),
-                    E('embedFontFamily', self.embedFontFamily) if self.embedFontFamily else E('embedFontFamily'),
-                    E('hyphens', self.hyphens) if self.hyphens else E('hyphens'),
-                    E('outputFolder', self.outputFolder) if self.outputFolder else E('outputFolder'),
-                    E('lastUsedTargetPath', self.lastUsedTargetPath) if self.lastUsedTargetPath else E('lastUsedTargetPath'),
-                    E('lastUsedPath', self.lastUsedPath) if self.lastUsedPath else E('lastUsedPath'),
-                    E('writeLog', str(self.writeLog)),
-                    E('clearLogAfterExit', str(self.clearLogAfterExit)),
-                    E('logLevel', self.logLevel) if self.logLevel else E('logLevel'),
-                    E('kindlePath', self.kindlePath) if self.kindlePath else E('kindlePath'),
-                    E('kindleSyncCovers', str(self.kindleSyncCovers)),
-                    E('kindleDocsSubfolder', self.kindleDocsSubfolder) if self.kindleDocsSubfolder else E('kindleDocsSubfolder'),
-                    E('GoogleMail', self.GoogleMail) if self.GoogleMail else E('GoogleMail'),
-                    E('GooglePassword', self.GooglePassword) if self.GooglePassword else E('GooglePassword'),
-                    E('KindleMail', self.KindleMail) if self.KindleMail else E('KindleMail'),
-                    E('bookInfoVisible', str(self.bookInfoVisible)),
-                    E('bookInfoSplitterState', self.bookInfoSplitterState) if self.bookInfoSplitterState else E('bookInfoSplitterState'),
-                    E('columns',
-                        E('c0', str(self.columns['0'])) if self.columns['0'] else E('c0'),
-                        E('c1', str(self.columns['1'])) if self.columns['1'] else E('c1'),
-                        E('c2', str(self.columns['2'])) if self.columns['2'] else E('c2')
-                        ),
-                    E('geometry',
-                        E('x', str(self.geometry['x'])) if self.geometry['x'] else E('x'),
-                        E('y', str(self.geometry['y'])) if self.geometry['y'] else E('y'),
-                        E('width', str(self.geometry['width'])) if self.geometry['width'] else E('width'),
-                        E('height', str(self.geometry['height'])) if self.geometry['height'] else E('height')
-                        )
+        def number(v):
+            return {'number': str(v)}
+
+        E = ElementMaker()
+
+        config = E.settings(
+                    E.currentProfile(self.currentProfile) if self.currentProfile else E.currentProfile(),
+                    E.currentFormat(self.currentFormat) if self.currentFormat else E.currentFormat(),
+                    E.embedFontFamily(self.embedFontFamily) if self.embedFontFamily else E.embedFontFamily(),
+                    E.hyphens(self.hyphens) if self.hyphens else E.hyphens(),
+                    E.outputFolder(self.outputFolder) if self.outputFolder else E.outputFolder(),
+                    E.lastUsedTargetPath(self.lastUsedTargetPath) if self.lastUsedTargetPath else E.lastUsedTargetPath(),
+                    E.lastUsedPath(self.lastUsedPath) if self.lastUsedPath else E.lastUsedPath(),
+                    E.writeLog(str(self.writeLog)),
+                    E.clearLogAfterExit(str(self.clearLogAfterExit)),
+                    E.logLevel(self.logLevel) if self.logLevel else E.logLevel(),
+                    E.kindlePath(self.kindlePath) if self.kindlePath else E.kindlePath(),
+                    E.kindleSyncCovers(str(self.kindleSyncCovers)),
+                    E.kindleDocsSubfolder(self.kindleDocsSubfolder) if self.kindleDocsSubfolder else E.kindleDocsSubfolder(),
+                    E.GoogleMail(self.GoogleMail) if self.GoogleMail else E.GoogleMail(),
+                    E.GooglePassword(self.GooglePassword) if self.GooglePassword else E.GooglePassword(),
+                    E.KindleMail(self.KindleMail) if self.KindleMail else E.KindleMail(),
+                    E.bookInfoVisible(str(self.bookInfoVisible)),
+                    E.bookInfoSplitterState(self.bookInfoSplitterState) if self.bookInfoSplitterState else E.bookInfoSplitterState(),
+                    E.authorPattern(self.authorPattern) if self.authorPattern else E.authorPattern(),
+                    E.filenamePattern(self.filenamePattern) if self.filenamePattern else E.filenamePattern(),
+                    E.renameDestDir(self.renameDestDir) if self.renameDestDir else E.renameDestDir(),
+                    E.deleteAfterRename(str(self.deleteAfterRename)),
+                    E.columns(
+                        *[E.column(str(self.columns[col]), number(col)) for col in self.columns.keys()]
+                    ),
+                    E.geometry(
+                        E.x(str(self.geometry['x'])) if self.geometry['x'] else E.x(),
+                        E.y(str(self.geometry['y'])) if self.geometry['y'] else E.y(),
+                        E.width(str(self.geometry['width'])) if self.geometry['width'] else E.width(),
+                        E.height(str(self.geometry['height'])) if self.geometry['height'] else E.height()
                     )
+
+        )
         config_dir = os.path.dirname(self.config_file)
         if not os.path.exists(config_dir):
             os.makedirs(config_dir)

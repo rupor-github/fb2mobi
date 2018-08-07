@@ -29,5 +29,7 @@
     <file>send@2x.png</file>
     <file>gdrive.png</file>
     <file>gdrive@2x.png</file>
+    <file>rename.png</file>
+    <file>rename@2x.png</file>
   </qresource>
 </RCC>

@@ -21,6 +21,18 @@
     </sizepolicy>
    </property>
    <layout class="QGridLayout" name="gridLayout">
+    <property name="leftMargin">
+     <number>6</number>
+    </property>
+    <property name="topMargin">
+     <number>6</number>
+    </property>
+    <property name="rightMargin">
+     <number>6</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item row="0" column="0">
      <widget class="QSplitter" name="bookInfoSplitter">
       <property name="orientation">
@@ -45,6 +57,9 @@
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
        </property>
+       <property name="rootIsDecorated">
+        <bool>false</bool>
+       </property>
        <attribute name="headerVisible">
         <bool>true</bool>
        </attribute>
@@ -56,6 +71,16 @@
        <column>
         <property name="text">
          <string>Author</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Series</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Genre</string>
         </property>
        </column>
        <column>
@@ -73,8 +98,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>407</width>
-          <height>489</height>
+          <width>409</width>
+          <height>501</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
@@ -233,6 +258,16 @@
           </layout>
          </item>
          <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Genre</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="comboGenres"/>
+         </item>
+         <item>
           <widget class="QLabel" name="labelBookLanguage">
            <property name="text">
             <string>Book language</string>
@@ -241,6 +276,16 @@
          </item>
          <item>
           <widget class="QLineEdit" name="editBookLanguage"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Translator</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="editTranslator"/>
          </item>
          <item>
           <spacer name="verticalSpacer">
@@ -339,6 +384,8 @@
      <string>Edit</string>
     </property>
     <addaction name="actionDelete"/>
+    <addaction name="separator"/>
+    <addaction name="actionRename"/>
     <addaction name="separator"/>
     <addaction name="actionViewLog"/>
    </widget>
@@ -473,6 +520,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+G</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionRename">
+   <property name="text">
+    <string>Rename...</string>
+   </property>
+   <property name="toolTip">
+    <string>Rename selected files</string>
    </property>
    <property name="iconVisibleInMenu">
     <bool>false</bool>
@@ -801,6 +859,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionRename</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>rename()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>280</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>closeApp()</slot>
@@ -822,5 +896,6 @@
   <slot>sendViaMail()</slot>
   <slot>openHelpURL()</slot>
   <slot>openFromGDrive()</slot>
+  <slot>rename()</slot>
  </slots>
 </ui>
