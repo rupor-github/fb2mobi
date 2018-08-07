@@ -10,6 +10,7 @@ from io import BytesIO
 from lxml import etree
 from lxml.etree import QName
 from ui.genres import genres
+from modules.utils import format_pattern
 
 
 class Author():
@@ -121,7 +122,6 @@ class EbookMeta():
                 self.sequence.append(cur_series)
 
     def set_authors(self, author_str):
-        print(author_str, self.book_type)
         if self.book_type == 'fb2':
             self.author = []
             if author_str:
@@ -180,6 +180,13 @@ class EbookMeta():
                     author_str += ' ' + author.last_name
 
         return author_str.replace('  ', ' ').strip()
+
+    def get_first_translator_lastname(self):
+        translator = ''
+        for t in self.translator:
+            translator = t.last_name
+            break
+        return translator
 
     def get_autors(self):
         author_str = ''
@@ -401,19 +408,58 @@ class EbookMeta():
         else:
             self.tree.write(self.file, encoding=self.encoding, method='xml', xml_declaration=True, pretty_print=True)
 
+    def get_formatted_authors(self, format_str, short=False):
+        authors = []
+        if len(self.author) > 0:
+            for a in self.author:
+                author = format_pattern(format_str, [
+                        ('#fi', '' if not a.first_name else a.first_name[0] + '.'),
+                        ('#mi', '' if not a.middle_name else a.middle_name[0] + '.'),
+                        ('#f', '' if not a.first_name else a.first_name.strip()),
+                        ('#m', '' if not a.middle_name else a.middle_name.strip()),
+                        ('#l', '' if not a.last_name else a.last_name.strip())                    
+                    ])
+                authors.append(author)
+                if short:
+                    break
 
-if __name__ == '__main__':
-    # meta = Fb2Meta('Судья Ди 01. Золото Будды.fb2.zip')
-    # meta = Fb2Meta('_test.fb2')
-    # meta = Fb2Meta('Судья Ди 09. Убийство среди лотосов.fb2')
-    # meta = Fb2Meta('Судья Ди 09. Убийство среди лотосов.fb2.zip')
-    # meta.get()
-    # meta.write()
+            if short and len(self.author) > 1:
+                return authors[0] + ' и др' if self.lang.lower() == 'ru' else ', et al'
+            else:
+                return ', '.join(authors)
+        else:
+            return ''
 
-    meta = Fb2Meta('E:/test/Луна_суровая+хозяйка.zip')
-    meta.set_authors('Роберт ван Гулик, Гулик Ван Роберт')
-    meta.write()
+    def get_file_ext(self):
+        if self.file.lower().endswith('.fb2.zip'):
+            return 'fb2.zip'
+        elif self.file.lower().endswith('.zip'):
+            return 'zip'
+        elif self.file.lower().endswith('.fb2'):
+            return 'fb2'
+        return ''
 
-    meta = Fb2Meta('E:/test/Не отпускай меня.fb2.zip')
-    meta.set_authors('Роберт ван Гулик, Гулик Ван Роберт')
-    meta.write()
+    def meta_to_filename(self, author_format, filename_format, dest_path=None):
+        if author_format and filename_format and self.book_type == 'fb2':
+            (series_name, series_num) = self.get_first_series()
+
+            name = format_pattern(filename_format, 
+                [
+                    ('#title', '' if not self.book_title else self.book_title.strip()),
+                    ('#series', series_name.strip()),
+                    ('#abbrseries', ''.join(word[0] for word in series_name.split()).lower() if series_name else ''),
+                    ('#number', str(series_num).strip()),
+                    ('#authors', self.get_formatted_authors(author_format, short=False)),
+                    ('#author', self.get_formatted_authors(author_format, short=True)),
+                    ('#translator', self.get_first_translator_lastname()),
+                ])
+            ext = self.get_file_ext()
+            if not dest_path:
+                dest_path = os.path.split(self.file)[0]
+            return os.path.normpath(os.path.join(dest_path, '{0}.{1}'.format(name, ext)))
+        else:
+            return ''
+
+
+
+

@@ -34,6 +34,8 @@ class GuiConfig():
         self.columns = {}
         self.authorPattern = '#l, #f'
         self.filenamePattern = '#author. #title{ (пер. #translator)}'
+        self.renameDestDir = ''
+        self.deleteAfterRename = False
 
         self.geometry = {}
         self.geometry['x'] = None
@@ -119,6 +121,11 @@ class GuiConfig():
             elif e.tag == 'filenamePattern':
                 self.filenamePattern = e.text
 
+            elif e.tag == 'renameDestDir':
+                self.renameDestDir = e.text
+
+            elif e.tag == 'deleteAfterRename':
+                self.deleteAfterRename = e.text.lower() == 'true'
 
     def write(self):
         def number(v):
@@ -145,8 +152,10 @@ class GuiConfig():
                     E.KindleMail(self.KindleMail) if self.KindleMail else E.KindleMail(),
                     E.bookInfoVisible(str(self.bookInfoVisible)),
                     E.bookInfoSplitterState(self.bookInfoSplitterState) if self.bookInfoSplitterState else E.bookInfoSplitterState(),
-                    E.authorPattern(self.authorPattern if self.authorPattern else E.authorPattern()),
-                    E.filenamePattern(self.filenamePattern if self.filenamePattern else E.filenamePattern()),
+                    E.authorPattern(self.authorPattern) if self.authorPattern else E.authorPattern(),
+                    E.filenamePattern(self.filenamePattern) if self.filenamePattern else E.filenamePattern(),
+                    E.renameDestDir(self.renameDestDir) if self.renameDestDir else E.renameDestDir(),
+                    E.deleteAfterRename(str(self.deleteAfterRename)),
                     E.columns(
                         *[E.column(str(self.columns[col]), number(col)) for col in self.columns.keys()]
                     ),

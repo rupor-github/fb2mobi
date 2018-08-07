@@ -37,6 +37,7 @@ from ui.gdrive import GoogleDrive
 
 from modules.config import ConverterConfig
 from modules.sendtokindle import SendToKindle
+from modules.utils import format_pattern, copy_file
 import modules.default_css
 import fb2mobi
 import synccovers
@@ -56,12 +57,19 @@ _translate = QCoreApplication.translate
 
 
 class RenameDialog(QDialog, Ui_RenameDialog):
-    def __init__(self, parent, author_pattern, filename_pattern):
+    def __init__(self, parent, author_pattern, filename_pattern, dest_dir, delete_after_rename, files):
         super(RenameDialog, self).__init__(parent)
+      
+        self.files = files
         self.setupUi(self)
         self.switch_copy_to()
         self.lineAuthorPattern.setText(author_pattern)
         self.lineFilenamePattern.setText(filename_pattern)
+        self.checkDeleteAfterRename.setCheckState(delete_after_rename)
+        if dest_dir:
+            self.lineDestFolder.setText(dest_dir)
+            self.radioRenameTo.setChecked(True)
+        self.switch_copy_to()
 
         self.lineAuthorPattern.setToolTip(( '<b>Возможные значения:</b><br/>'
                                             '<b>#f</b> - имя<br/>'
@@ -71,7 +79,8 @@ class RenameDialog(QDialog, Ui_RenameDialog):
                                             '<b>#mi</b> - инициал отчества'))
 
         self.lineFilenamePattern.setToolTip((   '<b>Возможные значения:</b><br/>'
-                                                '<b>#author</b> - автор(ы)<br/>'
+                                                '<b>#author</b> - автор<br/>'
+                                                '<b>#authors</b> - авторы<br/>'
                                                 '<b>#title</b> - название книги<br/>'
                                                 '<b>#series</b> - название серии<br/>'
                                                 '<b>#number</b> - номер в серии<br/>'
@@ -79,6 +88,21 @@ class RenameDialog(QDialog, Ui_RenameDialog):
                                                 '<b>#translator</b> - переводчик<br/>'
                                                 '<b>{}</b> - блок'))
 
+    def test(self):
+        self.textSamples.clear()        
+        dest_dir = ''
+        if self.radioRenameTo.isChecked():
+            dest_dir = self.lineDestFolder.text()
+        for file in self.files:
+            try:
+                meta = EbookMeta(file)
+                meta.get()
+                new_file = meta.meta_to_filename(self.lineAuthorPattern.text(), 
+                    self.lineFilenamePattern.text(),
+                    dest_path=dest_dir)
+                self.textSamples.append(new_file)
+            except:
+                self.textSamples.append(_translate('fb2mobi-gui', 'Renaming error for file {0}'.format(file)))
 
     def switch_copy_to(self):
         if self.radioSameDir.isChecked():
@@ -477,12 +501,10 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             self.toolBar.addAction(self.toolAdd)
             self.toolBar.addAction(self.actionAddGDirve)
             self.toolBar.addSeparator()
-            self.toolBar.addWidget(spacer)
             self.toolBar.addAction(self.toolSaveToDisk)
             self.toolBar.addAction(self.toolSendToKindle)
             self.toolBar.addAction(self.toolSendMail)
             self.toolBar.addSeparator()
-            self.toolBar.addWidget(spacer)
             self.toolBar.addAction(self.actionRename)
             self.toolBar.addAction(self.toolSettings)
             spacer = QWidget()
@@ -989,6 +1011,11 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             item.setText(2, meta.get_first_series_str())
             item.setText(3, meta.get_first_genre_name())
 
+            item.setToolTip(0, meta.book_title)
+            item.setToolTip(1, meta.get_autors())
+            item.setToolTip(2, meta.get_first_series_str())
+            item.setToolTip(3, meta.get_first_genre_name())
+
             QApplication.restoreOverrideCursor()
         elif len(selected_items) > 1:
             msg = QMessageBox(self)
@@ -1021,6 +1048,11 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
                     item.setText(1, meta.get_autors())
                     item.setText(2, meta.get_first_series_str())
                     item.setText(3, meta.get_first_genre_name())
+
+                    item.setToolTip(0, meta.book_title)
+                    item.setToolTip(1, meta.get_autors())
+                    item.setToolTip(2, meta.get_first_series_str())
+                    item.setToolTip(3, meta.get_first_genre_name())
 
                 QApplication.restoreOverrideCursor()
 
@@ -1226,9 +1258,73 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
             QMessageBox.critical(self, _translate('fb2mobi-gui', 'Error'), str(e))
 
     def rename(self):
-        renDlg = RenameDialog(self, self.gui_config.authorPattern, self.gui_config.filenamePattern)
-        if renDlg.exec_():
-            print('Exec')
+        files_to_rename = []
+        if len(self.treeFileList.selectedItems()) > 0:
+            selected_items = self.treeFileList.selectedItems()
+            for item in selected_items:
+                files_to_rename.append(item.text(4))
+
+            renDlg = RenameDialog(self, self.gui_config.authorPattern, 
+                self.gui_config.filenamePattern, 
+                self.gui_config.renameDestDir,
+                self.gui_config.deleteAfterRename,
+                files_to_rename)
+            if renDlg.exec_():
+                msg = QMessageBox(self)
+                msg.setIcon(QMessageBox.Question)
+                msg.setWindowTitle(_translate('fb2mobi', 'Rename'))
+                msg.setText(_translate('fb2mobi', 'Rename selected files?'))
+                msg.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+                if msg.exec_() == QMessageBox.Yes:
+                    self.gui_config.authorPattern = renDlg.lineAuthorPattern.text()
+                    self.gui_config.filenamePattern = renDlg.lineFilenamePattern.text()
+                    if renDlg.radioRenameTo.isChecked():
+                        self.gui_config.renameDestDir = renDlg.lineDestFolder.text().strip()
+                    else:
+                        self.gui_config.renameDestDir = None
+                    self.gui_config.deleteAfterRename = renDlg.checkDeleteAfterRename.checkState()
+
+                    selected_items = self.treeFileList.selectedItems()
+                    errors = 0
+
+                    progressDlg = QProgressDialog(self)
+                    progressDlg.setWindowModality(Qt.WindowModal)
+                    progressDlg.setMinimumDuration(0)
+                    progressDlg.setLabelText(_translate('fb2mobi-gui', 'Renaming files...'))
+                    progressDlg.setRange(0, len(selected_items))
+                    progressDlg.setAutoClose(False)
+                    progressDlg.forceShow()
+
+                    i = 0
+                    for item in selected_items:
+                        try:
+                            i += 1
+                            progressDlg.setValue(i)
+
+                            file = item.text(4)
+                            meta = EbookMeta(file)
+                            meta.get()
+                            new_file = meta.meta_to_filename(self.gui_config.authorPattern, 
+                                self.gui_config.filenamePattern,
+                                dest_path=self.gui_config.renameDestDir)
+                            if os.path.exists(new_file):
+                                raise Exception('File {} exist!'.format(new_file))
+                            else:
+                                copy_file(file, new_file)
+                            if self.gui_config.deleteAfterRename:
+                                os.remove(file)
+                            item.setText(4, new_file)
+                            item.setToolTip(4, new_file)
+                        except Exception as e:
+                            self.log.critical('Error while renaming  file {0}: {1}.'.format(file, str(e)))
+                            self.log.debug('Getting details', exc_info=True)
+                            errors += 1
+
+                    progressDlg.deleteLater()
+
+                    if errors > 0:
+                        QMessageBox.critical(self, _translate('fb2mobi-gui', 'Error'), _translate('fb2mobi-gui', 'Error while renaming file(s).\nCheck log for details.'))
+                    
 
     def openHelpURL(self):
         webbrowser.open(url=HELP_URL)
@@ -1273,7 +1369,6 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
 
 
 class AppEventFilter(QObject):
-
     def __init__(self, app_win):
         super(AppEventFilter, self).__init__()
         self.app_win = app_win

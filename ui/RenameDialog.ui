@@ -6,31 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>246</height>
+    <width>443</width>
+    <height>359</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Rename</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <property name="leftMargin">
-    <number>6</number>
-   </property>
-   <property name="topMargin">
-    <number>6</number>
-   </property>
-   <property name="rightMargin">
-    <number>6</number>
-   </property>
-   <property name="bottomMargin">
-    <number>6</number>
-   </property>
    <item row="0" column="0">
     <layout class="QVBoxLayout" name="verticalLayout">
-     <property name="spacing">
-      <number>4</number>
-     </property>
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
@@ -50,13 +35,6 @@
      </item>
      <item>
       <widget class="QLineEdit" name="lineFilenamePattern"/>
-     </item>
-     <item>
-      <widget class="QLabel" name="labelSample">
-       <property name="text">
-        <string>Sample string</string>
-       </property>
-      </widget>
      </item>
      <item>
       <widget class="QRadioButton" name="radioSameDir">
@@ -90,27 +68,62 @@
       </layout>
      </item>
      <item>
-      <spacer name="verticalSpacer">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QDialogButtonBox" name="buttonBox">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="standardButtons">
-        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <widget class="QCheckBox" name="checkDeleteAfterRename">
+       <property name="text">
+        <string>Delete source files after rename</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Samples:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTextEdit" name="textSamples">
+       <property name="lineWrapMode">
+        <enum>QTextEdit::NoWrap</enum>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QPushButton" name="btnTest">
+         <property name="text">
+          <string>Test</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QDialogButtonBox" name="buttonBox">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="standardButtons">
+          <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
@@ -198,10 +211,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnTest</sender>
+   <signal>clicked()</signal>
+   <receiver>RenameDialog</receiver>
+   <slot>test()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>48</x>
+     <y>321</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>196</x>
+     <y>171</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>switch_copy_to()</slot>
   <slot>select_dest_dir()</slot>
-  <slot>check_values()</slot>
+  <slot>test()</slot>
  </slots>
 </ui>
