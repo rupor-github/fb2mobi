@@ -1,0 +1,5 @@
+*
+!kindlegen
+!kindlegen.exe
+!docker/bootstrap.sh
+!requirements.txt

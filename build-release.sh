@@ -1,4 +1,4 @@
-#!env bash
+#!/bin/bash
 
 # Standard preambule
 plain() {
@@ -71,14 +71,15 @@ for _mingw in ${ARCH_INSTALLS}; do
 
 	(
 		if [ -z ${_msystem} ]; then
+			[ ! -f kindlegen ] && cp ../kindlegen .
 			${_python} setup-cli.linux.cx_freeze.py build_exe -b ${_dist}
 			if [ $? -eq 0 ]; then
 				# clean after cx_Freeze
 				for file in ${_dist}/lib/.libs/*; do
 					rm ${_dist}/lib/`basename $file`
 				done
-				[ -f fb2mobi_cli_${_arch}_glibc_${_glibc}.tar.xz ] && rm fb2mobi_cli_${_arch}_glibc_${_glibc}.tar.xz
-				tar --directory ${_dist} --create --xz --file fb2mobi_cli_${_arch}_glibc_${_glibc}.tar.xz .
+				[ -f ${HOME}/result/fb2mobi_cli_${_arch}_glibc_${_glibc}.tar.xz ] && rm ${HOME}/result/fb2mobi_cli_${_arch}_glibc_${_glibc}.tar.xz
+				tar --directory ${_dist} --create --xz --file ${HOME}/result/fb2mobi_cli_${_arch}_glibc_${_glibc}.tar.xz .
 			fi
 		else
 			[ -f fb2mobi_all_${_arch}.7z ] && rm fb2mobi_all_${_arch}.7z
