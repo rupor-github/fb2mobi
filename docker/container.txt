@@ -1,0 +1,11 @@
+docker build -t fb2mobilin:latest .. -f ./Dockerfile.build
+docker build -t fb2mobiwin:latest .. -f ./Dockerfile-win.build
+
+docker save -o ../../fb2mobilin.tar fb2mobilin
+docker load -i ../../fb2mobilin.tar
+
+docker save -o ../../fb2mobiwin.tar fb2mobiwin
+docker load -i ../../fb2mobiwin.tar
+
+docker run --name fb2mobilin -v E:/projects/books/fb2mobi:/root/result -it fb2mobilin:latest
+docker run --name fb2mobiwin -v E:/projects/books/fb2mobi:C:/Users/ContainerAdministrator/result -it fb2mobiwin:latest

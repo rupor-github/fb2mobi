@@ -88,4 +88,4 @@ RUN Write-Host ('Installing pip=={0} ...' -f $env:PYTHON_PIP_VERSION); \
 	Write-Host 'Complete.';
 
 ENV ARCH_INSTALLS='win32 win64'
-CMD ["powershell", ".\\build.ps1"]
+CMD ["powershell", ".\\build.ps1", "latest"]

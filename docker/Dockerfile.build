@@ -9,6 +9,11 @@ RUN apt-get -qqy update \
 
 WORKDIR /root/
 COPY requirements.txt .
+COPY docker/build.sh .
+COPY kindlegen .
+
+# when building using LCOW on Windows containers executive bit is not set...
+RUN chmod a+x build.sh kindlegen
 
 RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
     && python3.6 get-pip.py \
@@ -16,8 +21,5 @@ RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
     && pip3.6 install -r requirements.txt \
     && rm -rf /var/lib/apt/lists/*
 
-COPY docker/build.sh .
-COPY kindlegen .
-
 ENV ARCH_INSTALLS=linux
-CMD ["/bin/bash/", "-c", "./build.sh", "latest"]
+CMD ["./build.sh", "latest"]

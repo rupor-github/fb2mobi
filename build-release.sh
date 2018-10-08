@@ -33,30 +33,13 @@ RED='[38;5;01m'
 YELLOW='[38;5;03m'
 
 readonly ALL_OFF BOLD BLUE GREEN RED YELLOW
-ARCH_INSTALLS="${ARCH_INSTALLS:-win32 win64 linux}"
-
-w_cmd=/mnt/c/Windows/System32/cmd.exe
-
-find . -type d -name '__pycache__' -print0 | xargs -0 rm -rf
+ARCH_INSTALLS="${ARCH_INSTALLS:-linux}"
 
 for _mingw in ${ARCH_INSTALLS}; do
 	
 	case ${_mingw} in
-		win32)
-			_arch=win32
-			_msystem=MINGW32
-			_dist=bin_win32
-			_python=d:/python/python3.6.0_x86/python.exe
-		;;
-		win64)
-			_arch=win64
-			_msystem=MINGW64
-			_dist=bin_win64
-			_python=d:/python/python3.6.0_x64/python.exe
-		;;
 		linux)
 			_glibc=`ldd --version | head -n 1 | awk '{ print $5; }'`
-			_msystem=
 			_os=$(uname)
 			_arch=${_os,,}_$(uname -m)
 			_dist=bin_${_arch}
@@ -64,68 +47,24 @@ for _mingw in ${ARCH_INSTALLS}; do
 		;;
 	esac
 
+	print_msg1 "........................."
 	print_msg1 "Building ${_arch} release"
 	print_msg1 "........................."
 
 	[ -d ${_dist} ] && rm -rf ${_dist}
 
 	(
-		if [ -z ${_msystem} ]; then
-			[ ! -f kindlegen ] && cp ../kindlegen .
-			${_python} setup-cli.linux.cx_freeze.py build_exe -b ${_dist}
-			if [ $? -eq 0 ]; then
-				# clean after cx_Freeze
-				for file in ${_dist}/lib/.libs/*; do
-					rm ${_dist}/lib/`basename $file`
-				done
-				[ -f ${HOME}/result/fb2mobi_cli_${_arch}_glibc_${_glibc}.tar.xz ] && rm ${HOME}/result/fb2mobi_cli_${_arch}_glibc_${_glibc}.tar.xz
-				tar --directory ${_dist} --create --xz --file ${HOME}/result/fb2mobi_cli_${_arch}_glibc_${_glibc}.tar.xz .
-			fi
-		else
-			[ -f fb2mobi_all_${_arch}.7z ] && rm fb2mobi_all_${_arch}.7z
-
-			w_tmp_dir=`${w_cmd} /c echo %TMP% 2>/dev/null | tr -d '\r'`
-			u_tmp_dir=/mnt/c`echo -n ${w_tmp_dir:2} | tr '\\\\\\\\' '/'`
-			u_work_dir=`mktemp -d -p "${u_tmp_dir}"`
-			w_work_dir=${w_tmp_dir}\\`basename ${u_work_dir}`
-
-			repo=`git remote -v | grep fetch | awk '{ print $2; }'`
-
-			pushd ${u_work_dir}
-			git clone ${repo} .
-			popd
-			cp kindlegen.exe ${u_work_dir}/.
-
-			cat <<EOF >${u_work_dir}/_build_${_arch}.cmd
-cd ${w_work_dir}
-${_python} setup-all.win32.cx_freeze.py build_exe -b ${w_work_dir}/${_dist}
-EOF
-
-			${w_cmd} /c ${w_work_dir}/_build_${_arch}.cmd 2>/dev/null
-
-			if [ -d ${u_work_dir}/${_dist} ]; then
-				cp -R ${u_work_dir}/${_dist} ${_dist}
-				rm -rf ${u_work_dir}
-
-				# clean after cx_Freeze
-				_dirs=(imageformats platforms styles)
-				for _d in ${_dirs[@]}; do
-					mv ${_dist}/${_d}/Qt5* ${_dist}/lib/.
-					rm ${_dist}/${_d}/VCRUNTIME140.dll
-					rm ${_dist}/${_d}/MSVCP140.dll
-				done
-				mv ${_dist}/lib/VCRUNTIME140.dll ${_dist}/.
-  			        mv ${_dist}/lib/MSVCP140.dll ${_dist}/.
-
-				cd ${_dist}
-				7z a -r ../fb2mobi_all_${_arch}
-			fi
+		[ ! -f kindlegen ] && cp ../kindlegen .
+		${_python} setup-cli.linux.cx_freeze.py build_exe -b ${_dist}
+		if [ $? -eq 0 ]; then
+			# clean after cx_Freeze
+			for file in ${_dist}/lib/.libs/*; do
+				rm ${_dist}/lib/`basename $file`
+			done
+			[ -f ${HOME}/result/fb2mobi_cli_${_arch}_glibc_${_glibc}.tar.xz ] && rm ${HOME}/result/fb2mobi_cli_${_arch}_glibc_${_glibc}.tar.xz
+			tar --directory ${_dist} --create --xz --file ${HOME}/result/fb2mobi_cli_${_arch}_glibc_${_glibc}.tar.xz .
 		fi
 	)
-
 done
-
-find . -type d -name '__pycache__' -print0 | xargs -0 rm -rf
-
 exit 0
 
