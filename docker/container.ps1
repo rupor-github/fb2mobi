@@ -1,6 +1,14 @@
-docker build --squash -t fb2mobi:latest .. -f .\Dockerfile.build | Tee-Object -FilePath "..\..\all.log"
+docker build -t fb2mobi:latest .. -f .\Dockerfile.build | Tee-Object -FilePath "..\..\all.log"
+docker build -t fb2mobiwin:latest .. -f .\Dockerfile-win.build | Tee-Object -FilePath "..\..\allwin.log"
+
+# docker build --squash -t fb2mobi:latest .. -f .\Dockerfile.build | Tee-Object -FilePath "..\..\all.log"
+# docker build --squash -t fb2mobiwin:latest .. -f .\Dockerfile-win.build | Tee-Object -FilePath "..\..\allwin.log"
 
 # docker save -o ..\..\fb2mobi.tar fb2mobi
 # docker load -i ..\..\fb2mobi.tar
 
+# docker save -o ..\..\fb2mobiwin.tar fb2mobiwin
+# docker load -i ..\..\fb2mobiwin.tar
+
 # docker run --name fb2mobi -v E:/projects/books/fb2mobi:/root/result -it fb2mobi:latest
+# docker run --name fb2mobiwin -v E:/projects/books/fb2mobi:C:/result -it fb2mobiwin:latest

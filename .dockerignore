@@ -1,5 +1,6 @@
 *
 !kindlegen
 !kindlegen.exe
-!docker/bootstrap.sh
+!docker/build.sh
+!docker/build.ps1
 !requirements.txt
