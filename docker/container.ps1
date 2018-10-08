@@ -1,4 +1,4 @@
-docker --squash build -t fb2mobi:latest .. -f .\Dockerfile.build | Tee-Object -FilePath "..\..\all.log"
+docker build --squash -t fb2mobi:latest .. -f .\Dockerfile.build | Tee-Object -FilePath "..\..\all.log"
 
 # docker save -o ..\..\fb2mobi.tar fb2mobi
 # docker load -i ..\..\fb2mobi.tar
