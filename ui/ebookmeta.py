@@ -439,14 +439,20 @@ class EbookMeta():
             return 'fb2'
         return ''
 
+    def replace_na_symbols(self, text):
+        for c in ':/\\*?"<>|':
+            text = text.replace(c, '_')
+
+        return text
+
     def meta_to_filename(self, author_format, filename_format, dest_path=None):
         if author_format and filename_format and self.book_type == 'fb2':
             (series_name, series_num) = self.get_first_series()
 
             name = format_pattern(filename_format, 
                 [
-                    ('#title', '' if not self.book_title else self.book_title.strip()),
-                    ('#series', series_name.strip()),
+                    ('#title', self.replace_na_symbols('' if not self.book_title else self.book_title.strip())),
+                    ('#series', self.replace_na_symbols(series_name.strip())),
                     ('#abbrseries', ''.join(word[0] for word in series_name.split()).lower() if series_name else ''),
                     ('#number', str(series_num).strip()),
                     ('#authors', self.get_formatted_authors(author_format, short=False)),

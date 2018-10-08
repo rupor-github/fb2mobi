@@ -905,6 +905,16 @@ class MainAppWindow(QMainWindow, Ui_MainWindow):
         for item in self.treeFileList.selectedItems():
             self.rootFileList.removeChild(item)
 
+    def deleteAllAction(self):
+        if self.treeFileList.topLevelItemCount() > 0:
+            msg = QMessageBox(self)
+            msg.setIcon(QMessageBox.Question)
+            msg.setWindowTitle(_translate('fb2mobi', 'Delete from list'))
+            msg.setText(_translate('fb2mobi', 'Delete all files from list?'))
+            msg.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+            if msg.exec_() == QMessageBox.Yes:
+                self.treeFileList.clear()
+
     def openLog(self):
         self.openFile(self.log_file)
 

@@ -384,6 +384,7 @@
      <string>Edit</string>
     </property>
     <addaction name="actionDelete"/>
+    <addaction name="actionDeleteAll"/>
     <addaction name="separator"/>
     <addaction name="actionRename"/>
     <addaction name="separator"/>
@@ -534,6 +535,11 @@
    </property>
    <property name="iconVisibleInMenu">
     <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionDeleteAll">
+   <property name="text">
+    <string>Delete all</string>
    </property>
   </action>
  </widget>
@@ -875,6 +881,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionDeleteAll</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>deleteAllAction()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>280</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>closeApp()</slot>
@@ -897,5 +919,6 @@
   <slot>openHelpURL()</slot>
   <slot>openFromGDrive()</slot>
   <slot>rename()</slot>
+  <slot>deleteAllAction()</slot>
  </slots>
 </ui>
