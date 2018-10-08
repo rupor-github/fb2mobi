@@ -44,7 +44,7 @@ class GoogleDrive():
         credentials = store.get()
         if not credentials or credentials.invalid:
             flow = client.flow_from_clientsecrets(os.path.join(self.executable_path, CLIENT_SECRET_FILE), SCOPES)
-            flow.user_agent = APPLICATION_NAME
+            flow.user_agent = APPLICATION_NAME           
             credentials = tools.run_flow(flow, store, http=self.http)
 
         return credentials

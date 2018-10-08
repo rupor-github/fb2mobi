@@ -205,6 +205,8 @@ class Ui_MainWindow(object):
         self.actionRename = QtWidgets.QAction(MainWindow)
         self.actionRename.setIconVisibleInMenu(False)
         self.actionRename.setObjectName("actionRename")
+        self.actionDeleteAll = QtWidgets.QAction(MainWindow)
+        self.actionDeleteAll.setObjectName("actionDeleteAll")
         self.menu.addAction(self.actionAddFile)
         self.menu.addAction(self.actionAddGDirve)
         self.menu.addSeparator()
@@ -220,6 +222,7 @@ class Ui_MainWindow(object):
         self.menu_2.addSeparator()
         self.menu_2.addAction(self.actionAbout)
         self.menu_3.addAction(self.actionDelete)
+        self.menu_3.addAction(self.actionDeleteAll)
         self.menu_3.addSeparator()
         self.menu_3.addAction(self.actionRename)
         self.menu_3.addSeparator()
@@ -250,6 +253,7 @@ class Ui_MainWindow(object):
         self.actionOpenHelpURL.triggered.connect(MainWindow.openHelpURL)
         self.actionAddGDirve.triggered.connect(MainWindow.openFromGDrive)
         self.actionRename.triggered.connect(MainWindow.rename)
+        self.actionDeleteAll.triggered.connect(MainWindow.deleteAllAction)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -296,4 +300,5 @@ class Ui_MainWindow(object):
         self.actionAddGDirve.setShortcut(_translate("MainWindow", "Ctrl+G"))
         self.actionRename.setText(_translate("MainWindow", "Rename..."))
         self.actionRename.setToolTip(_translate("MainWindow", "Rename selected files"))
+        self.actionDeleteAll.setText(_translate("MainWindow", "Delete all"))
 
