@@ -33,5 +33,5 @@ foreach( $a in ($Env:ARCH_INSTALLS -split ' ') )
     Move-Item -Path $dist/lib/MSVCP140.dll $dist/MSVCP140.dll -ErrorAction SilentlyContinue
 
     Write-Host "Compressiing result..."
-    Compress-Archive -Path $dist\* -CompressionLevel Optimal -DestinationPath $result/fb2mobi_all_$arch.zip
+    Compress-Archive -Path $dist -DestinationPath $result/fb2mobi_all_$arch
 }
