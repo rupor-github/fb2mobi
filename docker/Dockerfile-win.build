@@ -1,17 +1,24 @@
-FROM microsoft/windowsservercore:ltsc2016
+FROM microsoft/windowsservercore
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
 ENV PYTHON_VERSION 3.6.6
 ENV PYTHON_RELEASE 3.6.6
+ENV PYTHON_PIP_VERSION 18.1
+ENV ARCH_INSTALLS='win32 win64'
 
-RUN $url = ('https://www.python.org/ftp/python/{0}/python-{1}-amd64.exe' -f $env:PYTHON_RELEASE, $env:PYTHON_VERSION); \
+WORKDIR C:\\Users\\ContainerAdministrator
+COPY requirements.txt .
+COPY kindlegen.exe .
+COPY docker/build.ps1 .
+
+RUN Write-Host 'Starting ...'; \
+	$url = ('https://www.python.org/ftp/python/{0}/python-{1}-amd64.exe' -f $env:PYTHON_RELEASE, $env:PYTHON_VERSION); \
 	Write-Host ('Downloading {0} ...' -f $url); \
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; \
 	Invoke-WebRequest -Uri $url -OutFile 'python64.exe'; \
 	\
-	Write-Host 'Installing ...'; \
-# https://docs.python.org/3.5/using/windows.html#installing-without-ui
+	Write-Host 'Installing 64 bit ...'; \
 	Start-Process python64.exe -Wait \
 		-ArgumentList @( \
 			'/quiet', \
@@ -24,10 +31,9 @@ RUN $url = ('https://www.python.org/ftp/python/{0}/python-{1}-amd64.exe' -f $env
 			'Include_test=0' \
 		); \
 	\
-	Write-Host 'Verifying install ...'; \
+	Write-Host 'Verifying 64 bit install ...'; \
 	Write-Host '  python --version'; C:\Python64\python --version; \
 	\
-	Write-Host 'Removing ...'; \
 	Remove-Item python64.exe -Force; \
 	\
         $url = ('https://www.python.org/ftp/python/{0}/python-{1}.exe' -f $env:PYTHON_RELEASE, $env:PYTHON_VERSION); \
@@ -35,8 +41,7 @@ RUN $url = ('https://www.python.org/ftp/python/{0}/python-{1}-amd64.exe' -f $env
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; \
 	Invoke-WebRequest -Uri $url -OutFile 'python32.exe'; \
 	\
-	Write-Host 'Installing ...'; \
-# https://docs.python.org/3.5/using/windows.html#installing-without-ui
+	Write-Host 'Installing 32 bit...'; \
 	Start-Process python32.exe -Wait \
 		-ArgumentList @( \
 			'/quiet', \
@@ -49,32 +54,21 @@ RUN $url = ('https://www.python.org/ftp/python/{0}/python-{1}-amd64.exe' -f $env
 			'Include_test=0' \
 		); \
 	\
-	Write-Host 'Verifying install ...'; \
+	Write-Host 'Verifying 32 bit install ...'; \
 	Write-Host '  python --version'; C:\Python32\python --version; \
 	\
-	Write-Host 'Removing ...'; \
 	Remove-Item python32.exe -Force; \
 	\
-	Write-Host 'Complete.';
-
-WORKDIR C:\\Users\\ContainerAdministrator
-COPY requirements.txt .
-COPY kindlegen.exe .
-COPY docker/build.ps1 .
-
-# if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
-ENV PYTHON_PIP_VERSION 18.1
-
-RUN Write-Host ('Installing pip=={0} ...' -f $env:PYTHON_PIP_VERSION); \
+        Write-Host ('Installing pip=={0} ...' -f $env:PYTHON_PIP_VERSION); \
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; \
 	Invoke-WebRequest -Uri 'https://bootstrap.pypa.io/get-pip.py' -OutFile 'get-pip.py'; \
 	\
 	C:\Python64\python get-pip.py --disable-pip-version-check --no-cache-dir --no-warn-script-location; \
-	Write-Host 'Verifying pip install ...'; \
+	Write-Host 'Verifying 64 bit pip install ...'; \
 	C:\Python64\Scripts\pip --version; \
 	\
 	C:\Python32\python get-pip.py --disable-pip-version-check --no-cache-dir --no-warn-script-location; \
-	Write-Host 'Verifying pip install ...'; \
+	Write-Host 'Verifying 32 bit pip install ...'; \
 	C:\Python32\Scripts\pip --version; \
 	\
 	Remove-Item get-pip.py -Force; \
@@ -87,5 +81,4 @@ RUN Write-Host ('Installing pip=={0} ...' -f $env:PYTHON_PIP_VERSION); \
 	\
 	Write-Host 'Complete.';
 
-ENV ARCH_INSTALLS='win32 win64'
 CMD ["powershell", ".\\build.ps1", "latest"]
