@@ -6,7 +6,7 @@ defined in the docker files and build process fully automated in scripts. At the
 for several platforms (as well as attemptng to fix various problems with Unicode support in Python for Windows) has been noticeable burden for me - requiring
 time (which I do not have) and resources (virtual machines, etc). As the result I am reducing my attention to this project - there would not be conversion
 to latest Python or any further program binary distributions for Windows and Linux coming from me. I may be able to provide source level fixes if required, but
-this would be it. Instead I am opening new project - [fb2converter](https://github.com/rupor-github/fb2mobi), a complete rewrite of this program in go language which
+this would be it. Instead I am opening new project - [fb2converter](https://github.com/rupor-github/fb2converter), a complete rewrite of this program in go language which
 requires much less time support time (or so I think). At the moment it has everything command line of fb2mobi does and then some and eventually it may even get
 its own UI, we'll see. Any new features or significant fixes would be provided by new project or would have to come from somebody else.**
 
