@@ -1,5 +1,15 @@
 This program is based on fb2conv program published by [dnkorpushov](https://github.com/dnkorpushov) on [the-ebook.org](http://www.the-ebook.org/forum/viewtopic.php?t=28447) site.
 
+## Important:
+**This project has been "stable" for a while - no changes or additional fixes where requested. Builds for Linux and Windows build environments have been fully
+defined in the docker files and build process fully automated in scripts. At the same time maintaining Python build environment
+for several platforms (as well as attemptng to fix various problems with Unicode support in Python for Windows) has been noticeable burden for me - requiring
+time (which I do not have) and resources (virtual machines, etc). As the result I am reducing my attention to this project - there would not be conversion
+to latest Python or any further program binary distributions for Windows and Linux coming from me. I may be able to provide source level fixes if required, but
+this would be it. Instead I am opening new project - [fb2converter](https://github.com/rupor-github/fb2mobi), a complete rewrite of this program in go language which
+requires much less time support time (or so I think). At the moment it has everything command line of fb2mobi does and then some and eventually it may even get
+its own UI, we'll see. Any new features or significant fixes would be provided by new project or would have to come from somebody else.**
+
 Original program (being Python 2) did not work well under Windows when non-russian system codepage was selected for non-Unicode programs.
 In order to improve the situation I had to port it to Python 3. Later author of original converter re-joined the project and ported GUI UI here.
 He also added binary releases for MAC.
