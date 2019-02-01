@@ -9,7 +9,7 @@ to latest Python or any further program binary distributions for Windows and Lin
 this would be it.**
 
 **Instead I am opening new project - [fb2converter](https://github.com/rupor-github/fb2converter), a complete rewrite of this program in go language which
-requires much less time support time (or so I think). At the moment it has everything command line of fb2mobi does and then some and eventually it may even get
+requires much less support time (or so I think). At the moment it has everything command line of fb2mobi does and then some and eventually it may even get
 its own UI, we'll see. Any new features or significant fixes would be provided by new project or would have to come from somebody else.**
 
 Original program (being Python 2) did not work well under Windows when non-russian system codepage was selected for non-Unicode programs.
