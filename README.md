@@ -51,7 +51,7 @@ Here is brief list of changes to the original project (in addition to bug fixes)
 * For FB2 input files output name could be derived from book metadata using tag `<outputPattern>` and the same rules as for book title.
 * Added support for multiple authors
 
-More info can be found on [russian forum](http://www.the-ebook.org/forum/viewtopic.php?t=30380).
+More info can be found on [russian forum](https://4pda.ru/forum/index.php?showtopic=942254).
 
 Program uses source code (modified) from following projects released under GPL:
 
