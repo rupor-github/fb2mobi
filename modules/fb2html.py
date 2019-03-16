@@ -904,7 +904,7 @@ class Fb2XHTML:
             vignette = self.get_vignette(level, 'chapterEnd')
             if vignette:
                 self.buff.append('<p class="vignette_chapter_end"><img src="vignettes/{0}" /></p>'.format(vignette))
-            self.buff.append('<span class="chapter_end"/>')
+            self.buff.append('<div class="chapter_end"/>')
 
         self.current_header_level = max(0, self.current_header_level - 1)
 
